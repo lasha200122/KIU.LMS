@@ -1,10 +1,15 @@
 ﻿global using FluentValidation;
 global using FluentValidation.Results;
 global using KIU.LMS.Application.Common;
+global using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL.Base;
+global using KIU.LMS.Domain.Common.Interfaces.Services;
+global using KIU.LMS.Domain.Common.Models.Device;
 global using KIU.LMS.Domain.Common.Models.Response;
+global using KIU.LMS.Domain.Common.Models.User;
+global using KIU.LMS.Domain.Entities.SQL;
 global using MediatR;
 global using MediatR.Pipeline;
-global using Microsoft.Extensions.Configuration;
+global using Microsoft.AspNetCore.SignalR;
 global using Microsoft.Extensions.DependencyInjection;
 global using System;
 global using System.Collections.Generic;

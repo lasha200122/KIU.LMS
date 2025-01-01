@@ -4,7 +4,6 @@ public class UserDevice : Aggregate
 {
     public Guid UserId { get; private set; }
     public string DeviceIdentifier { get; private set; } = null!;
-    public string DeviceName { get; private set; } = null!;
 
     public virtual User User { get; private set; } = null!;
 
@@ -14,12 +13,10 @@ public class UserDevice : Aggregate
         Guid id,
         Guid userId,
         string deviceIdentifier,
-        string deviceName,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         UserId = userId;
         DeviceIdentifier = deviceIdentifier;
-        DeviceName = deviceName;
         Validate(this);
     }
 

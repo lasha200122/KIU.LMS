@@ -1,8 +1,12 @@
 ﻿global using KIU.LMS.Domain.Common.Attributes;
 global using KIU.LMS.Domain.Common.Enums.Conversation;
+global using KIU.LMS.Domain.Common.Enums.Email;
+global using KIU.LMS.Domain.Common.Enums.Exam;
 global using KIU.LMS.Domain.Common.Enums.Question;
+global using KIU.LMS.Domain.Common.Enums.User;
 global using KIU.LMS.Domain.Common.Interfaces.Entities;
 global using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL.Base;
+global using KIU.LMS.Domain.Common.Models.Jwt;
 global using KIU.LMS.Domain.Common.Models.Paged;
 global using KIU.LMS.Domain.Entities.Base;
 global using KIU.LMS.Domain.Entities.SQL;
@@ -15,3 +19,4 @@ global using System.Linq.Expressions;
 global using System.Security.Cryptography;
 global using System.Threading;
 global using System.Threading.Tasks;
+global using KIU.LMS.Domain.Common.Models.Device;

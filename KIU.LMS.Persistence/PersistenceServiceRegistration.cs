@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Persistence;
+﻿using StackExchange.Redis;
+
+namespace KIU.LMS.Persistence;
 
 public static class PersistenceServiceRegistration
 {
@@ -8,8 +10,12 @@ public static class PersistenceServiceRegistration
 
         var mongodbOptions = configuration.GetSection(nameof(MongodbSettings)).Get<MongodbSettings>();
         services.AddSingleton(mongodbOptions!);
-
         services.AddScoped(typeof(IMongoRepository<>), typeof(MongoRepository<>));
+
+        var redisOptions = configuration.GetSection(nameof(RedisSettings)).Get<RedisSettings>()!;
+        services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(redisOptions.ConnectionString));
+        services.AddScoped(typeof(IRedisRepository<>), typeof(RedisRepository<>));
+
 
         services.AddDbContext<LmsDbContext>(options =>
             options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));

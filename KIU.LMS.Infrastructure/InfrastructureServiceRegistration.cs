@@ -7,6 +7,7 @@ public static class InfrastructureServiceRegistration
         var thisAssembly = Assembly.GetExecutingAssembly();
 
         var jwtSetting = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>()!;
+        services.AddSingleton(jwtSetting!);
 
         services.AddAuthorization();
 
@@ -24,7 +25,27 @@ public static class InfrastructureServiceRegistration
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSetting.Secret)),
                 };
+
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/notification"))
+                        {
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
+
+        services.AddSingleton<IPasswordService, PasswordService>();
+        services.AddSingleton<IJwtService, JwtService>();
+
+        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<IActiveSessionService, ActiveSessionService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

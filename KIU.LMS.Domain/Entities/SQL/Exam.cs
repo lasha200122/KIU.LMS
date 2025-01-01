@@ -4,7 +4,7 @@ public class Exam : Aggregate
 {
     public Guid CourseId { get; private set; }
     public string Name { get; private set; } = null!;
-    public string Type { get; private set; } = null!;
+    public ExamType Type { get; private set; }
     public DateTimeOffset StartTime { get; private set; }
     public DateTimeOffset EndTime { get; private set; }
     public int DurationInMinutes { get; private set; }
@@ -24,7 +24,7 @@ public class Exam : Aggregate
         Guid id,
         Guid courseId,
         string name,
-        string type,
+        ExamType type,
         DateTimeOffset startTime,
         DateTimeOffset endTime,
         int durationInMinutes,

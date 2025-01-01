@@ -1,7 +1,10 @@
 ﻿global using KIU.LMS.Api.Utilities;
 global using KIU.LMS.Application;
+global using KIU.LMS.Application.Features.Auth.Commands;
+global using KIU.LMS.Application.Hubs;
 global using KIU.LMS.Domain.Common.Models.Response;
 global using KIU.LMS.Infrastructure;
+global using KIU.LMS.Infrastructure.Middlewawres;
 global using KIU.LMS.Persistence;
 global using MediatR;
 global using Microsoft.AspNetCore.Builder;

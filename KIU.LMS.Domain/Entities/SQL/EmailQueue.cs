@@ -5,7 +5,7 @@ public class EmailQueue : Aggregate
     public Guid TemplateId { get; private set; }
     public string ToEmail { get; private set; } = null!;
     public string Variables { get; private set; } = null!;
-    public string Status { get; private set; } = null!;
+    public EmailStatus Status { get; private set; }
     public string? FailureReason { get; private set; }
     public DateTimeOffset? SentAt { get; private set; }
     public int RetryCount { get; private set; }
@@ -24,16 +24,16 @@ public class EmailQueue : Aggregate
         TemplateId = templateId;
         ToEmail = toEmail;
         Variables = variables;
-        Status = "Pending";
+        Status = EmailStatus.Pending;
         RetryCount = 0;
         Validate(this);
     }
 
-    public void UpdateStatus(string status, string? failureReason = null)
+    public void UpdateStatus(EmailStatus status, string? failureReason = null)
     {
         Status = status;
         FailureReason = failureReason;
-        if (status == "Sent")
+        if (status == EmailStatus.Sent)
         {
             SentAt = DateTimeOffset.Now;
         }

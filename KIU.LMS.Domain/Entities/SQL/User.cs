@@ -5,7 +5,7 @@ public class User : Aggregate
     public string FirstName { get; private set; } = null!;
     public string LastName { get; private set; } = null!;
     public string Email { get; private set; } = null!;
-    public string Role { get; private set; } = null!;
+    public UserRole Role { get; private set; }
     public string PasswordHash { get; private set; } = null!;
     public string PasswordSalt { get; private set; } = null!;
     public bool EmailVerified { get; private set; }
@@ -26,7 +26,7 @@ public class User : Aggregate
         string firstName,
         string lastName,
         string email,
-        string role,
+        UserRole role,
         string passwordHash,
         string passwordSalt,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)

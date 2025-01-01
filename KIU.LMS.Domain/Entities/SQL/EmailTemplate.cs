@@ -2,7 +2,7 @@
 
 public class EmailTemplate : Aggregate
 {
-    public string Type { get; private set; } = null!;
+    public EmailType Type { get; private set; }
     public string Body { get; private set; } = null!;
     public string Variables { get; private set; } = null!;
     public string Subject { get; private set; } = null!;
@@ -14,7 +14,7 @@ public class EmailTemplate : Aggregate
 
     public EmailTemplate(
         Guid id,
-        string type,
+        EmailType type,
         string body,
         string variables,
         string subject,
@@ -29,7 +29,7 @@ public class EmailTemplate : Aggregate
 
     private void Validate(EmailTemplate template)
     {
-        if (string.IsNullOrEmpty(template.Type))
+        if (template.Type == default)
             throw new Exception("შაბლონის ტიპი სავალდებულოა");
         if (string.IsNullOrEmpty(template.Body))
             throw new Exception("შაბლონის ტექსტი სავალდებულოა");

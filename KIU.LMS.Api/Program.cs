@@ -15,10 +15,16 @@ var builder = WebApplication.CreateBuilder(args);
 
     builder.Host.UseSerilog(logger);
 
+    builder.Services.AddSignalR(options =>
+    {
+        options.EnableDetailedErrors = true;
+        options.KeepAliveInterval = TimeSpan.FromMinutes(1);
+    });
+
     builder.Services
-    .AddApplicationServices(logger)
     .AddPersistenceServices(builder.Configuration, logger)
-    .AddInfrastructureServices(builder.Configuration, logger);
+    .AddInfrastructureServices(builder.Configuration, logger)
+    .AddApplicationServices(logger);
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -34,7 +40,8 @@ var builder = WebApplication.CreateBuilder(args);
     {
         o.AllowAnyHeader()
             .AllowAnyMethod()
-            .WithOrigins(origins);
+            .WithOrigins(origins)
+            .AllowCredentials();
     }));
 
     builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
@@ -56,7 +63,11 @@ var app = builder.Build();
 
     app.UseAuthentication();
 
+    app.UseMiddleware<ActiveSessionMiddleware>();
+
     app.UseAuthorization();
+
+    app.MapHub<NotificationHub>("/hubs/notification");
 
     app.MapControllers();
 

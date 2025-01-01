@@ -1,7 +1,7 @@
 ﻿namespace KIU.LMS.Api.Controllers;
 
 [ApiController]
-public abstract class ApisController(ISender _sender) : ControllerBase
+public abstract class ApiController(ISender _sender) : ControllerBase
 {
     protected async Task<IResult> Handle<TRequest, TResponse>(TRequest request)
         where TRequest : IRequest<Result<TResponse>>
