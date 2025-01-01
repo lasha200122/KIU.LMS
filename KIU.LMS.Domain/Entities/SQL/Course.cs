@@ -1,0 +1,35 @@
+﻿namespace KIU.LMS.Domain.Entities.SQL;
+
+public class Course : Aggregate
+{
+    public string Name { get; private set; } = null!;
+
+    private List<UserCourse> _userCourses = new();
+    public IReadOnlyCollection<UserCourse> UserCourses => _userCourses;
+
+    private List<CourseMaterial> _materials = new();
+    public IReadOnlyCollection<CourseMaterial> Materials => _materials;
+
+    private List<CourseMeeting> _meetings = new();
+    public IReadOnlyCollection<CourseMeeting> Meetings => _meetings;
+
+    private List<Exam> _exams = new();
+    public IReadOnlyCollection<Exam> Exams => _exams;
+
+    public Course() { }
+
+    public Course(
+        Guid id,
+        string name,
+        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+    {
+        Name = name;
+        Validate(this);
+    }
+
+    private void Validate(Course course)
+    {
+        if (string.IsNullOrEmpty(course.Name))
+            throw new Exception("კურსის სახელი სავალდებულოა");
+    }
+}

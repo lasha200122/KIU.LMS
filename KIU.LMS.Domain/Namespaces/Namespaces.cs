@@ -1,0 +1,17 @@
+﻿global using KIU.LMS.Domain.Common.Attributes;
+global using KIU.LMS.Domain.Common.Enums.Conversation;
+global using KIU.LMS.Domain.Common.Enums.Question;
+global using KIU.LMS.Domain.Common.Interfaces.Entities;
+global using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL.Base;
+global using KIU.LMS.Domain.Common.Models.Paged;
+global using KIU.LMS.Domain.Entities.Base;
+global using KIU.LMS.Domain.Entities.SQL;
+global using MongoDB.Bson;
+global using MongoDB.Bson.Serialization.Attributes;
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Linq.Expressions;
+global using System.Security.Cryptography;
+global using System.Threading;
+global using System.Threading.Tasks;
