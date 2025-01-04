@@ -11,6 +11,9 @@ public static class ApplicationServiceRegistration
         services.AddHttpContextAccessor();
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
+        services.AddHostedService<EmailQueueWorker>();
+
+
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
         return services;

@@ -97,6 +97,18 @@ public class BaseRepository<T>(DbContext Context) : IBaseRepository<T> where T :
         return await query.SingleOrDefaultAsync(predicate);
     }
 
+    public async Task<T?> SingleOrDefaultWithTrackingAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)
+    {
+        var query = Context.Set<T>().AsQueryable();
+
+        foreach (var property in includeProperties)
+        {
+            query = query.Include(property);
+        }
+
+        return await query.SingleOrDefaultAsync(predicate);
+    }
+
     public async Task<ICollection<T>> GetAllAsync(CancellationToken cancellationToken = default)
     {
         return await Context.Set<T>().AsNoTracking().ToListAsync(cancellationToken);

@@ -72,7 +72,7 @@ public class LoginCommandHandler(
         var userMeta = new UserDto(
             $"{user.FirstName} {user.LastName}",
             user.Email.ToLower(),
-            nameof(user.Role));
+            EnumTranslator.UserRoles(user.Role));
 
         return new LoginCommandResponse(
             AccessToken: token,

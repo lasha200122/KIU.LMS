@@ -25,6 +25,7 @@ public static class ResultExtensions
         );
     }
 
+
     public static IResult ToResult<T>(this Result<T> result)
     {
         if (result.IsSuccess)
@@ -47,17 +48,41 @@ public static class ResultExtensions
             });
     }
 
-    private static int GetStatusCode(ErrorType errorType) =>
-        errorType switch
+    public static IResult ToFileResult(this Result<byte[]> result, string contentType, string fileName)
+    {
+        if (!result.IsSuccess)
         {
-            ErrorType.Validation => StatusCodes.Status400BadRequest,
-            ErrorType.BadRequest => StatusCodes.Status400BadRequest,
-            ErrorType.NotFound => StatusCodes.Status404NotFound,
-            ErrorType.Conflict => StatusCodes.Status409Conflict,
-            ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
-            ErrorType.Forbidden => StatusCodes.Status403Forbidden,
-            _ => StatusCodes.Status500InternalServerError
-        };
+            if (result.FirstError is null)
+            {
+                throw new InvalidOperationException();
+            }
+            return Results.Problem(
+                statusCode: GetStatusCode(result.FirstError.Type),
+                title: GetTitle(result.Message, result.FirstError.Type),
+                type: GetType(result.FirstError.Type),
+                extensions: new Dictionary<string, object?>
+                {
+                    { "errors", result.Errors }
+                });
+        }
+
+        return Results.File(
+            fileContents: result.Data!,
+            contentType: contentType,
+            fileDownloadName: fileName);
+    }
+
+    private static int GetStatusCode(ErrorType errorType) =>
+    errorType switch
+    {
+        ErrorType.Validation => StatusCodes.Status400BadRequest,
+        ErrorType.BadRequest => StatusCodes.Status400BadRequest,
+        ErrorType.NotFound => StatusCodes.Status404NotFound,
+        ErrorType.Conflict => StatusCodes.Status409Conflict,
+        ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
+        ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+        _ => StatusCodes.Status500InternalServerError
+    };
 
     private static string GetTitle(string? resultMessage, ErrorType errorType)
     {

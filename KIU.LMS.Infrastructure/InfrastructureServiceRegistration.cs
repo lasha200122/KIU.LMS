@@ -9,6 +9,12 @@ public static class InfrastructureServiceRegistration
         var jwtSetting = configuration.GetSection(nameof(JwtSettings)).Get<JwtSettings>()!;
         services.AddSingleton(jwtSetting!);
 
+        var emailSetting = configuration.GetSection(nameof(EmailSettings)).Get<EmailSettings>()!;
+        services.AddSingleton(emailSetting!);
+
+        var frontSetting = configuration.GetSection(nameof(FrontSettings)).Get<FrontSettings>()!;
+        services.AddSingleton(frontSetting!);
+
         services.AddAuthorization();
 
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
@@ -17,13 +23,14 @@ public static class InfrastructureServiceRegistration
                 options.SaveToken = true;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = jwtSetting.Issuer,
                     ValidAudience = jwtSetting.Audience,
                     IssuerSigningKey = new SymmetricSecurityKey(
                         Encoding.UTF8.GetBytes(jwtSetting.Secret)),
+                    ClockSkew = TimeSpan.Zero
                 };
 
                 options.Events = new JwtBearerEvents
@@ -43,9 +50,12 @@ public static class InfrastructureServiceRegistration
 
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
+        services.AddSingleton<IExcelProcessor, ExcelProcessor>();
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IActiveSessionService, ActiveSessionService>();
+        services.AddScoped<IEmailProcessingService, EmailProcessingService>();
+        services.AddScoped<IEmailSenderService, EmailSenderService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

@@ -6,7 +6,7 @@ public class CurrentUserService(IHttpContextAccessor _httpContextAccessor) : ICu
     {
         get
         {
-            var claim = GetClaim(JwtRegisteredClaimNames.Sub);
+            var claim = GetClaim(ClaimTypes.NameIdentifier);
             return Guid.Parse(claim);
         }
     }
@@ -15,7 +15,7 @@ public class CurrentUserService(IHttpContextAccessor _httpContextAccessor) : ICu
     public string FullName => GetClaim(ClaimTypes.Name);
     public string Role => GetClaim(ClaimTypes.Role);
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
-    public string? DeviceId => _httpContextAccessor.HttpContext?.Request.Headers["X-Device-Info"].FirstOrDefault();
+    public string? DeviceId => "TEST ID";//_httpContextAccessor.HttpContext?.Request.Headers["X-Device-Info"].FirstOrDefault();
 
     private string GetClaim(string claimType)
     {

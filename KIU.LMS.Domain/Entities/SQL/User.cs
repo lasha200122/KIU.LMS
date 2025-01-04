@@ -41,6 +41,20 @@ public class User : Aggregate
         Validate(this);
     }
 
+    public void ChangePassword(string passwordHash, byte[] passwordSalt, Guid updateUserId) 
+    {
+        PasswordHash = passwordHash;
+        PasswordSalt = Convert.ToHexString(passwordSalt);
+
+        Update(updateUserId, DateTimeOffset.UtcNow);
+        Validate(this);
+    }
+
+    public void VerifyEmail() 
+    {
+        EmailVerified = true;
+    }
+
     private void Validate(User user)
     {
         if (string.IsNullOrEmpty(user.FirstName))

@@ -17,6 +17,7 @@ public interface IBaseRepository<T> where T : class
     Task<T?> FirstOrDefaultIncludedAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
     Task<T?> FirstOrDefaultWithTrackingIncludedAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
     Task<T?> SingleOrDefaultAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
+    Task<T?> SingleOrDefaultWithTrackingAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
 
     Task<ICollection<T>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<ICollection<T>> GetWhereAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
