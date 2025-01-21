@@ -1,9 +1,13 @@
 ﻿global using KIU.LMS.Api.Utilities;
 global using KIU.LMS.Application;
 global using KIU.LMS.Application.Features.Auth.Commands;
+global using KIU.LMS.Application.Features.Courses.Commands;
+global using KIU.LMS.Application.Features.Courses.Queries;
 global using KIU.LMS.Application.Features.Excel.Queries;
 global using KIU.LMS.Application.Features.Users.Commands;
+global using KIU.LMS.Application.Features.Users.Queries;
 global using KIU.LMS.Application.Hubs;
+global using KIU.LMS.Domain.Common.Models.Paged;
 global using KIU.LMS.Domain.Common.Models.Response;
 global using KIU.LMS.Infrastructure;
 global using KIU.LMS.Infrastructure.Middlewawres;

@@ -27,6 +27,13 @@ public class Course : Aggregate
         Validate(this);
     }
 
+    public void Update(string name, Guid updateUserId)
+    {
+        Name = name;
+        Update(updateUserId, DateTimeOffset.UtcNow);
+        Validate(this);
+    }
+
     private void Validate(Course course)
     {
         if (string.IsNullOrEmpty(course.Name))

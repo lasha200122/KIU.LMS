@@ -20,6 +20,6 @@ public class LogoutCommandHandler(
 
         await _sessionService.RemoveActiveSessionAsync(userId, deviceId);
 
-        return Result.Success();
+        return Result.Success("Logout finished successfully");
     }
 }
