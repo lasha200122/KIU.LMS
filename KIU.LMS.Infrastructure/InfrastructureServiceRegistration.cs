@@ -15,6 +15,9 @@ public static class InfrastructureServiceRegistration
         var frontSetting = configuration.GetSection(nameof(FrontSettings)).Get<FrontSettings>()!;
         services.AddSingleton(frontSetting!);
 
+        var geminiSetting = configuration.GetSection(nameof(GeminiSettings)).Get<GeminiSettings>()!;
+        services.AddSingleton(geminiSetting!);
+
         services.AddAuthorization();
 
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
@@ -51,6 +54,7 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IExcelProcessor, ExcelProcessor>();
+        services.AddScoped<IGeminiService, GeminiService>();
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IActiveSessionService, ActiveSessionService>();

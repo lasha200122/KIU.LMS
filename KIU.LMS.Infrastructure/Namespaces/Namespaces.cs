@@ -1,4 +1,7 @@
 ﻿global using ClosedXML.Excel;
+global using GenerativeAI.Classes;
+global using GenerativeAI.Models;
+global using GenerativeAI.Types;
 global using KIU.LMS.Application.Hubs;
 global using KIU.LMS.Domain.Common.Constants.Hash;
 global using KIU.LMS.Domain.Common.Interfaces.Repositories.NoSQL;
@@ -8,6 +11,7 @@ global using KIU.LMS.Domain.Common.Models.Excel;
 global using KIU.LMS.Domain.Common.Models.Jwt;
 global using KIU.LMS.Domain.Common.Settings.Email;
 global using KIU.LMS.Domain.Common.Settings.Front;
+global using KIU.LMS.Domain.Common.Settings.Gemini;
 global using KIU.LMS.Domain.Common.Settings.Jwt;
 global using KIU.LMS.Domain.Common.Utils;
 global using KIU.LMS.Domain.Entities.SQL;

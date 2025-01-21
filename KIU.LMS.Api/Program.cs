@@ -1,4 +1,3 @@
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 {
@@ -107,6 +106,7 @@ var app = builder.Build();
     app.UseAuthorization();
 
     app.MapHub<NotificationHub>("/hubs/notification");
+    app.MapHub<GeminiHub>("/hubs/gemini");
 
     app.MapControllers();
 
