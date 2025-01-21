@@ -4,6 +4,8 @@
 [Authorize]
 public class CourseController(ISender sender) : ApiController(sender)
 {
+    #region Courses
+
     [HttpGet("user")]
     public async Task<IResult> GetUserCourses()
     {
@@ -35,10 +37,14 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     [HttpGet("{id}")]
-    public async Task<IResult> GetCourseDetails(Guid id) 
+    public async Task<IResult> GetCourseDetails(Guid id)
     {
         return await Handle<GetCourseDetailsQuery, GetCourseDetailsQueryResponse>(new GetCourseDetailsQuery(id));
     }
+
+    #endregion Courses
+
+    #region Student Courses
 
     [HttpGet("students")]
     public async Task<IResult> GetCourses([FromQuery] GetCourseStudentsQuery request)
@@ -47,7 +53,7 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     [HttpGet("{id}/students/add")]
-    public async Task<IResult> GetCourseStudentsToAdd(Guid id) 
+    public async Task<IResult> GetCourseStudentsToAdd(Guid id)
     {
         return await Handle<GetCourseStudentsToAddQuery, ICollection<GetCourseStudentsToAddQueryResponse>>(new GetCourseStudentsToAddQuery(id));
     }
@@ -59,8 +65,38 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     [HttpDelete("{id}/students")]
-    public async Task<IResult> CourseDeleteStudent(Guid id) 
+    public async Task<IResult> CourseDeleteStudent(Guid id)
     {
         return await Handle(new CourseDeleteStudentCommand(id));
     }
+
+    #endregion Student Courses
+
+    #region Course Meetings 
+
+    [HttpPost("meetings")]
+    public async Task<IResult> AddCourseMeeting([FromBody] AddCourseMeetingCommand request)
+    {
+        return await Handle(request);
+    }
+
+    [HttpDelete("meetings/{id}")]
+    public async Task<IResult> DeleteCourseMeeting(Guid id)
+    {
+        return await Handle(new DeleteCourseMeetingCommand(id));
+    }
+
+    [HttpGet("meetings")]
+    public async Task<IResult> GetCourseMeetings([FromQuery] GetCourseMeetingsQuery request)
+    {
+        return await Handle<GetCourseMeetingsQuery, ICollection<GetCourseMeetingsQueryResponse>>(request);
+    }
+
+    [HttpPut("meetings")]
+    public async Task<IResult> UpdateCourseMeeting([FromBody] UpdateCourseMeetingCommand request)
+    {
+        return await Handle(request);
+    }
+
+    #endregion Course Meetings
 }

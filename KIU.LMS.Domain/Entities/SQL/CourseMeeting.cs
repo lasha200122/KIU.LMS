@@ -29,6 +29,22 @@ public class CourseMeeting : Aggregate
         Validate(this);
     }
 
+    public void Update(
+        string name,
+        string url,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
+        Guid userId) 
+    {
+        Name = name; 
+        Url = url;
+        StartTime = startTime; 
+        EndTime = endTime;
+
+        Update(userId, DateTimeOffset.UtcNow);
+        Validate(this);
+    }
+
     private void Validate(CourseMeeting meeting)
     {
         if (meeting.CourseId == default)
