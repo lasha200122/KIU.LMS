@@ -36,9 +36,9 @@ public class AddCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
 {
     public async Task<Result> Handle(AddCourseMeetingCommand request, CancellationToken cancellationToken)
     {
-        var course = await _unitOfWork.CourseRepository.ExistsAsync(x => x.Id == request.CourseId);
+        var course = await _unitOfWork.CourseRepository.SingleOrDefaultAsync(x => x.Id == request.CourseId);
 
-        if (!course)
+        if (course == null)
             return Result.Failure("Can't find course");
 
         var meeting = new CourseMeeting(
@@ -49,6 +49,24 @@ public class AddCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.StartDateTime,
             request.EndDateTime,
             _current.UserId);
+
+
+        var emailTemplate = await _unitOfWork.EmailTemplateRepository.SingleOrDefaultAsync(x => x.Type == EmailType.MeetingCreated);
+
+        if (emailTemplate != null)
+        {
+            var emailsToSend = await _unitOfWork.UserCourseRepository.GetMappedAsync(x => x.CourseId == request.CourseId, x => new EmailQueue(
+                Guid.NewGuid(),
+                emailTemplate.Id,
+                x.User.Email,
+                EmailTemplateUtils.MeetingCreatedVariableBuilder(x.User, meeting, course.Name),
+                _current.UserId));
+
+            if (emailsToSend != null && emailsToSend.Count() > 0)
+            {
+                await _unitOfWork.EmailQueueRepository.AddRangeAsync(emailsToSend);
+            }
+        }
 
         await _unitOfWork.CourseMeetingRepository.AddAsync(meeting);
 

@@ -51,7 +51,5 @@ public class CourseMeeting : Aggregate
             throw new Exception("კურსის ID სავალდებულოა");
         if (string.IsNullOrEmpty(meeting.Name))
             throw new Exception("სახელი სავალდებულოა");
-        if (meeting.StartTime >= meeting.EndTime)
-            throw new Exception("დაწყების დრო უნდა იყოს დასრულების დროზე ადრე");
     }
 }

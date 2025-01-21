@@ -20,4 +20,8 @@ public enum EmailType
     WelcomeMessage,
     SystemMaintenance,
     AccountBlocked,
+
+    MeetingCreated,
+    MeetingUpdated,
+    MeetingCancaled,
 }

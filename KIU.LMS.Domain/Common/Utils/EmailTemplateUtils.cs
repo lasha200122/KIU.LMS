@@ -27,4 +27,20 @@ public static class EmailTemplateUtils
 
         return JsonSerializer.Serialize(variables);
     }
+
+    public static string MeetingCreatedVariableBuilder(User user, CourseMeeting meeting, string courseName) 
+    {
+        var variables = new Dictionary<string, string> 
+        {
+            { "fullname", $"{user.FirstName} {user.LastName}" },
+            { "courseName", $"{courseName}"},
+            { "meetingName", $"{meeting.Name}" },
+            { "startDate", $"{meeting.StartTime.ToString("dd, MMMM, yyyy")}" },
+            { "startTime", $"{meeting.StartTime.ToString("HH:mm")}" },
+            { "endTime", $"{meeting.EndTime.ToString("HH:mm")}"},
+            { "meetingLink", $"{meeting.Url}"}
+        };
+
+        return JsonSerializer.Serialize(variables);
+    }
 }
