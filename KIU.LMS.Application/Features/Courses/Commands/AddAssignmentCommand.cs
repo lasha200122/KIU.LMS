@@ -11,7 +11,9 @@ public sealed record AddAssignmentCommand(
     decimal? Score,
     string? Problem,
     string? Code,
-    bool IsPublic) : IRequest<Result>;
+    bool IsPublic,
+    bool AiGrader,
+    SolutionType SolutionType) : IRequest<Result>;
 
 
 public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
@@ -28,6 +30,9 @@ public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentComm
             .NotNull();
 
         RuleFor(x => x.Order)
+            .NotNull();
+
+        RuleFor(x => x.SolutionType)
             .NotNull();
     }
 }
@@ -51,6 +56,8 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             request.Code,
             string.Empty,
             request.IsPublic,
+            request.AiGrader,
+            request.SolutionType,
             _current.UserId);
     
         await _unitOfWork.AssignmentRepository.AddAsync(assignment);

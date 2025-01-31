@@ -18,6 +18,7 @@ public class UnitOfWork(LmsDbContext _dbContext) : IUnitOfWork
     public IUserDeviceRepository UserDeviceRepository => new UserDeviceRepository(_dbContext);
     public ITopicRepository TopicRepository => new TopicRepository(_dbContext);
     public IAssignmentRepository AssignmentRepository => new AssignmentRepository(_dbContext);
+    public ISolutionRepository SolutionRepository => new SolutionRepository(_dbContext);
 
     public async Task CreateTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
     public async Task CommitTransactionAsync() => await _dbContext.Database.CommitTransactionAsync();

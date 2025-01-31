@@ -14,9 +14,14 @@ public class Assignment : Aggregate
     public string? Code { get; private set; }
     public string? FileName { get; private set; }
     public bool IsPublic { get; private set; }
+    public bool AIGrader { get; private set; }
+    public SolutionType SolutionType { get; private set; }
+
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
+
+    public virtual List<Solution> Solutions { get; private set; } = null!;
     public Assignment() {}
 
     public Assignment(
@@ -33,6 +38,8 @@ public class Assignment : Aggregate
         string? code,
         string? fileName,
         bool isPublic,
+        bool aiGrader,
+        SolutionType solutionType,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         CourseId = courseId;
@@ -47,6 +54,8 @@ public class Assignment : Aggregate
         Code = code;
         FileName = fileName;
         IsPublic = isPublic;
+        AIGrader = aiGrader;
+        SolutionType = solutionType;
     }
 }
 
@@ -58,4 +67,12 @@ public enum AssignmentType
     ClassWork,
     IPEQ,
     Project
+}
+
+public enum SolutionType 
+{
+    None,
+    Text,
+    Code,
+    File
 }

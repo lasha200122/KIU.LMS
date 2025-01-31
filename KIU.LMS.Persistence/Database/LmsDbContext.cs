@@ -18,6 +18,7 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<UserDevice> UserDevices { get; set; } = null!;
     public DbSet<Assignment> Assignments { get; set; } = null!;
     public DbSet<Topic> Topics { get; set; } = null!;
+    public DbSet<Solution> Solutions { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

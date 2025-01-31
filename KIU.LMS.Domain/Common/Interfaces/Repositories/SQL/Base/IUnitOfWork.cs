@@ -18,6 +18,7 @@ public interface IUnitOfWork
     IUserDeviceRepository UserDeviceRepository { get; }
     ITopicRepository TopicRepository { get; }
     IAssignmentRepository AssignmentRepository { get; }
+    ISolutionRepository SolutionRepository { get; }
 
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();

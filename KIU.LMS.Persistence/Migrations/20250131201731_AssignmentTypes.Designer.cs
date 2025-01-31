@@ -4,6 +4,7 @@ using KIU.LMS.Persistence.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KIU.LMS.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    partial class LmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250131201731_AssignmentTypes")]
+    partial class AssignmentTypes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -682,65 +685,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.ToTable("QuestionBank", (string)null);
                 });
 
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Solution", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("AssignmentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreateDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("CreateUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("DeleteDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("DeleteUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("FeedBack")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Grade")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GradingStatus")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LastUpdateDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("LastUpdateUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("AssignmentId");
-
-                    b.HasIndex("CreateDate");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("Solution", (string)null);
-                });
-
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Topic", b =>
                 {
                     b.Property<Guid>("Id")
@@ -1076,25 +1020,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Solution", b =>
-                {
-                    b.HasOne("KIU.LMS.Domain.Entities.SQL.Assignment", "Assignment")
-                        .WithMany("Solutions")
-                        .HasForeignKey("AssignmentId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("KIU.LMS.Domain.Entities.SQL.User", "User")
-                        .WithMany("Solutions")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Assignment");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Topic", b =>
                 {
                     b.HasOne("KIU.LMS.Domain.Entities.SQL.Course", "Course")
@@ -1134,11 +1059,6 @@ namespace KIU.LMS.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Assignment", b =>
-                {
-                    b.Navigation("Solutions");
                 });
 
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Course", b =>
@@ -1188,8 +1108,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Navigation("Devices");
 
                     b.Navigation("LoginAttempts");
-
-                    b.Navigation("Solutions");
 
                     b.Navigation("UserCourses");
                 });

@@ -18,6 +18,7 @@ public class User : Aggregate
 
     private List<UserDevice> _devices = new();
     public IReadOnlyCollection<UserDevice> Devices => _devices;
+    public  List<Solution> Solutions { get; private set; } = null!;
 
     public User() { }
 

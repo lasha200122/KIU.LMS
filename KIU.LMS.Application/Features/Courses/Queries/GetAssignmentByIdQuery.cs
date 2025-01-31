@@ -11,10 +11,15 @@ public sealed record GetAssignmentByIdQueryResponse(
     string? Problem,
     string? Code,
     bool IsPublic,
-    string Topic);
+    string Topic,
+    string Grade,
+    string Feedback,
+    bool SubmitAllowed,
+    string Value,
+    SolutionType SolutionType);
 
 
-public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetAssignmentByIdQuery, Result<GetAssignmentByIdQueryResponse>>
+public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetAssignmentByIdQuery, Result<GetAssignmentByIdQueryResponse>>
 {
     public async Task<Result<GetAssignmentByIdQueryResponse>> Handle(GetAssignmentByIdQuery request, CancellationToken cancellationToken)
     {
@@ -22,6 +27,11 @@ public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork) : IRequestHa
 
         if (assignment is null)
             return Result<GetAssignmentByIdQueryResponse>.Failure("Can't find Assignment");
+
+        var studentSolution = await _unitOfWork.SolutionRepository.FirstOrDefaultSortedAsync(
+            x => x.AssignmentId == assignment.Id && x.UserId == _current.UserId,
+            x => x.CreateDate,
+            true);
 
         var result = new GetAssignmentByIdQueryResponse(
             assignment.Id,
@@ -32,7 +42,12 @@ public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork) : IRequestHa
             assignment.Problem,
             assignment.Code,
             assignment.IsPublic,
-            assignment.Topic.Name);
+            assignment.Topic.Name,
+            studentSolution?.Grade?? string.Empty,
+            studentSolution?.FeedBack ?? string.Empty,
+            assignment.EndDateTime.HasValue? DateTimeOffset.UtcNow <= assignment.EndDateTime.Value : true,
+            studentSolution?.Value?? string.Empty,
+            assignment.SolutionType);
 
         return Result<GetAssignmentByIdQueryResponse>.Success(result);
     }
