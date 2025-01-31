@@ -25,7 +25,7 @@ public sealed class GetCourseAssignmentsHandler(IUnitOfWork _unitOfWork, ICurren
                 x.Score.HasValue? x.Score.Value.ToString() : "0",
                 x.StartDateTime.HasValue? x.StartDateTime.Value.ToString("MMM dd, HH:mm"): string.Empty,
                 x.EndDateTime.HasValue ? x.EndDateTime.Value.ToString("MMM dd, HH:mm") : string.Empty,
-                x.Course.Name,
+                x.Topic.Name,
                 x.Order
                 ),
             cancellationToken);

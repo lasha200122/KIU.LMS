@@ -153,5 +153,11 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle<GetAssignmentsQuery, PagedEntities<GetAssignmentsQueryesponse>>(request);
     }
 
+
+    [HttpGet("assignment/details")]
+    public async Task<IResult> GetAssignmentDetails([FromQuery] GetAssignmentByIdQuery request) 
+    {
+        return await Handle<GetAssignmentByIdQuery, GetAssignmentByIdQueryResponse>(request);
+    }
     #endregion Assignments
 }
