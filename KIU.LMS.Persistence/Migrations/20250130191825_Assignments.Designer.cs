@@ -4,6 +4,7 @@ using KIU.LMS.Persistence.Database;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace KIU.LMS.Persistence.Migrations
 {
     [DbContext(typeof(LmsDbContext))]
-    partial class LmsDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250130191825_Assignments")]
+    partial class Assignments
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -81,9 +84,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Property<DateTimeOffset?>("StartDateTime")
                         .HasColumnType("datetimeoffset");
 
-                    b.Property<Guid>("TopicId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -92,8 +92,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.HasIndex("CourseId");
 
                     b.HasIndex("CreateDate");
-
-                    b.HasIndex("TopicId");
 
                     b.ToTable("Assignment", (string)null);
                 });
@@ -676,56 +674,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.ToTable("QuestionBank", (string)null);
                 });
 
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Topic", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid>("CourseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("CreateDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid>("CreateUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset?>("DeleteDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("DeleteUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTimeOffset>("EndDateTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTimeOffset?>("LastUpdateDate")
-                        .HasColumnType("datetimeoffset");
-
-                    b.Property<Guid?>("LastUpdateUserId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(200)
-                        .HasColumnType("nvarchar(200)");
-
-                    b.Property<DateTimeOffset>("StartDateTime")
-                        .HasColumnType("datetimeoffset");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CourseId");
-
-                    b.HasIndex("CreateDate");
-
-                    b.ToTable("Topic", (string)null);
-                });
-
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.User", b =>
                 {
                     b.Property<Guid>("Id")
@@ -890,15 +838,7 @@ namespace KIU.LMS.Persistence.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("KIU.LMS.Domain.Entities.SQL.Topic", "Topic")
-                        .WithMany("Assignments")
-                        .HasForeignKey("TopicId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
                     b.Navigation("Course");
-
-                    b.Navigation("Topic");
                 });
 
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.CourseMaterial", b =>
@@ -1011,17 +951,6 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Topic", b =>
-                {
-                    b.HasOne("KIU.LMS.Domain.Entities.SQL.Course", "Course")
-                        .WithMany("Topics")
-                        .HasForeignKey("CourseId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Course");
-                });
-
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.UserCourse", b =>
                 {
                     b.HasOne("KIU.LMS.Domain.Entities.SQL.Course", "Course")
@@ -1062,8 +991,6 @@ namespace KIU.LMS.Persistence.Migrations
 
                     b.Navigation("Meetings");
 
-                    b.Navigation("Topics");
-
                     b.Navigation("UserCourses");
                 });
 
@@ -1087,11 +1014,6 @@ namespace KIU.LMS.Persistence.Migrations
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.QuestionBank", b =>
                 {
                     b.Navigation("ExamQuestions");
-                });
-
-            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Topic", b =>
-                {
-                    b.Navigation("Assignments");
                 });
 
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.User", b =>

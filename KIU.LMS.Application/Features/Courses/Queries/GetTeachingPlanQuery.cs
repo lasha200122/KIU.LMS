@@ -1,0 +1,52 @@
+﻿namespace KIU.LMS.Application.Features.Courses.Queries;
+
+public sealed record GetTeachingPlanQuery(Guid CourseId) : IRequest<Result<IEnumerable<GetTeachingPlanQueryResponse>>>;
+
+
+public sealed record GetTeachingPlanQueryResponse(
+    Guid Id, 
+    string Topic,
+    string Date,
+    string Time,
+    IEnumerable<AssignmentItem> Homeworks,
+    IEnumerable<AssignmentItem> ClassWorks,
+    IEnumerable<AssignmentItem> MCQs,
+    IEnumerable<AssignmentItem> IPEQs,
+    IEnumerable<AssignmentItem> Projects);
+
+public sealed record AssignmentItem(Guid Id, string Number);
+
+
+public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetTeachingPlanQuery, Result<IEnumerable<GetTeachingPlanQueryResponse>>>
+{
+    public async Task<Result<IEnumerable<GetTeachingPlanQueryResponse>>> Handle(GetTeachingPlanQuery request, CancellationToken cancellationToken)
+    {
+        var result = await _unitOfWork.TopicRepository.GetMappedAsync(
+            x => x.CourseId == request.CourseId,
+            x => new GetTeachingPlanQueryResponse(
+                x.Id,
+                x.Name,
+                x.StartDateTime.ToString("dd/MM/yyyy"),
+                $"{x.StartDateTime.ToString("HH:mm")} - {x.EndDateTime.ToString("HH:mm")}",
+                x.Assignments.Where(a => a.Type == AssignmentType.Homework)
+                    .OrderBy(a => a.Order)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
+                x.Assignments.Where(a => a.Type == AssignmentType.ClassWork)
+                    .OrderBy(a => a.Order)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
+                x.Assignments.Where(a => a.Type == AssignmentType.None)
+                    .OrderBy(a => a.Order)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
+                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ)
+                    .OrderBy(a => a.Order)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
+                x.Assignments.Where(a => a.Type == AssignmentType.Project)
+                    .OrderBy(a => a.Order)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString()))
+            ),
+            cancellationToken
+        );
+
+        return Result<IEnumerable<GetTeachingPlanQueryResponse>>.Success(result);
+    }
+}

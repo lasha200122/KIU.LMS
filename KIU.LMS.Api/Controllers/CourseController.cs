@@ -99,4 +99,59 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     #endregion Course Meetings
+
+    #region Teaching Plan
+
+    [HttpGet("plan")]
+    public async Task<IResult> GetTeachingPlan([FromQuery] GetTeachingPlanQuery request) 
+    {
+        return await Handle<GetTeachingPlanQuery, IEnumerable<GetTeachingPlanQueryResponse>>(request); 
+    }
+
+    #endregion Teaching Plan
+
+
+    #region Topics
+
+    [HttpGet("topics")]
+    public async Task<IResult> GetTopics([FromQuery] GetTopicsQuery request) 
+    {
+        return await Handle<GetTopicsQuery, PagedEntities<GetTopicsQueryResponse>>(request);
+    }
+
+    [HttpPost("topic")]
+    public async Task<IResult> AddCourseTopic([FromBody] AddCourseTopicCommand request)
+    {
+        return await Handle(request);
+    }
+
+    [HttpGet("topic-list")]
+    public async Task<IResult> GetTopicsList([FromQuery] GetTopicsListQuery request) 
+    {
+        return await Handle<GetTopicsListQuery, IEnumerable<GetTopicsListQueryResponse>>(request);
+    }
+
+    #endregion Topics
+
+    #region Assignments
+
+    [HttpGet("assignment")]
+    public async Task<IResult> GetCourseAssignments([FromQuery] GetCourseAssignmentsQuery request)
+    {
+        return await Handle<GetCourseAssignmentsQuery, IEnumerable<GetCourseAssignmentsQueryResponse>>(request);
+    }
+
+    [HttpPost("assignment")]
+    public async Task<IResult> AddAssignment([FromBody] AddAssignmentCommand request) 
+    {
+        return await Handle(request);
+    }
+
+    [HttpGet("assignments")]
+    public async Task<IResult> GetAssignments([FromQuery] GetAssignmentsQuery request) 
+    {
+        return await Handle<GetAssignmentsQuery, PagedEntities<GetAssignmentsQueryesponse>>(request);
+    }
+
+    #endregion Assignments
 }

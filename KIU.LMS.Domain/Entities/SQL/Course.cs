@@ -16,6 +16,10 @@ public class Course : Aggregate
     private List<Exam> _exams = new();
     public IReadOnlyCollection<Exam> Exams => _exams;
 
+    private List<Assignment> _assignments = new();
+    public IReadOnlyCollection<Assignment> Assignments => _assignments;
+    private List<Topic> _topics = new();
+    public IReadOnlyCollection<Topic> Topics => _topics;
     public Course() { }
 
     public Course(

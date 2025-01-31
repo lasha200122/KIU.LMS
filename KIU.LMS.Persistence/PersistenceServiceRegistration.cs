@@ -34,6 +34,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserCourseRepository, UserCourseRepository>();
         services.AddScoped<IUserDeviceRepository, UserDeviceRepository>();
+        services.AddScoped<ITopicRepository, TopicRepository>(); 
+        services.AddScoped<IAssignmentRepository, AssignmentRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
