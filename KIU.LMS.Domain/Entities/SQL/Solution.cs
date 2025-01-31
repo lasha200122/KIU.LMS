@@ -31,6 +31,19 @@ public class Solution : Aggregate
         FeedBack = feedBack;
         GradingStatus = gradingStatus;
     }
+
+    public void Failed() 
+    {
+        GradingStatus = GradingStatus.Failed;
+        FeedBack = "Automated grading failed. Requires manual review.";
+    }
+
+    public void Graded(string grade, string feedback) 
+    {
+        Grade = grade;
+        FeedBack = feedback;
+        GradingStatus = GradingStatus.Completed;
+    }
 }
 
 

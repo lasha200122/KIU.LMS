@@ -159,5 +159,12 @@ public class CourseController(ISender sender) : ApiController(sender)
     {
         return await Handle<GetAssignmentByIdQuery, GetAssignmentByIdQueryResponse>(request);
     }
+
+    [HttpPost("assignment/submit")]
+    public async Task<IResult> SubmitAssignment([FromBody] SubmitAssignmentCommand request) 
+    {
+        return await Handle(request);
+    }
+
     #endregion Assignments
 }

@@ -54,12 +54,13 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IExcelProcessor, ExcelProcessor>();
-        services.AddScoped<IGeminiService, GeminiService>();
 
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IActiveSessionService, ActiveSessionService>();
         services.AddScoped<IEmailProcessingService, EmailProcessingService>();
         services.AddScoped<IEmailSenderService, EmailSenderService>();
+        services.AddScoped<IGeminiService, GeminiService>();
+        services.AddScoped<IGradingService, GradingService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
