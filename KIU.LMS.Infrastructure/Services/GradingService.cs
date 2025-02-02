@@ -70,75 +70,45 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
     private string BuildGradingPrompt(Assignment assignment, Solution solution)
     {
-        return $@"You are an automated grading system. Grade the following student submission:
+        return $@"You are a rigorous academic grading system with high standards for evaluation. Your task is to critically assess the following student submission with careful attention to detail and academic excellence.
 
-Assignment Details:
+Assignment Context:
 {assignment.Problem}
-Maximum Score: {assignment.Score}
+Maximum Possible Score: {assignment.Score}
 
-Student Solution:
+Grading Criteria to Consider:
+- Accuracy and correctness of the solution
+- Depth of understanding demonstrated
+- Quality and clarity of presentation
+- Proper methodology and approach
+- Originality and creative thinking where applicable
+- Technical precision and attention to detail
+- Adherence to academic standards
+- Completeness of the solution
+
+Student Submission for Evaluation:
 {solution.Value}
 
-Provide your evaluation in the following JSON format only:
+Critical Evaluation Instructions:
+- Analyze each aspect thoroughly
+- Identify both major and minor errors
+- Apply strict academic standards
+- Consider partial credit only when clearly deserved
+- Evaluate against best practices in the field
+- Look for evidence of deep understanding
+- Check for gaps in logic or methodology
+- Assess the overall quality and sophistication
+
+Provide your detailed evaluation in the following JSON format only:
 {{
     ""grade"": ""numeric value between 0-{assignment.Score}"",
     ""feedback"": ""detailed evaluation of the solution"",
     ""suggestions"": ""specific recommendations for improvement""
 }}
 
+Note: Maintain high academic standards in your evaluation. Do not award full points unless the solution demonstrates exceptional quality and complete understanding.
 Ensure your response contains only this JSON object with no additional text.";
     }
-
-    //private GradingResult ParseAndValidateResponse(string response, decimal? maxScore)
-    //{
-    //    try
-    //    {
-    //        var gradingResult = JsonSerializer.Deserialize<GradingResult>(response);
-
-    //        if (gradingResult == null ||
-    //            string.IsNullOrEmpty(gradingResult.grade) ||
-    //            string.IsNullOrEmpty(gradingResult.feedback))
-    //        {
-    //            return null;
-    //        }
-
-    //        if (!ValidateGrade(gradingResult.grade, maxScore))
-    //        {
-    //            return null;
-    //        }
-
-    //        return gradingResult;
-    //    }
-    //    catch (JsonException ex)
-    //    {
-    //        return null;
-    //    }
-    //}
-
-    //private bool ValidateGrade(string grade, decimal? maxScore)
-    //{
-    //    if (!decimal.TryParse(grade, out decimal numericGrade))
-    //        return false;
-
-    //    return numericGrade >= 0 && maxScore.HasValue && numericGrade <= maxScore.Value;
-    //}
-
-    //private string CombineFeedback(string feedback, string suggestions)
-    //{
-    //    var combinedFeedback = new StringBuilder();
-    //    combinedFeedback.AppendLine("Evaluation:");
-    //    combinedFeedback.AppendLine(feedback);
-
-    //    if (!string.IsNullOrEmpty(suggestions))
-    //    {
-    //        combinedFeedback.AppendLine();
-    //        combinedFeedback.AppendLine("Suggestions for Improvement:");
-    //        combinedFeedback.AppendLine(suggestions);
-    //    }
-
-    //    return combinedFeedback.ToString().Trim();
-    //}
-
 
     private GradingResult ParseAndValidateResponse(string response, decimal? maxScore)
     {

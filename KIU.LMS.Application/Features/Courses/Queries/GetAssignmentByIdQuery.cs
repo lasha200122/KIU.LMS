@@ -16,6 +16,7 @@ public sealed record GetAssignmentByIdQueryResponse(
     string Feedback,
     bool SubmitAllowed,
     string Value,
+    string Submeted,
     SolutionType SolutionType);
 
 
@@ -47,6 +48,7 @@ public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork, ICurrentUser
             studentSolution?.FeedBack ?? string.Empty,
             assignment.EndDateTime.HasValue? DateTimeOffset.UtcNow <= assignment.EndDateTime.Value : true,
             studentSolution?.Value?? string.Empty,
+            studentSolution == null ? string.Empty :studentSolution.CreateDate.ToLocalTime().ToString("MMM dd, HH:mm"),
             assignment.SolutionType);
 
         return Result<GetAssignmentByIdQueryResponse>.Success(result);

@@ -17,14 +17,14 @@ public sealed class GetCourseAssignmentsHandler(IUnitOfWork _unitOfWork, ICurren
     public async Task<Result<IEnumerable<GetCourseAssignmentsQueryResponse>>> Handle(GetCourseAssignmentsQuery request, CancellationToken cancellationToken)
     {
         var result = await _unitOfWork.AssignmentRepository.GetMappedAsync(
-            x => x.CourseId == request.CourseId && x.Type == request.Type,
+            x => x.CourseId == request.CourseId && x.Type == request.Type && x.StartDateTime.HasValue && x.StartDateTime <= DateTimeOffset.UtcNow,
             x => new GetCourseAssignmentsQueryResponse(
                 x.Id,
                 x.Name,
-                "0",
-                x.Score.HasValue? x.Score.Value.ToString() : "0",
-                x.StartDateTime.HasValue? x.StartDateTime.Value.ToString("MMM dd, HH:mm"): string.Empty,
-                x.EndDateTime.HasValue ? x.EndDateTime.Value.ToString("MMM dd, HH:mm") : string.Empty,
+                x.Solutions.Any()? x.Solutions.OrderByDescending(x => x.CreateDate).First().Grade : string.Empty,
+                x.Score.HasValue? x.Score.Value.ToString() : "-",
+                x.StartDateTime.HasValue? x.StartDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm"): string.Empty,
+                x.EndDateTime.HasValue ? x.EndDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty,
                 x.Topic.Name,
                 x.Order
                 ),
