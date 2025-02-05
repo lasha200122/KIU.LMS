@@ -4,14 +4,16 @@
 public class Question : Document
 {
     public string QuestionBankId { get; private set; } = string.Empty;
+    public string Text { get; private set; }
     public QuestionType Type { get; private set; }
     public List<Option> Options { get; private set; } = new List<Option>();
 
     public Question() {}
 
-    public Question(Guid questionBankId, QuestionType type, List<Option> options) 
+    public Question(Guid questionBankId, string text, QuestionType type, List<Option> options) 
     {
         QuestionBankId = questionBankId.ToString();
+        Text = text;
         Type = type;
         Options = options;
     }

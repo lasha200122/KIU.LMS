@@ -86,4 +86,31 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument> where TDoc
     {
         return await _collection.Find(filterExpression).AnyAsync();
     }
+
+    public virtual async Task<PagedEntities<TDocument>> GetPagedDataAsync(
+        Expression<Func<TDocument, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 10)
+    {
+        var filter = filterExpression ?? (_ => true);
+
+        var totalCount = await _collection
+            .CountDocumentsAsync(filter);
+
+        var records = await _collection
+            .Find(filter)
+            .Skip((pageNumber - 1) * pageSize)
+            .Limit(pageSize)
+            .ToListAsync();
+
+        return new PagedEntities<TDocument>(records, (int)totalCount);
+    }
+
+    public virtual async Task<long> CountAsync(Expression<Func<TDocument, bool>>? filterExpression = null) 
+    {
+        var filter = filterExpression ?? (_ => true);
+
+        return await _collection
+            .CountDocumentsAsync(filter);
+    }
 }

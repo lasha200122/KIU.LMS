@@ -74,6 +74,7 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
 Assignment Context:
 {assignment.Problem}
+{assignment.Code}
 Maximum Possible Score: {assignment.Score}
 
 Student Submission for Evaluation:

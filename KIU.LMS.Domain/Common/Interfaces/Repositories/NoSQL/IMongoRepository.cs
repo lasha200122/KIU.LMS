@@ -16,4 +16,10 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument
     Task DeleteByIdAsync(string id);
     Task DeleteManyAsync(Expression<Func<TDocument, bool>> filterExpression);
     Task<bool> ExistsAsync(Expression<Func<TDocument, bool>> filterExpression);
+    Task<PagedEntities<TDocument>> GetPagedDataAsync(
+        Expression<Func<TDocument, bool>>? filterExpression = null,
+        int pageNumber = 1,
+        int pageSize = 10);
+
+    Task<long> CountAsync(Expression<Func<TDocument, bool>>? filterExpression = null);
 }

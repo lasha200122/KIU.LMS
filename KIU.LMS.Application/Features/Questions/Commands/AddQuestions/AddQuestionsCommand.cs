@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace KIU.LMS.Application.Features.Questions.Commands.AddQuestions
 {
-    public sealed record AddQuestionsCommand(IFormFile File) : IRequest<Result>;
+    public sealed record AddQuestionsCommand(IFormFile File, Guid Id) : IRequest<Result>;
 
     public class AddQuestionsCommandValidator : AbstractValidator<AddQuestionsCommand>
     {
@@ -12,6 +12,9 @@ namespace KIU.LMS.Application.Features.Questions.Commands.AddQuestions
         {
             RuleFor(x => x.File)
                 .NotEmpty();
+
+            RuleFor(x => x.Id)
+                .NotNull();
         }
     }
 
@@ -31,7 +34,7 @@ namespace KIU.LMS.Application.Features.Questions.Commands.AddQuestions
         public async Task<Result> Handle(AddQuestionsCommand request, CancellationToken cancellationToken)
         {
             var result = _excelProcessor.ProcessQuestionsExcelFile(request.File);
-            var questionBankId = Guid.NewGuid();
+
             if (!result.IsValid)
                 return Result.Failure("Excel file contains errors");
 
@@ -44,7 +47,9 @@ namespace KIU.LMS.Application.Features.Questions.Commands.AddQuestions
 
                 options.AddRange(q.IncorrectAnswers.Select(x => new Option(x, false)));
 
-                return new Question(questionBankId,
+                return new Question(
+                    request.Id,
+                    q.Question,
                     QuestionType.Single,
                     options
                 );

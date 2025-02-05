@@ -165,4 +165,27 @@ public class ExcelProcessor : IExcelProcessor
             workbook.SaveAs(stream);
         }
     }
+
+    public void GenerateQuestionsTemplate(Stream stream)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Questions");
+
+            worksheet.Cell(1, 1).Value = "კითხვა";
+            worksheet.Cell(1, 2).Value = "სწორი პასუხი";
+            worksheet.Cell(1, 3).Value = "არასწორი პასუხი 1";
+            worksheet.Cell(1, 4).Value = "არასწორი პასუხი 2";
+            worksheet.Cell(1, 5).Value = "არასწორი პასუხი 3";
+            worksheet.Cell(1, 6).Value = "არასწორი პასუხი 4";
+
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            worksheet.Columns().AdjustToContents();
+
+            workbook.SaveAs(stream);
+        }
+    }
 }
