@@ -19,7 +19,7 @@ public interface IUnitOfWork
     ITopicRepository TopicRepository { get; }
     IAssignmentRepository AssignmentRepository { get; }
     ISolutionRepository SolutionRepository { get; }
-
+    IPromptRepository PromptRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackAsync();

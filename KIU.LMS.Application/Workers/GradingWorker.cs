@@ -30,7 +30,7 @@ public class GradingWorker(IServiceProvider _serviceProvider) : BackgroundServic
         var solutions = await _unitOfWork.SolutionRepository.GetWhereAsTrackingIncludedAsync(x => 
         x.Assignment.AIGrader && 
         (!x.Assignment.EndDateTime.HasValue || x.Assignment.EndDateTime.Value < currentTime) &&
-        (x.GradingStatus == GradingStatus.None || x.GradingStatus == GradingStatus.Failed), x => x.Assignment);
+        (x.GradingStatus == GradingStatus.None || x.GradingStatus == GradingStatus.Failed), x => x.Assignment, x => x.Assignment.Prompt);
 
         foreach (var solution in solutions)
         {

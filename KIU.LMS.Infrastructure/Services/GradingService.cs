@@ -70,34 +70,14 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
     private string BuildGradingPrompt(Assignment assignment, Solution solution)
     {
-        return $@"You are a rigorous academic grading system with high standards for evaluation. Your task is to critically assess the following student submission with careful attention to detail and academic excellence.
+        return $@" {assignment.Prompt.Value}
 
 Assignment Context:
 {assignment.Problem}
 Maximum Possible Score: {assignment.Score}
 
-Grading Criteria to Consider:
-- Accuracy and correctness of the solution
-- Depth of understanding demonstrated
-- Quality and clarity of presentation
-- Proper methodology and approach
-- Originality and creative thinking where applicable
-- Technical precision and attention to detail
-- Adherence to academic standards
-- Completeness of the solution
-
 Student Submission for Evaluation:
 {solution.Value}
-
-Critical Evaluation Instructions:
-- Analyze each aspect thoroughly
-- Identify both major and minor errors
-- Apply strict academic standards
-- Consider partial credit only when clearly deserved
-- Evaluate against best practices in the field
-- Look for evidence of deep understanding
-- Check for gaps in logic or methodology
-- Assess the overall quality and sophistication
 
 Provide your detailed evaluation in the following JSON format only:
 {{

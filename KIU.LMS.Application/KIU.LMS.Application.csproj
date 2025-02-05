@@ -9,4 +9,8 @@
     <ProjectReference Include="..\KIU.LMS.Domain\KIU.LMS.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Features\Questions\Queries\" />
+  </ItemGroup>
+
 </Project>

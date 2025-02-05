@@ -166,5 +166,11 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("assignment/ipeq/execute")]
+    public async Task<IResult> IpeqExecute([FromBody] IpeqExecuteCommand request) 
+    {
+        return await Handle<IpeqExecuteCommand, string?>(request);
+    }
+
     #endregion Assignments
 }

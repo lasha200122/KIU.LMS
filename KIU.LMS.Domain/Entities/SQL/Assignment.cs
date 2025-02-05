@@ -16,10 +16,12 @@ public class Assignment : Aggregate
     public bool IsPublic { get; private set; }
     public bool AIGrader { get; private set; }
     public SolutionType SolutionType { get; private set; }
+    public Guid? PromptId { get; private set; }
 
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
+    public virtual Prompt Prompt { get; private set; } = null!;
 
     public virtual List<Solution> Solutions { get; private set; } = null!;
     public Assignment() {}
@@ -40,6 +42,7 @@ public class Assignment : Aggregate
         bool isPublic,
         bool aiGrader,
         SolutionType solutionType,
+        Guid? promptId,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         CourseId = courseId;
@@ -56,6 +59,7 @@ public class Assignment : Aggregate
         IsPublic = isPublic;
         AIGrader = aiGrader;
         SolutionType = solutionType;
+        PromptId = promptId;
     }
 }
 

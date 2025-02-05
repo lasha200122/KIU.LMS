@@ -2,6 +2,65 @@
 
 public class ExcelProcessor : IExcelProcessor
 {
+    public ExcelValidationResult ProcessQuestionsExcelFile(IFormFile file)
+    {
+        var result = new ExcelValidationResult();
+        using (var stream = new MemoryStream())
+        {
+            file.CopyTo(stream);
+            using (var workbook = new XLWorkbook(stream))
+            {
+                var worksheet = workbook.Worksheet(1);
+                var rows = worksheet.RowsUsed().Skip(1);
+                foreach (var row in rows)
+                {
+                    var rowNum = row.RowNumber();
+                    try
+                    {
+                        var incorrectAnswers = new List<string>();
+                        for (int i = 3; i <= 6; i++)
+                        {
+                            var answer = row.Cell(i).GetString().Trim();
+                            if (!string.IsNullOrWhiteSpace(answer))
+                                incorrectAnswers.Add(answer);
+                        }
+
+                        var question = new QuestionExcelDto(
+                            row.Cell(1).GetString().Trim(),
+                            row.Cell(2).GetString().Trim(),
+                            incorrectAnswers
+                        );
+
+                        if (string.IsNullOrWhiteSpace(question.Question))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "Question", "კითხვა სავალდებულოა"));
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(question.CorrectAnswer))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "CorrectAnswer", "სწორი პასუხი სავალდებულოა"));
+                            continue;
+                        }
+
+                        if (!question.IncorrectAnswers.Any())
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "IncorrectAnswers", "მინიმუმ ერთი არასწორი პასუხი სავალდებულოა"));
+                            continue;
+                        }
+
+                        result.ValidQuestions.Add(question);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Errors.Add(new ExcelRowError(rowNum, "General", $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
+                    }
+                }
+            }
+        }
+        result.IsValid = !result.Errors.Any();
+        return result;
+    }
     public async Task<ExcelValidationResult> ProcessStudentsExcelFile(IFormFile file)
     {
         var result = new ExcelValidationResult();

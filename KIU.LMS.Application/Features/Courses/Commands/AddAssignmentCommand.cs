@@ -13,7 +13,8 @@ public sealed record AddAssignmentCommand(
     string? Code,
     bool IsPublic,
     bool AiGrader,
-    SolutionType SolutionType) : IRequest<Result>;
+    SolutionType SolutionType,
+    Guid? PromptId) : IRequest<Result>;
 
 
 public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
@@ -58,6 +59,7 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             request.IsPublic,
             request.AiGrader,
             request.SolutionType,
+            request.PromptId,
             _current.UserId);
     
         await _unitOfWork.AssignmentRepository.AddAsync(assignment);
