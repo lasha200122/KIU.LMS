@@ -75,6 +75,7 @@ public class ExamService(
         if (currentQuestion?.IsTimeExpired == true)
         {
             session.MoveToNextQuestion();
+            session.StartQuestion();
             await _sessionRepository.UpdateAsync(session);
             return session.CurrentQuestion;
         }
