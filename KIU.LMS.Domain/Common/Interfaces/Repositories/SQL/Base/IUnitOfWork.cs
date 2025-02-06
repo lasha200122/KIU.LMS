@@ -20,6 +20,8 @@ public interface IUnitOfWork
     IAssignmentRepository AssignmentRepository { get; }
     ISolutionRepository SolutionRepository { get; }
     IPromptRepository PromptRepository { get; }
+    IQuizRepository QuizRepository { get; }
+    IQuizBankRepository QuizBankRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackAsync();

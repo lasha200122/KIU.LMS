@@ -173,4 +173,20 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     #endregion Assignments
+
+    #region Quizzes
+    [HttpGet("quizzes")]
+    public async Task<IResult> GetQuizzes([FromQuery] GetCourseQuizzesQuery request) 
+    {
+        return await Handle<GetCourseQuizzesQuery, IEnumerable<GetCourseQuizzesQueryResponse>>(request);
+    }
+
+
+    [HttpGet("quizzzes/grid")]
+    public async Task<IResult> GetQuizzesGrid([FromQuery] GetQuizzesQuery request) 
+    {
+        return await Handle<GetQuizzesQuery, PagedEntities<GetQuizzesQueryResponse>>(request);
+    }
+
+    #endregion Quizzes
 }

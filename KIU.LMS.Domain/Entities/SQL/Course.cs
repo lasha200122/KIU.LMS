@@ -20,6 +20,9 @@ public class Course : Aggregate
     public IReadOnlyCollection<Assignment> Assignments => _assignments;
     private List<Topic> _topics = new();
     public IReadOnlyCollection<Topic> Topics => _topics;
+
+    private List<Quiz> _quizes = new();
+    public IReadOnlyCollection<Quiz> Quizzes => _quizes;
     public Course() { }
 
     public Course(

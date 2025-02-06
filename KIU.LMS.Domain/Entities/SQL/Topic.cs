@@ -10,6 +10,9 @@ public class Topic : Aggregate
     public virtual Course Course { get; private set; } = null!;
     public List<Assignment> Assignments { get; private set; } = null!;
 
+    private List<Quiz> _quizes = new();
+    public IReadOnlyCollection<Quiz> Quizzes => _quizes;
+
     public Topic() {}
 
     public Topic(Guid id, Guid courseId, string name, DateTimeOffset startDateTime, DateTimeOffset endDateTime, Guid userId) : base(id, DateTimeOffset.Now, userId)

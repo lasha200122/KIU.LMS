@@ -21,7 +21,7 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
 {
     public async Task<Result<IEnumerable<GetTeachingPlanQueryResponse>>> Handle(GetTeachingPlanQuery request, CancellationToken cancellationToken)
     {
-        var result = await _unitOfWork.TopicRepository.GetMappedAsync(
+        var result = await _unitOfWork.TopicRepository.GetSortedMappedAsync(
             x => x.CourseId == request.CourseId,
             x => new GetTeachingPlanQueryResponse(
                 x.Id,
@@ -34,7 +34,7 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
                 x.Assignments.Where(a => a.Type == AssignmentType.ClassWork)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.None)
+                x.Quizzes.Where(a => a.Type == QuizType.MCQ)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
                 x.Assignments.Where(a => a.Type == AssignmentType.IPEQ)
@@ -44,6 +44,8 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString()))
             ),
+            x => x.StartDateTime,
+            false,
             cancellationToken
         );
 

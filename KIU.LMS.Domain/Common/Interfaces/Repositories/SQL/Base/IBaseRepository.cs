@@ -35,4 +35,5 @@ public interface IBaseRepository<T> where T : class
     Task<PagedEntities<T>> GetPaginatedWhereAsync(Expression<Func<T, bool>> predicate, int pageNumber, int itemsPerPage, Expression<Func<T, object>>? orderBy = null, CancellationToken cancellationToken = default);
     Task<PagedEntities<TResult>> GetPaginatedMappedAsync<TResult>(int pageNumber, int itemsPerPage, Expression<Func<T, TResult>> select, Expression<Func<T, object>>? orderBy = null, CancellationToken cancellationToken = default);
     Task<PagedEntities<TResult>> GetPaginatedWhereMappedAsync<TResult>(Expression<Func<T, bool>> predicate, int pageNumber, int itemsPerPage, Expression<Func<T, TResult>> select, Expression<Func<T, object>>? orderBy = null, CancellationToken cancellationToken = default);
+    Task<ICollection<TResult>> GetSortedMappedAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> select, Expression<Func<T, object>>? sortPredicate, bool isDescending, CancellationToken cancellationToken = default);
 }

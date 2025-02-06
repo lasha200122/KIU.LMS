@@ -38,6 +38,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IAssignmentRepository, AssignmentRepository>();
         services.AddScoped<ISolutionRepository, SolutionRepository>();
         services.AddScoped<IPromptRepository, PromptRepository>();
+        services.AddScoped<IQuizRepository, QuizRepository>();
+        services.AddScoped<IQuizBankRepository, QuizBankRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

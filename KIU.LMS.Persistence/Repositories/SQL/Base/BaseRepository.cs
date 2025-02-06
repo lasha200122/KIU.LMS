@@ -155,6 +155,18 @@ public class BaseRepository<T>(DbContext Context) : IBaseRepository<T> where T :
         return await Context.Set<T>().AsNoTracking().Where(predicate).Select(select).ToListAsync(cancellationToken);
     }
 
+    public async Task<ICollection<TResult>> GetSortedMappedAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> select, Expression<Func<T, object>>? sortPredicate, bool isDescending, CancellationToken cancellationToken = default)
+    {
+        var query = Context.Set<T>().AsNoTracking().Where(predicate);
+
+        if (sortPredicate != null)
+        {
+            query = isDescending ? query.OrderByDescending(sortPredicate) : query.OrderBy(sortPredicate);
+        }
+
+        return await query.Select(select).ToListAsync(cancellationToken);
+    }
+
     public async Task<ICollection<TResult>> GetAsync<TResult>(Expression<Func<T, TResult>> select)
     {
         return await Context.Set<T>().AsNoTracking().Select(select).ToListAsync();
