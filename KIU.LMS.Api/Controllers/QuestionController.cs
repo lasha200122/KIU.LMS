@@ -45,4 +45,10 @@ public class QuestionController(ISender sender) : ApiController(sender)
     {
         return await Handle<GetQuestionBanksListQuery, List<GetQuestionBanksListQueryResponse>>(new GetQuestionBanksListQuery());
     }
+
+    [HttpGet("{id}/explain")]
+    public async Task<IResult> ExplainQuestion(string id) 
+    {
+        return await Handle<GeminiQuestionExplainQuery, string>(new GeminiQuestionExplainQuery(id));
+    }
 }
