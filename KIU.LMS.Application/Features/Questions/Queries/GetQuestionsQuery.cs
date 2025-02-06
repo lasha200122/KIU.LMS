@@ -21,6 +21,6 @@ public sealed class GetQuestionsQueryHandler(IMongoRepository<Question> _mongoDb
 {
     public async Task<Result<PagedEntities<Question>>> Handle(GetQuestionsQuery request, CancellationToken cancellationToken)
     {
-        return await _mongoDb.GetPagedDataAsync(null, request.PageNumber, request.PageSize);
+        return await _mongoDb.GetPagedDataAsync(x => x.QuestionBankId == request.Id.ToString(), request.PageNumber, request.PageSize);
     }
 }

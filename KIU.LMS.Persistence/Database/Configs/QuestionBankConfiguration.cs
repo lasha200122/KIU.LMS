@@ -10,9 +10,5 @@ public class QuestionBankConfiguration : EntityConfiguration<QuestionBank>
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
-
-        builder.HasMany(x => x.ExamQuestions)
-            .WithOne(x => x.QuestionBank)
-            .HasForeignKey(x => x.QuestionBankId);
     }
 }

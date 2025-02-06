@@ -4,9 +4,6 @@ public class QuestionBank : Aggregate
 {
     public string Name { get; private set; } = null!;
 
-    private List<ExamQuestion> _examQuestions = new();
-    public IReadOnlyCollection<ExamQuestion> ExamQuestions => _examQuestions;
-
     private List<QuizBank> _quizBanks = new();
     public IReadOnlyCollection<QuizBank> QuizBanks => _quizBanks;
 

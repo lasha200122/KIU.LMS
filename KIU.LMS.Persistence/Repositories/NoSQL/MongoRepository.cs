@@ -113,4 +113,15 @@ public class MongoRepository<TDocument> : IMongoRepository<TDocument> where TDoc
         return await _collection
             .CountDocumentsAsync(filter);
     }
+
+    public virtual async Task CreateAsync(TDocument document)
+    {
+        await _collection.InsertOneAsync(document);
+    }
+
+    public virtual async Task UpdateAsync(TDocument document)
+    {
+        var filter = Builders<TDocument>.Filter.Eq(doc => doc.Id, document.Id);
+        await _collection.ReplaceOneAsync(filter, document);
+    }
 }

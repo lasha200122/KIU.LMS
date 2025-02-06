@@ -188,5 +188,11 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle<GetQuizzesQuery, PagedEntities<GetQuizzesQueryResponse>>(request);
     }
 
+    [HttpGet("quiz/{id}")]
+    public async Task<IResult> GetQuizDetails(Guid id) 
+    {
+        return await Handle<GetQuizDetailsQuery, GetQuizDetailsQueryResponse>(new GetQuizDetailsQuery(id));
+    }
+
     #endregion Quizzes
 }

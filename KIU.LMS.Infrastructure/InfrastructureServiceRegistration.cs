@@ -61,6 +61,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IEmailSenderService, EmailSenderService>();
         services.AddScoped<IGeminiService, GeminiService>();
         services.AddScoped<IGradingService, GradingService>();
+        services.AddScoped<IExamService, ExamService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

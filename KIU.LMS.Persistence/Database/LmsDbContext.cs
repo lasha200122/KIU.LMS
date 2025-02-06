@@ -7,10 +7,6 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<CourseMeeting> CourseMeetings { get; set; } = null!;
     public DbSet<EmailQueue> EmailQueues { get; set; } = null!;
     public DbSet<EmailTemplate> EmailTemplates { get; set; } = null!;
-    public DbSet<Exam> Exams { get; set; } = null!;
-    public DbSet<ExamAttempt> ExamAttempts { get; set; } = null!;
-    public DbSet<ExamConfiguration> ExamConfigurations { get; set; } = null!;
-    public DbSet<ExamQuestion> ExamQuestions { get; set; } = null!;
     public DbSet<LoginAttempt> LoginAttempts { get; set; } = null!;
     public DbSet<QuestionBank> QuestionBanks { get; set; } = null!;
     public DbSet<User> Users { get; set; } = null!;
@@ -20,6 +16,7 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<Topic> Topics { get; set; } = null!;
     public DbSet<Solution> Solutions { get; set; } = null!;
     public DbSet<Prompt> Prompts { get; set; } = null!;
+    public DbSet<ExamResult> ExamResults { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

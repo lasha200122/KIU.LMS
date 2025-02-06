@@ -12,12 +12,16 @@ public class Quiz : Aggregate
     public DateTimeOffset? EndDateTime { get; private set; }
     public decimal? Score { get; private set; }
     public bool Explanation { get; private set; }
+    public int? TimePerQuestion { get; private set; }
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
 
     private List<QuizBank> _quizBanks = new();
     public IReadOnlyCollection<QuizBank> QuizBanks => _quizBanks;
+
+    private List<ExamResult> _examResults = new();
+    public IReadOnlyCollection<ExamResult> ExamResults => _examResults;
 
     public Quiz() {}
 
@@ -33,6 +37,7 @@ public class Quiz : Aggregate
         DateTimeOffset? endDateTime,
         decimal? score,
         bool explanation,
+        int? timePerQuestion,
         Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
         CourseId = courseId;
@@ -45,6 +50,7 @@ public class Quiz : Aggregate
         EndDateTime = endDateTime;
         Score = score;
         Explanation = explanation;
+        TimePerQuestion = timePerQuestion;
     }
 }
 

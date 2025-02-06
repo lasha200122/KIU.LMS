@@ -9,6 +9,7 @@ public class Option : Document
 
     public Option(string text, bool isCorrect) 
     {
+        Id = ObjectId.GenerateNewId().ToString(); 
         Text = text;
         IsCorrect = isCorrect;
     }    

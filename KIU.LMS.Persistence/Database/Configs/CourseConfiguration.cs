@@ -22,9 +22,5 @@ public class CourseConfiguration : EntityConfiguration<Course>
         builder.HasMany(x => x.Meetings)
             .WithOne(x => x.Course)
             .HasForeignKey(x => x.CourseId);
-
-        builder.HasMany(x => x.Exams)
-            .WithOne(x => x.Course)
-            .HasForeignKey(x => x.CourseId);
     }
 }

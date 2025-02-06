@@ -7,10 +7,6 @@ public interface IUnitOfWork
     ICourseMeetingRepository CourseMeetingRepository { get; }
     IEmailQueueRepository EmailQueueRepository { get; }
     IEmailTemplateRepository EmailTemplateRepository { get; }
-    IExamRepository ExamRepository { get; }
-    IExamAttemptRepository ExamAttemptRepository { get; }
-    IExamConfigurationRepository ExamConfigurationRepository { get; }
-    IExamQuestionRepository ExamQuestionRepository { get; }
     ILoginAttemptRepository LoginAttemptRepository { get; }
     IQuestionBankRepository QuestionBankRepository { get; }
     IUserRepository UserRepository { get; }
@@ -22,6 +18,7 @@ public interface IUnitOfWork
     IPromptRepository PromptRepository { get; }
     IQuizRepository QuizRepository { get; }
     IQuizBankRepository QuizBankRepository { get; }
+    IExamResultRepository ExamResultRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackAsync();

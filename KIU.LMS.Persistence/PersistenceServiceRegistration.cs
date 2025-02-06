@@ -25,10 +25,6 @@ public static class PersistenceServiceRegistration
         services.AddScoped<ICourseMeetingRepository, CourseMeetingRepository>();
         services.AddScoped<IEmailQueueRepository, EmailQueueRepository>();
         services.AddScoped<IEmailTemplateRepository, EmailTemplateRepository>();
-        services.AddScoped<IExamRepository, ExamRepository>();
-        services.AddScoped<IExamAttemptRepository, ExamAttemptRepository>();
-        services.AddScoped<IExamConfigurationRepository, ExamConfigurationRepository>();
-        services.AddScoped<IExamQuestionRepository, ExamQuestionRepository>();
         services.AddScoped<ILoginAttemptRepository, LoginAttemptRepository>();
         services.AddScoped<IQuestionBankRepository, QuestionBankRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
@@ -40,6 +36,7 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IPromptRepository, PromptRepository>();
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizBankRepository, QuizBankRepository>();
+        services.AddScoped<IExamResultRepository, ExamResultRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

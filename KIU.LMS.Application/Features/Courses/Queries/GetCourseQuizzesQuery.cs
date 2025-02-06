@@ -22,7 +22,7 @@ public sealed class GetCourseQuizzesQueryHandler(IUnitOfWork _unitOfWork, ICurre
             x => new GetCourseQuizzesQueryResponse(
                 x.Id,
                 x.Title,
-                string.Empty, // TODO
+                x.ExamResults.Where(x => x.StudentId == _current.UserId).OrderByDescending(x => x.CreateDate).Select(x => x.Score.ToString()).FirstOrDefault(),
                 x.Score.HasValue ? x.Score.Value.ToString() : "-",
                 x.StartDateTime.ToLocalTime().ToString("MMM dd, HH:mm"),
                 x.EndDateTime.HasValue ? x.EndDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty,

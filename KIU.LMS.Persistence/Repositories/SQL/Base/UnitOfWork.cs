@@ -7,10 +7,6 @@ public class UnitOfWork(LmsDbContext _dbContext) : IUnitOfWork
     public ICourseMeetingRepository CourseMeetingRepository => new CourseMeetingRepository(_dbContext);
     public IEmailQueueRepository EmailQueueRepository => new EmailQueueRepository(_dbContext);
     public IEmailTemplateRepository EmailTemplateRepository => new EmailTemplateRepository(_dbContext);
-    public IExamRepository ExamRepository => new ExamRepository(_dbContext);
-    public IExamAttemptRepository ExamAttemptRepository => new ExamAttemptRepository(_dbContext);
-    public IExamConfigurationRepository ExamConfigurationRepository => new ExamConfigurationRepository(_dbContext);
-    public IExamQuestionRepository ExamQuestionRepository => new ExamQuestionRepository(_dbContext);
     public ILoginAttemptRepository LoginAttemptRepository => new LoginAttemptRepository(_dbContext);
     public IQuestionBankRepository QuestionBankRepository => new QuestionBankRepository(_dbContext);
     public IUserRepository UserRepository => new UserRepository(_dbContext);
@@ -22,6 +18,7 @@ public class UnitOfWork(LmsDbContext _dbContext) : IUnitOfWork
     public IPromptRepository PromptRepository => new PromptRepository(_dbContext);
     public IQuizRepository QuizRepository => new QuizRepository(_dbContext);
     public IQuizBankRepository QuizBankRepository => new QuizBankRepository(_dbContext);
+    public IExamResultRepository ExamResultRepository => new ExamResultRepository(_dbContext);
 
     public async Task CreateTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
     public async Task CommitTransactionAsync() => await _dbContext.Database.CommitTransactionAsync();

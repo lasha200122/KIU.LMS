@@ -22,4 +22,6 @@ public interface IMongoRepository<TDocument> where TDocument : IDocument
         int pageSize = 10);
 
     Task<long> CountAsync(Expression<Func<TDocument, bool>>? filterExpression = null);
+    Task CreateAsync(TDocument document);
+    Task UpdateAsync(TDocument document);
 }
