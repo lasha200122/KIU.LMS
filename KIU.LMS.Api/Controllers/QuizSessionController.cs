@@ -4,6 +4,7 @@ using KIU.LMS.Application.Features.QuizSessions.Queries;
 namespace KIU.LMS.Api.Controllers;
 
 [Route("api/quiz/sessions")]
+[Authorize]
 public class QuizSessionController(ISender sender) : ApiController(sender)
 {
     [HttpPost("{id}/start")]

@@ -4,6 +4,7 @@ using KIU.LMS.Application.Features.Prompts.Queries;
 namespace KIU.LMS.Api.Controllers;
 
 [Route("api/prompts")]
+[Authorize]
 public class PromptsController(ISender _sender) : ApiController(_sender)
 {
     [HttpPost]
