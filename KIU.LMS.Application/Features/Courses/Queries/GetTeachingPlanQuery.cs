@@ -26,8 +26,8 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             x => new GetTeachingPlanQueryResponse(
                 x.Id,
                 x.Name,
-                x.StartDateTime.ToString("dd/MM/yyyy"),
-                $"{x.StartDateTime.ToString("HH:mm")} - {x.EndDateTime.ToString("HH:mm")}",
+                x.StartDateTime.ToLocalTime().ToString("dd/MM/yyyy"),
+                $"{x.StartDateTime.ToLocalTime().ToString("HH:mm")} - {x.EndDateTime.ToLocalTime().ToString("HH:mm")}",
                 x.Assignments.Where(a => a.Type == AssignmentType.Homework)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
