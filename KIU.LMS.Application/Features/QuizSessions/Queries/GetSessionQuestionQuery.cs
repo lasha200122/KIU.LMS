@@ -9,11 +9,12 @@ public sealed record GetSessionQuestionQueryResponse(
     List<AnswerDto> Options,
     int CurrentIndex,
     DateTimeOffset? StartedAt,
-    int Total);
+    int Total,
+    bool HasExplanation);
 
 public sealed record AnswerDto(string Id, string Text);
 
-public sealed class GetSessionQuestionQueryHandler(IExamService _service) : IRequestHandler<GetSessionQuestionQuery, Result<GetSessionQuestionQueryResponse>>
+public sealed class GetSessionQuestionQueryHandler(IExamService _service, IUnitOfWork _unitOfWork) : IRequestHandler<GetSessionQuestionQuery, Result<GetSessionQuestionQueryResponse>>
 {
     public async Task<Result<GetSessionQuestionQueryResponse>> Handle(GetSessionQuestionQuery request, CancellationToken cancellationToken)
     {
@@ -24,6 +25,7 @@ public sealed class GetSessionQuestionQueryHandler(IExamService _service) : IReq
 
         var session = await _service.GetSessionByIdAsync(request.Id);
 
+        var quiz = await _unitOfWork.QuizRepository.SingleOrDefaultAsync(x => x.Id == new Guid(session!.QuizId));
 
         var result = new GetSessionQuestionQueryResponse(
             question.QuestionId,
@@ -32,7 +34,8 @@ public sealed class GetSessionQuestionQueryHandler(IExamService _service) : IReq
             question.Options.Select(x => new AnswerDto(x.Id, x.Text)).ToList(),
             session!.CurrentQuestionIndex + 1,
             question.StartedAt,
-            session!.Questions.Count());
+            session!.Questions.Count(),
+            quiz!.Explanation);
 
         return Result<GetSessionQuestionQueryResponse>.Success(result);
     }
