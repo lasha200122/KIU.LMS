@@ -28,7 +28,7 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
     private async Task<(bool success, string grade, string feedback)> ProcessGradingWithRetryAsync(Solution solution)
     {
-        const int maxRetries = 3;
+        const int maxRetries = 10;
         var attempts = 0;
 
         while (attempts < maxRetries)
@@ -70,25 +70,31 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
     private string BuildGradingPrompt(Assignment assignment, Solution solution)
     {
+        string score = assignment.Score.HasValue ? assignment.Score.Value.ToString() : "does not have grade";
         return $@" {assignment.Prompt.Value}
 
 Assignment Context:
-{assignment.Problem}
-{assignment.Code}
-Maximum Possible Score: {assignment.Score}
+{assignment.Problem?? string.Empty}
+{assignment.Code?? string.Empty}
+Maximum Possible Score: {score}
 
 Student Submission for Evaluation:
 {solution.Value}
 
 Provide your detailed evaluation in the following JSON format only:
 {{
-    ""grade"": ""numeric value between 0-{assignment.Score}"",
-    ""feedback"": ""detailed evaluation of the solution"",
-    ""suggestions"": ""specific recommendations for improvement""
+    ""grade"": ""numeric value between 0-{score}"",
+    ""feedback"": ""detailed evaluation of the solution (max 300 characters)"",
+    ""suggestions"": ""specific recommendations for improvement (max 200 characters)""
 }}
 
-Note: Maintain high academic standards in your evaluation. Do not award full points unless the solution demonstrates exceptional quality and complete understanding.
-Ensure your response contains only this JSON object with no additional text.";
+Important:
+- Keep feedback and suggestions concise and to the point
+- Do not exceed the character limits specified above
+- Maintain high academic standards in your evaluation
+- Do not award full points unless the solution demonstrates exceptional quality
+- Ensure your response contains only this JSON object with no additional text
+- Focus on the most important aspects in your limited feedback space";
     }
 
     private GradingResult ParseAndValidateResponse(string response, decimal? maxScore)

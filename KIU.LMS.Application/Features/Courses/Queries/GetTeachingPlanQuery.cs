@@ -28,19 +28,19 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
                 x.Name,
                 x.StartDateTime.ToLocalTime().ToString("dd/MM/yyyy"),
                 $"{x.StartDateTime.ToLocalTime().ToString("HH:mm")} - {x.EndDateTime.ToLocalTime().ToString("HH:mm")}",
-                x.Assignments.Where(a => a.Type == AssignmentType.Homework)
+                x.Assignments.Where(a => a.Type == AssignmentType.Homework && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.ClassWork)
+                x.Assignments.Where(a => a.Type == AssignmentType.ClassWork && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Quizzes.Where(a => a.Type == QuizType.MCQ)
+                x.Quizzes.Where(a => a.Type == QuizType.MCQ && a.StartDateTime <= DateTimeOffset.UtcNow)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ)
+                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.Project)
+                x.Assignments.Where(a => a.Type == AssignmentType.Project && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString()))
             ),

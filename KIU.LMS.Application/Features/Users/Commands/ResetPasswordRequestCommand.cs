@@ -27,7 +27,7 @@ public class ResetPasswordRequestCommandHandler(IUnitOfWork _unitOfWork, IRedisR
 
         var token = TextGenerator.GenerateRandomToken(16);
 
-        string url = $"{_settings.Domain}/verify/{token}";
+        string url = $"{_settings.Domain}/reset-password/{token}";
 
         var variables = EmailTemplateUtils.ResetPasswordVariableBuilder(user, url);
 

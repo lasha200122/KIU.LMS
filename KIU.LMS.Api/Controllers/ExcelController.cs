@@ -15,4 +15,11 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
     {
         return await HandleFile(new AddQuestionsTemplateQuery(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "questions-template.xlsx");
     }
+
+
+    [HttpGet("course-registration")]
+    public async Task<IResult> AddCourseTemplate()
+    {
+        return await HandleFile(new AddCourseStudentsTemplateQuery(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "course-template.xlsx");
+    }
 }

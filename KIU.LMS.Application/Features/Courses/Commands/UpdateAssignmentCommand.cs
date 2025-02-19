@@ -1,7 +1,7 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Commands;
 
-public sealed record AddAssignmentCommand(
-    Guid CourseId,
+public sealed record UpdateAssignmentCommand(
+    Guid Id,
     Guid TopicId,
     AssignmentType Type,
     string Name,
@@ -19,11 +19,11 @@ public sealed record AddAssignmentCommand(
     Guid? PromptId) : IRequest<Result>;
 
 
-public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
+public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignmentCommand>
 {
-    public AddAssignmentCommandValidator() 
+    public UpdateAssignmentCommandValidator()
     {
-        RuleFor(x => x.CourseId)
+        RuleFor(x => x.Id)
             .NotNull();
 
         RuleFor(x => x.Type)
@@ -41,13 +41,16 @@ public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentComm
 }
 
 
-public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddAssignmentCommand, Result>
+public class UpdateAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<UpdateAssignmentCommand, Result>
 {
-    public async Task<Result> Handle(AddAssignmentCommand request, CancellationToken cancellationToken)
+    public async Task<Result> Handle(UpdateAssignmentCommand request, CancellationToken cancellationToken)
     {
-        var assignment = new Assignment(
-            Guid.NewGuid(),
-            request.CourseId,
+        var assignment = await _unitOfWork.AssignmentRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+
+        if (assignment == null)
+            return Result.Failure("Can't find assignment");
+
+        assignment.Update(
             request.TopicId,
             request.Type,
             request.Name,
@@ -65,11 +68,11 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             request.FullScreen,
             request.RuntimeAttempt,
             _current.UserId);
-    
-        await _unitOfWork.AssignmentRepository.AddAsync(assignment);
+
+        _unitOfWork.AssignmentRepository.Update(assignment);
 
         await _unitOfWork.SaveChangesAsync();
 
-        return Result.Success("Assignment Created Successfully");
+        return Result.Success("Assignment Updated Successfully");
     }
 }

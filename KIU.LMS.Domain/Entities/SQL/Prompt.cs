@@ -11,4 +11,11 @@ public class Prompt : Aggregate
     public Prompt(
         Guid id, string titile, string value, Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     { Value = value;  Title = titile; }
+
+    public void Update(string title, string value, Guid userId) 
+    {
+        Title = title;
+        Value = value;
+        Update(userId, DateTimeOffset.UtcNow);
+    }
 }

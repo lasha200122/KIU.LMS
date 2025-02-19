@@ -22,4 +22,13 @@ public class Topic : Aggregate
         StartDateTime = startDateTime;
         EndDateTime = endDateTime;
     }
+
+    public void Update(string name, DateTimeOffset startDateTime, DateTimeOffset endDateTime, Guid userId) 
+    {
+        Name = name;
+        StartDateTime = startDateTime;
+        EndDateTime = endDateTime;
+
+        Update(userId, DateTimeOffset.UtcNow);
+    }
 }

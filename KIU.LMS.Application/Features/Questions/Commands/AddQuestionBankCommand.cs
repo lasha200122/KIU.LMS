@@ -1,5 +1,4 @@
-﻿
-namespace KIU.LMS.Application.Features.Questions.Commands;
+﻿namespace KIU.LMS.Application.Features.Questions.Commands;
 
 public sealed record AddQuestionBankCommand(string Name) : IRequest<Result>;
 

@@ -16,6 +16,13 @@ public class UserController(ISender _sender) : ApiController(_sender)
         return await Handle(request);
     }
 
+
+    [HttpPost("excel")]
+    public async Task<IResult> RegisterUsers([FromForm] RegisterUsersCommand request)
+    {
+        return await Handle(request);
+    }
+
     [HttpPatch]
     [AllowAnonymous]
     public async Task<IResult> VerifyEmail([FromBody] VerifyEmailCommand request)

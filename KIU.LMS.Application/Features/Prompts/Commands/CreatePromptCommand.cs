@@ -1,5 +1,4 @@
-﻿
-namespace KIU.LMS.Application.Features.Prompts.Commands;
+﻿namespace KIU.LMS.Application.Features.Prompts.Commands;
 
 public sealed record CreatePromptCommand(string Title, string Value) : IRequest<Result>;
 

@@ -64,6 +64,12 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("students/add/excel")]
+    public async Task<IResult> CourseAddStudents([FromForm] CourseStudentsAddCommand request) 
+    {
+        return await Handle(request);
+    }
+
     [HttpDelete("{id}/students")]
     public async Task<IResult> CourseDeleteStudent(Guid id)
     {
@@ -125,6 +131,24 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("topic/update")]
+    public async Task<IResult> UpdateCourseTopic([FromBody] UpdateCourseTopicCommand request)
+    {
+        return await Handle(request);
+    }
+
+    [HttpDelete("topic/{id}")]
+    public async Task<IResult> DeleteCourseTopic(Guid id) 
+    {
+        return await Handle(new DeleteCourseTopicCommand(id));
+    }
+
+    [HttpGet("topic/{id}")]
+    public async Task<IResult> GetTopicDetails(Guid id) 
+    {
+        return await Handle<GetTopicDetailsQuery, GetTopicDetailsQueryResponse>(new GetTopicDetailsQuery(id));
+    }
+
     [HttpGet("topic-list")]
     public async Task<IResult> GetTopicsList([FromQuery] GetTopicsListQuery request) 
     {
@@ -147,17 +171,34 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("assignment/update")]
+    public async Task<IResult> UpdateAssignment([FromBody] UpdateAssignmentCommand request) 
+    {
+        return await Handle(request);
+    }
+
     [HttpGet("assignments")]
     public async Task<IResult> GetAssignments([FromQuery] GetAssignmentsQuery request) 
     {
         return await Handle<GetAssignmentsQuery, PagedEntities<GetAssignmentsQueryesponse>>(request);
     }
 
-
     [HttpGet("assignment/details")]
     public async Task<IResult> GetAssignmentDetails([FromQuery] GetAssignmentByIdQuery request) 
     {
         return await Handle<GetAssignmentByIdQuery, GetAssignmentByIdQueryResponse>(request);
+    }
+
+    [HttpGet("assignment/details/{id}")]
+    public async Task<IResult> GetAssignmentDetails(Guid id) 
+    {
+        return await Handle<GetAssignmentDetailsQuery, GetAssignmentDetailsQueryResponse>(new GetAssignmentDetailsQuery(id));
+    }
+
+    [HttpDelete("assignments/{id}")]
+    public async Task<IResult> DeleteAssignment(Guid id) 
+    {
+        return await Handle(new DeleteAssigmnentCommand(id));
     }
 
     [HttpPost("assignment/submit")]
@@ -195,4 +236,14 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     #endregion Quizzes
+
+    #region Solutions
+
+    [HttpGet("solutions")]
+    public async Task<IResult> AssignmentSolutions([FromQuery] StudentsSolutionListQuery request) 
+    {
+        return await Handle<StudentsSolutionListQuery, PagedEntities<StudentsSolutionListQueryResponse>>(request);
+    }
+
+    #endregion Solutions
 }

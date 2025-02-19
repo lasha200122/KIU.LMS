@@ -34,6 +34,18 @@ public class QuestionController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("update")]
+    public async Task<IResult> UpdateQuestionBank([FromBody] UpdateQuestionBankCommand request)
+    {
+        return await Handle(request);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IResult> DeleteQuestionBank(Guid id)
+    {
+        return await Handle(new DeleteQuestionBankCommand(id));
+    }
+
     [HttpGet("{id}")]
     public async Task<IResult> GetBankDetails(Guid id) 
     {

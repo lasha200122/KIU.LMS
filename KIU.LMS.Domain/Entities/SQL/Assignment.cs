@@ -17,6 +17,8 @@ public class Assignment : Aggregate
     public bool AIGrader { get; private set; }
     public SolutionType SolutionType { get; private set; }
     public Guid? PromptId { get; private set; }
+    public bool FullScreen { get; private set; }
+    public int? RuntimeAttempt { get; private set; }
 
 
     public virtual Course Course { get; private set; } = null!;
@@ -43,6 +45,8 @@ public class Assignment : Aggregate
         bool aiGrader,
         SolutionType solutionType,
         Guid? promptId,
+        bool fullScreen,
+        int? runtimeAttempt,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         CourseId = courseId;
@@ -60,6 +64,47 @@ public class Assignment : Aggregate
         AIGrader = aiGrader;
         SolutionType = solutionType;
         PromptId = promptId;
+        FullScreen = fullScreen;
+        RuntimeAttempt = runtimeAttempt;
+    }
+
+    public void Update(
+        Guid topicId,
+        AssignmentType type,
+        string name,
+        int order,
+        DateTimeOffset? startDateTime,
+        DateTimeOffset? endDateTime,
+        decimal? score,
+        string? problem,
+        string? code,
+        string? fileName,
+        bool isPublic,
+        bool aiGrader,
+        SolutionType solutionType,
+        Guid? promptId,
+        bool fullScreen,
+        int? runtimeAttempt,
+        Guid updateUserId) 
+    {
+        TopicId = topicId;
+        Type = type;
+        Name = name;
+        Order = order;
+        StartDateTime = startDateTime;
+        EndDateTime = endDateTime;
+        Score = score;
+        Problem = problem;
+        Code = code;
+        FileName = fileName;
+        IsPublic = isPublic;
+        AIGrader = aiGrader;
+        SolutionType = solutionType;
+        PromptId = promptId;
+        FullScreen = fullScreen;
+        RuntimeAttempt = runtimeAttempt;
+
+        Update(updateUserId, DateTimeOffset.UtcNow);
     }
 }
 

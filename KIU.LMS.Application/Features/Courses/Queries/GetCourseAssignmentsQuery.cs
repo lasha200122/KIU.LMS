@@ -21,13 +21,12 @@ public sealed class GetCourseAssignmentsHandler(IUnitOfWork _unitOfWork, ICurren
             x => new GetCourseAssignmentsQueryResponse(
                 x.Id,
                 x.Name,
-                x.Solutions.Any()? x.Solutions.OrderByDescending(x => x.CreateDate).First().Grade : string.Empty,
+                x.Solutions.Any(x => x.UserId == _current.UserId) ? x.Solutions.Where(x => x.UserId == _current.UserId).OrderByDescending(x => x.CreateDate).First().Grade : string.Empty,
                 x.Score.HasValue? x.Score.Value.ToString() : "-",
                 x.StartDateTime.HasValue? x.StartDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm"): string.Empty,
                 x.EndDateTime.HasValue ? x.EndDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty,
                 x.Topic.Name,
-                x.Order
-                ),
+                x.Order),
             cancellationToken);
 
         return Result<IEnumerable<GetCourseAssignmentsQueryResponse>>.Success(result);

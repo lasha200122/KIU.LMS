@@ -23,8 +23,7 @@ public class VerifyEmailCommandValidator : AbstractValidator<VerifyEmailCommand>
 public class VerifyEmailCommandHandler(
     IUnitOfWork _unitOfWork,
     IRedisRepository<string> _redis,
-    IPasswordService _password,
-    ICurrentUserService _currentUser) : IRequestHandler<VerifyEmailCommand, Result>
+    IPasswordService _password) : IRequestHandler<VerifyEmailCommand, Result>
 {
     public async Task<Result> Handle(VerifyEmailCommand request, CancellationToken cancellationToken)
     {
@@ -42,7 +41,7 @@ public class VerifyEmailCommandHandler(
 
         var passwordHash = _password.HashPasword(request.Password, out byte[] salt);
 
-        user.ChangePassword(passwordHash, salt, _currentUser.UserId);
+        user.ChangePassword(passwordHash, salt, user.Id);
         user.VerifyEmail();
 
         await _unitOfWork.SaveChangesAsync();

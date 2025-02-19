@@ -1,4 +1,5 @@
-﻿using KIU.LMS.Application.Features.QuizSessions.Commands;
+﻿using KIU.LMS.Application.Features.Questions.Queries;
+using KIU.LMS.Application.Features.QuizSessions.Commands;
 using KIU.LMS.Application.Features.QuizSessions.Queries;
 
 namespace KIU.LMS.Api.Controllers;
@@ -29,5 +30,11 @@ public class QuizSessionController(ISender sender) : ApiController(sender)
     public async Task<IResult> FinishSession(string id)
     {
         return await Handle(new FinishExamCommand(id));
+    }
+
+    [HttpGet("question/answer/{id}")]
+    public async Task<IResult> GetQuestionAnswer(string id) 
+    {
+        return await Handle<GetQuestionAnswerQuery, List<string>>(new GetQuestionAnswerQuery(id));
     }
 }

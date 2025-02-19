@@ -188,4 +188,56 @@ public class ExcelProcessor : IExcelProcessor
             workbook.SaveAs(stream);
         }
     }
+
+    public void GenerateEmailListTemplate(Stream stream)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Emails");
+
+            worksheet.Cell(1, 1).Value = "ელ.ფოსტა";
+
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            worksheet.Columns().AdjustToContents();
+
+            workbook.SaveAs(stream);
+        }
+    }
+
+    public async Task<List<string>> ProcessEmailListFile(IFormFile file)
+    {
+        var emails = new List<string>();
+
+        using (var stream = new MemoryStream())
+        {
+            await file.CopyToAsync(stream);
+            using (var workbook = new XLWorkbook(stream))
+            {
+                var worksheet = workbook.Worksheet(1);
+                var rows = worksheet.RowsUsed().Skip(1);
+
+                foreach (var row in rows)
+                {
+                    try
+                    {
+                        var email = row.Cell(1).GetString().Trim().ToLower();
+
+                        if (IsValidEmail(email))
+                        {
+                            emails.Add(email);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                }
+            }
+        }
+
+        return emails;
+    }
 }

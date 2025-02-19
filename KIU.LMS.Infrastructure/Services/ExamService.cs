@@ -39,7 +39,7 @@ public class ExamService(
                         x.Type,
                         x.Options.OrderBy(x => Guid.NewGuid()).ToList(),
                         quiz.TimePerQuestion,
-                        null));
+                        null)).Take(quizBank.Amount);
 
                 questions.AddRange(questionsToAdd);
             }

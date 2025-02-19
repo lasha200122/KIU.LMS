@@ -7,5 +7,6 @@ public interface IExcelProcessor
 
     void GenerateStudentRegistrationTemplate(Stream stream);
     void GenerateQuestionsTemplate(Stream stream);
-
+    void GenerateEmailListTemplate(Stream stream); 
+    Task<List<string>> ProcessEmailListFile(IFormFile file);
 }

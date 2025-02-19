@@ -18,6 +18,12 @@ public class QuestionBank : Aggregate
         Validate(this);
     }
 
+    public void Update(string name, Guid userId) 
+    {
+        Name = name;
+        Update(userId, DateTimeOffset.UtcNow);
+    }
+
     private void Validate(QuestionBank bank)
     {
         if (string.IsNullOrEmpty(bank.Name))
