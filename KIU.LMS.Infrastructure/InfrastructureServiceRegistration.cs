@@ -1,4 +1,7 @@
-﻿namespace KIU.LMS.Infrastructure;
+﻿using Anthropic.SDK;
+using Microsoft.Extensions.Options;
+
+namespace KIU.LMS.Infrastructure;
 
 public static class InfrastructureServiceRegistration
 {
@@ -17,6 +20,9 @@ public static class InfrastructureServiceRegistration
 
         var geminiSetting = configuration.GetSection(nameof(GeminiSettings)).Get<GeminiSettings>()!;
         services.AddSingleton(geminiSetting!);
+
+        var claudeSetting = configuration.GetSection(nameof(ClaudeSettings)).Get<ClaudeSettings>()!;
+        services.AddSingleton(claudeSetting!);
 
         services.AddAuthorization();
 
@@ -51,6 +57,17 @@ public static class InfrastructureServiceRegistration
                 };
             });
 
+        services.Configure<ClaudeSettings>(configuration.GetSection("ClaudeSettings"));
+
+        services.AddSingleton<AnthropicClient>(sp =>
+        {
+            var settings = sp.GetRequiredService<IOptions<ClaudeSettings>>().Value;
+            var client = new AnthropicClient();
+            client.Auth = new APIAuthentication(settings.ApiKey);
+            //client.AnthropicVersion = settings.AnthropicVersion;
+            return client;
+        });
+
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IExcelProcessor, ExcelProcessor>();
@@ -62,6 +79,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IGeminiService, GeminiService>();
         services.AddScoped<IGradingService, GradingService>();
         services.AddScoped<IExamService, ExamService>();
+        services.AddScoped<IClaudeService, ClaudeService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

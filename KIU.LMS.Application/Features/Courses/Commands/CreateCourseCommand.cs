@@ -18,7 +18,7 @@ public class CreateCourseCommandHandler(
 {
     public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
-        var name = request.Name.Trim().ToLower();
+        var name = request.Name.Trim();
         var courseExist = await _unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken);
 
         if (courseExist)

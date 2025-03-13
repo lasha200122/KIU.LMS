@@ -22,4 +22,10 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
     {
         return await HandleFile(new AddCourseStudentsTemplateQuery(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "course-template.xlsx");
     }
+
+    [HttpGet("quiz/{id}/results")]
+    public async Task<IResult> GetQuizResults(Guid id)
+    {
+        return await HandleFile(new GetQuizResultsQuery(id), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-result.xlsx");
+    }
 }

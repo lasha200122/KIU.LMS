@@ -20,6 +20,9 @@ public class Course : Aggregate
 
     private List<Quiz> _quizes = new();
     public IReadOnlyCollection<Quiz> Quizzes => _quizes;
+
+    private List<Module> _modules = new();
+    public IReadOnlyCollection<Module> Modules => _modules;
     public Course() { }
 
     public Course(

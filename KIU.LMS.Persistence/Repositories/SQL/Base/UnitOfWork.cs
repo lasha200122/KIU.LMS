@@ -19,6 +19,8 @@ public class UnitOfWork(LmsDbContext _dbContext) : IUnitOfWork
     public IQuizRepository QuizRepository => new QuizRepository(_dbContext);
     public IQuizBankRepository QuizBankRepository => new QuizBankRepository(_dbContext);
     public IExamResultRepository ExamResultRepository => new ExamResultRepository(_dbContext);
+    public IModuleRepository ModuleRepository => new ModuleRepository(_dbContext);
+    public ISubModuleRepository SubModuleRepository => new SubModuleRepository(_dbContext);
 
     public async Task CreateTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
     public async Task CommitTransactionAsync() => await _dbContext.Database.CommitTransactionAsync();

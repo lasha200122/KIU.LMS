@@ -37,6 +37,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IQuizRepository, QuizRepository>();
         services.AddScoped<IQuizBankRepository, QuizBankRepository>();
         services.AddScoped<IExamResultRepository, ExamResultRepository>();
+        services.AddScoped<IModuleRepository, ModuleRepository>();
+        services.AddScoped<ISubModuleRepository, SubModuleRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

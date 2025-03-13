@@ -1,9 +1,10 @@
-﻿using KIU.LMS.Domain.Common.Models.Gemini;
+﻿using Anthropic.SDK.Messaging;
+using KIU.LMS.Domain.Common.Models.Gemini;
 using System.Text.Json;
 
 namespace KIU.LMS.Infrastructure.Services;
 
-public class GradingService(IGeminiService _gemini) : IGradingService
+public class GradingService(IClaudeService _gemini) : IGradingService
 {
     public async Task<(bool success, string message)> GradeSubmissionAsync(Solution solution)
     {
@@ -28,126 +29,110 @@ public class GradingService(IGeminiService _gemini) : IGradingService
 
     private async Task<(bool success, string grade, string feedback)> ProcessGradingWithRetryAsync(Solution solution)
     {
-        const int maxRetries = 10;
-        var attempts = 0;
 
-        while (attempts < maxRetries)
-        {
-            try
-            {
-                var prompt = BuildGradingPrompt(solution.Assignment, solution);
-                var response = await _gemini.GenerateContentAsync(prompt);
-
-                if (string.IsNullOrEmpty(response))
-                {
-                    attempts++;
-                    continue;
-                }
-
-                var gradingResult = ParseAndValidateResponse(response, solution.Assignment.Score);
-                if (gradingResult != null)
-                {
-                    var combinedFeedback = CombineFeedback(gradingResult.GetFormattedFeedback(), gradingResult.GetFormattedSuggestions());
-                    return (true, gradingResult.grade.ToString(), combinedFeedback);
-                }
-
-                attempts++;
-                await Task.Delay(1000 * attempts);
-            }
-            catch (Exception ex)
-            {
-                attempts++;
-
-                if (attempts == maxRetries)
-                    return (false, string.Empty, string.Empty);
-
-                await Task.Delay(1000 * attempts);
-            }
-        }
-
-        return (false, string.Empty, string.Empty);
-    }
-
-    private string BuildGradingPrompt(Assignment assignment, Solution solution)
-    {
-        string score = assignment.Score.HasValue ? assignment.Score.Value.ToString() : "does not have grade";
-        return $@" {assignment.Prompt.Value}
-
-Assignment Context:
-{assignment.Problem?? string.Empty}
-{assignment.Code?? string.Empty}
-Maximum Possible Score: {score}
-
-Student Submission for Evaluation:
-{solution.Value}
-
-Provide your detailed evaluation in the following JSON format only:
-{{
-    ""grade"": ""numeric value between 0-{score}"",
-    ""feedback"": ""detailed evaluation of the solution (max 300 characters)"",
-    ""suggestions"": ""specific recommendations for improvement (max 200 characters)""
-}}
-
-Important:
-- Keep feedback and suggestions concise and to the point
-- Do not exceed the character limits specified above
-- Maintain high academic standards in your evaluation
-- Do not award full points unless the solution demonstrates exceptional quality
-- Ensure your response contains only this JSON object with no additional text
-- Focus on the most important aspects in your limited feedback space";
-    }
-
-    private GradingResult ParseAndValidateResponse(string response, decimal? maxScore)
-    {
         try
         {
+            var claudeRequest = BuildGradingPrompt(solution.Assignment, solution);
+            var response = await _gemini.GenerateContentAsync(claudeRequest.Messages, claudeRequest.SystemMessages);
+
+            if (response == null)
+                return (false, string.Empty, string.Empty);
+
             var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 AllowTrailingCommas = true
             };
 
-            var cleanedResponse = CleanJsonResponse(response);
-            var gradingResult = JsonSerializer.Deserialize<GradingResult>(cleanedResponse, options);
+            var gradingResult = JsonSerializer.Deserialize<GradingResult>(response, options);
 
-            if (gradingResult == null ||
-                string.IsNullOrEmpty(gradingResult.grade.ToString()) ||
-                string.IsNullOrEmpty(gradingResult.feedback))
+            if (gradingResult != null)
             {
-                return null;
+                var combinedFeedback = CombineFeedback(gradingResult.feedback, gradingResult.suggestions);
+                return (true, gradingResult.grade.ToString(), combinedFeedback);
             }
 
-            if (!ValidateGrade(gradingResult.grade.ToString(), maxScore))
-            {
-                return null;
-            }
-
-            return gradingResult;
+            await Task.Delay(10000);
         }
-        catch (JsonException ex)
+        catch (Exception ex)
         {
-            return null;
+            await Task.Delay(1000);
+            return (false, string.Empty, string.Empty);
         }
+
+        return (false, string.Empty, string.Empty);
     }
 
-    private string CleanJsonResponse(string response)
+    private (List<Message> Messages, List<SystemMessage> SystemMessages) BuildGradingPrompt(Assignment assignment, Solution solution)
     {
-        var jsonStart = response.IndexOf("{");
-        var jsonEnd = response.LastIndexOf("}");
+        string score = assignment.Score.HasValue ? assignment.Score.Value.ToString() : "does not have grade";
 
-        if (jsonStart == -1 || jsonEnd == -1)
-            return response;
-
-        return response.Substring(jsonStart, jsonEnd - jsonStart + 1)
-                      .Replace("\r", "");
-    }
-
-    private bool ValidateGrade(string grade, decimal? maxScore)
+        var systemMessages = new List<SystemMessage>
     {
-        if (!decimal.TryParse(grade, out decimal numericGrade))
-            return false;
+        new("""
+            You are an expert code evaluator and grading assistant with deep knowledge in software development.
+            Your task is to evaluate student code submissions with the following strict requirements:
+            """),
+        new("""
+            Response Format:
+            {
+                "grade": numeric (0-[maxScore]),
+                "feedback": constructive evaluation (300 chars max),
+                "suggestions": specific improvements (200 chars max)
+            }
+            """),
+        new("""
+            Grading Guidelines:
+            - Evaluate against industry best practices
+            - Consider code quality, efficiency, and readability
+            - Check for proper error handling and edge cases
+            - Assess code organization and maintainability
+            - Look for security considerations
+            - Verify proper documentation and comments
+            """),
+        new("""
+            Response Rules:
+            - Return ONLY valid JSON format
+            - Stay within character limits
+            - Be specific and actionable in feedback
+            - Provide practical improvement suggestions
+            - No conversation or additional text
+            - Grade strictly - full score only for exceptional work
+            """)
+    };
 
-        return numericGrade >= 0 && maxScore.HasValue && numericGrade <= maxScore.Value;
+        var messages = new List<Message>
+    {
+        new Message(RoleType.User, $"""
+            Additional Prompt:
+            {assignment.Prompt.Value ?? "No specific promp provided"}
+            """),
+
+        new Message(RoleType.User, $"""
+            Assignment Details:
+            Original Task:
+            {assignment.Problem ?? "No specific problem description provided"}
+            """),
+
+        new Message(RoleType.User, $"""
+            Reference Implementation:
+            {assignment.Code ?? "No reference implementation provided"}
+            """),
+
+        new Message(RoleType.User, $"""
+            Grading Information:
+            Maximum Score: {score}
+            """),
+
+        new Message(RoleType.User, $"""
+            Student Submission:
+            {solution.Value}
+            
+            Evaluate the above submission according to the specified criteria and format.
+            """)
+    };
+
+        return new(messages, systemMessages);
     }
 
     private string CombineFeedback(string feedback, string suggestions)

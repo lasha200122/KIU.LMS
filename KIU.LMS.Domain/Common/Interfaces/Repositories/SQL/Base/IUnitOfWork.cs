@@ -19,6 +19,8 @@ public interface IUnitOfWork
     IQuizRepository QuizRepository { get; }
     IQuizBankRepository QuizBankRepository { get; }
     IExamResultRepository ExamResultRepository { get; }
+    IModuleRepository ModuleRepository { get; }
+    ISubModuleRepository SubModuleRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackAsync();

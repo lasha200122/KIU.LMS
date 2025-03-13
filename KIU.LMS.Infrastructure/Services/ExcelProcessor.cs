@@ -81,7 +81,8 @@ public class ExcelProcessor : IExcelProcessor
                         var student = new StudentExcelDto(
                             row.Cell(1).GetString().Trim().ToLower(), 
                             row.Cell(2).GetString().Trim().ToLower(),
-                            row.Cell(3).GetString().Trim().ToLower());
+                            row.Cell(3).GetString().Trim().ToLower(),
+                            row.Cell(4).GetString().Trim());
 
                         if (string.IsNullOrWhiteSpace(student.FirstName))
                         {
@@ -239,5 +240,65 @@ public class ExcelProcessor : IExcelProcessor
         }
 
         return emails;
+    }
+
+    public void GenerateQuizResults(Stream stream, IEnumerable<QuizResultDto> quizResults)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Quiz Results");
+
+            worksheet.Cell(1, 1).Value = "სახელი";
+            worksheet.Cell(1, 2).Value = "გვარი";
+            worksheet.Cell(1, 3).Value = "ელ.ფოსტა";
+            worksheet.Cell(1, 4).Value = "დაწყების დრო";
+            worksheet.Cell(1, 5).Value = "დასრულების დრო";
+            worksheet.Cell(1, 6).Value = "ქულა";
+            worksheet.Cell(1, 7).Value = "კითხვების რაოდენობა";
+            worksheet.Cell(1, 8).Value = "სწორი პასუხები";
+            worksheet.Cell(1, 9).Value = "ხანგრძლივობა";
+            worksheet.Cell(1, 10).Value = "უარყოფითი ქულა";
+
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            int row = 2;
+            foreach (var result in quizResults)
+            {
+                worksheet.Cell(row, 1).Value = result.FirstName;
+                worksheet.Cell(row, 2).Value = result.LastName;
+                worksheet.Cell(row, 3).Value = result.Email;
+                worksheet.Cell(row, 4).Value = result.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
+                worksheet.Cell(row, 5).Value = result.FinishedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
+                worksheet.Cell(row, 6).Value = result.Score;
+                worksheet.Cell(row, 7).Value = result.TotalQuestions;
+                worksheet.Cell(row, 8).Value = result.CorrectAnswers;
+
+                var duration = result.Duration;
+                worksheet.Cell(row, 9).Value = $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
+
+                worksheet.Cell(row, 10).Value = result.MinusPoint;
+
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            var dataRange = worksheet.Range(2, 1, row - 1, 10);
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            worksheet.Column(4).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
+            worksheet.Column(5).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
+
+            worksheet.Column(6).Style.NumberFormat.Format = "0.00";
+            if (quizResults.Any(r => r.MinusPoint.HasValue))
+            {
+                worksheet.Column(10).Style.NumberFormat.Format = "0.00";
+            }
+
+            workbook.SaveAs(stream);
+        }
     }
 }

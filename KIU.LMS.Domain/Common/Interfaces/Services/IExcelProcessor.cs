@@ -9,4 +9,5 @@ public interface IExcelProcessor
     void GenerateQuestionsTemplate(Stream stream);
     void GenerateEmailListTemplate(Stream stream); 
     Task<List<string>> ProcessEmailListFile(IFormFile file);
+    void GenerateQuizResults(Stream stream, IEnumerable<QuizResultDto> quizResults);
 }

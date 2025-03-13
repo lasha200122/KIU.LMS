@@ -12,6 +12,8 @@ public sealed record AddQuizCommand(
     decimal? Score,
     bool Explanation,
     int? TimePerQuestion,
+    decimal? MinusScore,
+    DateTimeOffset? PublicTill,
     List<QuestionBankItem> Banks) : IRequest<Result>;
 
 public sealed record QuestionBankItem(Guid Id, int Amount);
@@ -84,6 +86,8 @@ public sealed class AddQuizCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserS
             request.Score,
             request.Explanation,
             request.TimePerQuestion,
+            request.MinusScore,
+            request.PublicTill,
             _current.UserId);
 
         var quizBanks = request.Banks.Select(x => new QuizBank(

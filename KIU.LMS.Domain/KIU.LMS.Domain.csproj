@@ -15,6 +15,7 @@
 	  <PackageReference Include="Serilog.AspNetCore" Version="8.0.1" />
 	  <PackageReference Include="Serilog.Sinks.Graylog" Version="3.1.1" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.4" />
+	  <PackageReference Include="Anthropic.SDK" Version="4.4.2" />
   </ItemGroup>
 
 </Project>

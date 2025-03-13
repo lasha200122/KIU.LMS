@@ -2,7 +2,7 @@
 
 namespace KIU.LMS.Application.Features.Questions.Queries;
 
-public sealed record GetQuestionBanksListQuery() : IRequest<Result<List<GetQuestionBanksListQueryResponse>>>;
+public sealed record GetQuestionBanksListQuery(Guid Id) : IRequest<Result<List<GetQuestionBanksListQueryResponse>>>;
 
 public sealed record GetQuestionBanksListQueryResponse(Guid Id, string Title, int Amount);
 
@@ -10,6 +10,8 @@ public sealed class GetQuestionBanksListQueryHandler(IUnitOfWork _unitOfWork, IM
 {
     public async Task<Result<List<GetQuestionBanksListQueryResponse>>> Handle(GetQuestionBanksListQuery request, CancellationToken cancellationToken)
     {
+        //var questionBankIds = await _unitOfWork.QuestionBankRepository.GetMappedAsync(x => x.Module.CourseId == request.Id, x => x.Id.ToString());
+
         var questions = await _mongoDb.GetAllAsync();
 
         var questionBanksWithCounts = questions

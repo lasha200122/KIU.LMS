@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Questions.Commands;
 
-public sealed record AddQuestionBankCommand(string Name) : IRequest<Result>;
+public sealed record AddQuestionBankCommand(Guid ModuleId, string Name) : IRequest<Result>;
 
 public sealed class AddQuestionBankCommandValidator : AbstractValidator<AddQuestionBankCommand> 
 {
@@ -19,6 +19,7 @@ public sealed class AddQuestionBankCommandHandler(IUnitOfWork _unitOfWork, ICurr
         var questionBank = new QuestionBank(
             Guid.NewGuid(),
             request.Name,
+            request.ModuleId,
             _current.UserId);
 
         await _unitOfWork.QuestionBankRepository.AddAsync(questionBank);

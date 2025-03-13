@@ -3,18 +3,23 @@
 public class QuestionBank : Aggregate
 {
     public string Name { get; private set; } = null!;
+    public Guid ModuleId { get; private set; }
 
+    public virtual Module Module { get; private set; } = null!;
     private List<QuizBank> _quizBanks = new();
     public IReadOnlyCollection<QuizBank> QuizBanks => _quizBanks;
+
 
     public QuestionBank() { }
 
     public QuestionBank(
         Guid id,
         string name,
+        Guid moduleId,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         Name = name;
+        ModuleId = moduleId;
         Validate(this);
     }
 

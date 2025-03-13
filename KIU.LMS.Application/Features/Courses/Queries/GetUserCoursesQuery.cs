@@ -8,6 +8,14 @@ public class GetUserCoursesQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSer
 {
     public async Task<Result<IEnumerable<GetUserCoursesResponse>>> Handle(GetUserCoursesQuery request, CancellationToken cancellationToken)
     {
+        if (_current.Role == "Admin")
+        {
+            var course = await _unitOfWork.CourseRepository.GetWhereIncludedAsync(x => true);
+
+            var adminResponse = course.Select(c => new GetUserCoursesResponse(c.Id, c.Name));
+
+            return Result<IEnumerable<GetUserCoursesResponse>>.Success(adminResponse);
+        }
         var courses = await _unitOfWork.UserCourseRepository.GetWhereIncludedAsync(x => x.UserId == _current.UserId, x => x.Course);
 
         var response = courses.Select(c => new GetUserCoursesResponse(c.CourseId, c.Course.Name));

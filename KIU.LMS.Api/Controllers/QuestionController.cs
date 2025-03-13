@@ -52,10 +52,10 @@ public class QuestionController(ISender sender) : ApiController(sender)
         return await Handle<GetQuestionBankDetailsQuery, GetQuestionBankDetailsQueryResponse>(new GetQuestionBankDetailsQuery(id));
     }
 
-    [HttpGet("list")]
-    public async Task<IResult> GetQuestionBanksList() 
+    [HttpGet("list/{id}")]
+    public async Task<IResult> GetQuestionBanksList(Guid id) 
     {
-        return await Handle<GetQuestionBanksListQuery, List<GetQuestionBanksListQueryResponse>>(new GetQuestionBanksListQuery());
+        return await Handle<GetQuestionBanksListQuery, List<GetQuestionBanksListQueryResponse>>(new GetQuestionBanksListQuery(id));
     }
 
     [HttpGet("{id}/explain")]

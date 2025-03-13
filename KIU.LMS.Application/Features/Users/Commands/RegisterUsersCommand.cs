@@ -49,6 +49,7 @@ public class RegisterUsersCommandHandler(
                 UserRole.Student,
                 passwordHash,
                 Convert.ToHexString(salt),
+                user.Institution,
                 _currentUser.UserId);
 
             var email = new EmailQueue(

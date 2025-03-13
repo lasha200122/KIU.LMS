@@ -13,6 +13,8 @@ public class Quiz : Aggregate
     public decimal? Score { get; private set; }
     public bool Explanation { get; private set; }
     public int? TimePerQuestion { get; private set; }
+    public decimal? MinusScore { get; private set; }
+    public DateTimeOffset? PublicTill { get; private set; }
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
@@ -38,6 +40,8 @@ public class Quiz : Aggregate
         decimal? score,
         bool explanation,
         int? timePerQuestion,
+        decimal? minusScore,
+        DateTimeOffset? publicTill,
         Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
         CourseId = courseId;
@@ -51,6 +55,8 @@ public class Quiz : Aggregate
         Score = score;
         Explanation = explanation;
         TimePerQuestion = timePerQuestion;
+        MinusScore = minusScore;
+        PublicTill = publicTill;
     }
 }
 

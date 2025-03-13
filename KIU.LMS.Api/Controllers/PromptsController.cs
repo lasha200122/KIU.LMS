@@ -36,4 +36,10 @@ public class PromptsController(ISender _sender) : ApiController(_sender)
     {
         return await Handle(new DeletePromptCommand(id));
     }
+
+    [HttpGet("balance")]
+    public async Task<IResult> GetAntropicBalance() 
+    {
+        return await Handle<GetAntropicBalanceQuery, string>(new GetAntropicBalanceQuery());
+    }
 }

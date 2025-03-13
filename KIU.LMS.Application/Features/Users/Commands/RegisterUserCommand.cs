@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Users.Commands;
 
-public sealed record RegisterUserCommand(string FirstName, string LastName, string Email) : IRequest<Result>;
+public sealed record RegisterUserCommand(string FirstName, string LastName, string Email, string? Institution) : IRequest<Result>;
 
 public class RegisterUserCommandValidator : AbstractValidator<RegisterUserCommand> 
 {
@@ -54,6 +54,7 @@ public class RegisterUserCommandHandler(
             UserRole.Student,
             passwordHash,
             Convert.ToHexString(salt),
+            request.Institution,
             _currentUser.UserId);
 
         var email = new EmailQueue(

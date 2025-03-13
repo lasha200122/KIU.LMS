@@ -10,5 +10,10 @@ public class QuestionBankConfiguration : EntityConfiguration<QuestionBank>
         builder.Property(x => x.Name)
             .IsRequired()
             .HasMaxLength(200);
+
+        builder.HasOne(x => x.Module)
+            .WithMany(x => x.QuestionBanks)
+            .HasForeignKey(x => x.ModuleId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

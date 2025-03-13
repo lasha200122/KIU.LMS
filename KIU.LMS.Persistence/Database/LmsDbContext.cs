@@ -17,7 +17,8 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<Solution> Solutions { get; set; } = null!;
     public DbSet<Prompt> Prompts { get; set; } = null!;
     public DbSet<ExamResult> ExamResults { get; set; } = null!;
-
+    public DbSet<Domain.Entities.SQL.Module> Modules { get; set; } = null!;
+    public DbSet<SubModule> SubModules { get; set; } = null!;
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(LmsDbContext).Assembly);

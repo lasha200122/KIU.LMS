@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Questions.Queries;
 
-public sealed record GetQuestionBanksQuery(string? Name, int PageNumber, int PageSize) : IRequest<Result<PagedEntities<GetQuestionBanksQueryResponse>>>;
+public sealed record GetQuestionBanksQuery(Guid ModuleId, string? Name, int PageNumber, int PageSize) : IRequest<Result<PagedEntities<GetQuestionBanksQueryResponse>>>;
 
 public sealed record GetQuestionBanksQueryResponse(Guid Id, string Name);
 
@@ -18,7 +18,7 @@ public class GetQuestionBanksQueryQueryHandler(IUnitOfWork _unitOfWork) : IReque
     public async Task<Result<PagedEntities<GetQuestionBanksQueryResponse>>> Handle(GetQuestionBanksQuery request, CancellationToken cancellationToken)
     {
         var courses = await _unitOfWork.QuestionBankRepository.GetPaginatedWhereMappedAsync(
-            x => string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name),
+            x => x.ModuleId == request.ModuleId && (string.IsNullOrEmpty(request.Name) || x.Name.Contains(request.Name)),
             request.PageNumber,
             request.PageSize,
             x => new GetQuestionBanksQueryResponse(x.Id, x.Name),

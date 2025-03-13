@@ -163,9 +163,9 @@ public class ExamService(
                 new Guid(session.QuizId),
                 session.StartedAt,
                 DateTimeOffset.UtcNow,
-                CalculateScore(answers.ToList(), session.Questions),
+                CalculateScore(answers.ToList(), session.Questions, quiz.MinusScore),
                 session.Questions.Count,
-                CountCorrectAnswers(answers.ToList(), session.Questions),
+                CountAnswers(answers.ToList(), session.Questions).CorrectCount,
                 session.Id,
                 new Guid(session.StudentId));
 
@@ -190,9 +190,9 @@ public class ExamService(
                 new Guid(session.QuizId),
                 session.StartedAt,
                 DateTimeOffset.UtcNow,
-                CalculateScore(answers.ToList(), session.Questions),
+                CalculateScore(answers.ToList(), session.Questions, quiz.MinusScore),
                 session.Questions.Count,
-                CountCorrectAnswers(answers.ToList(), session.Questions),
+                CountAnswers(answers.ToList(), session.Questions).CorrectCount,
                 session.Id,
                 new Guid(session.StudentId));
 
@@ -201,17 +201,29 @@ public class ExamService(
         }
     }
 
-    private decimal CalculateScore(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions)
+    private decimal CalculateScore(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)
     {
-        int correctAnswers = CountCorrectAnswers(answers, questions);
-        return questions.Count > 0
-            ? (decimal)correctAnswers / questions.Count * 100
-            : 0;
+        var (correctCount, wrongCount) = CountAnswers(answers, questions);
+
+        if (questions.Count <= 0)
+            return 0;
+
+        decimal baseScore = (decimal)correctCount;
+
+        if (penaltyPerWrongAnswer.HasValue && penaltyPerWrongAnswer.Value > 0)
+        {
+            decimal penalty = wrongCount * penaltyPerWrongAnswer.Value;
+            return baseScore - penalty;
+        }
+
+        return baseScore;
     }
 
-    private int CountCorrectAnswers(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions)
+    private (int CorrectCount, int WrongCount) CountAnswers(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions)
     {
         int correctCount = 0;
+        int wrongCount = 0;
+
         foreach (var answer in answers)
         {
             var question = questions.FirstOrDefault(q => q.QuestionId == answer.QuestionId);
@@ -227,8 +239,13 @@ public class ExamService(
                 {
                     correctCount++;
                 }
+                else
+                {
+                    wrongCount++;
+                }
             }
         }
-        return correctCount;
+
+        return (correctCount, wrongCount);
     }
 }

@@ -9,6 +9,7 @@ public class User : Aggregate
     public string PasswordHash { get; private set; } = null!;
     public string PasswordSalt { get; private set; } = null!;
     public bool EmailVerified { get; private set; }
+    public string? Institution { get; private set; }
 
     private List<UserCourse> _userCourses = new();
     public IReadOnlyCollection<UserCourse> UserCourses => _userCourses;
@@ -32,6 +33,7 @@ public class User : Aggregate
         UserRole role,
         string passwordHash,
         string passwordSalt,
+        string? institution,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         FirstName = firstName;
@@ -41,6 +43,7 @@ public class User : Aggregate
         PasswordHash = passwordHash;
         PasswordSalt = passwordSalt;
         EmailVerified = false;
+        Institution = institution;
         Validate(this);
     }
 

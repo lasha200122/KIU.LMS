@@ -213,6 +213,12 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle<IpeqExecuteCommand, string?>(request);
     }
 
+    [HttpPost("assignment/solution/{id}")]
+    public async Task<IResult> GradeSolution(Guid id) 
+    {
+        return await Handle(new GradeSolutionCommand(id));
+    }
+
     #endregion Assignments
 
     #region Quizzes
