@@ -16,7 +16,7 @@ public class EmailQueueWorker(IServiceProvider _serviceProvider) : BackgroundSer
                 var pendingEmailsQueue = await unitOfWork.EmailQueueRepository.GetWhereAsTrackingIncludedAsync(x => x.Status == EmailStatus.Pending ||
                                (x.Status == EmailStatus.Retry && x.RetryCount < 3), x => x.Template);
 
-                var pendingEmails = pendingEmailsQueue.Take(10).ToList();
+                var pendingEmails = pendingEmailsQueue.Take(100).ToList();
 
                 foreach (var queueItem in pendingEmails)
                 {

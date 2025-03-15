@@ -2,8 +2,9 @@
 
 namespace KIU.LMS.Application.Features.LeaderBoard;
 
-public sealed record LeaderBoardQuery(Guid CourseId, Guid QuizId) : IRequest<Result<List<LeaderBoardResponse>>>;
+public sealed record LeaderBoardQuery(Guid CourseId, Guid QuizId, int Page, string? Text) : IRequest<Result<FinalResponse>>;
 
+public sealed record FinalResponse(List<LeaderBoardResponse> Students, int Count);
 public sealed record LeaderBoardResponse(
     int Rank,
     string FirstName,
@@ -20,18 +21,23 @@ public sealed record LeaderBoardResponse(
 public sealed class LeaderBoardQueryHandler(
     IUnitOfWork _unitOfWork,
     IMongoRepository<ExamSession> _sessionRepository,
-    IMongoRepository<StudentAnswer> _answerRepository) : IRequestHandler<LeaderBoardQuery, Result<List<LeaderBoardResponse>>>
+    IMongoRepository<StudentAnswer> _answerRepository) : IRequestHandler<LeaderBoardQuery, Result<FinalResponse>>
 {
-    public async Task<Result<List<LeaderBoardResponse>>> Handle(LeaderBoardQuery request, CancellationToken cancellationToken)
+    public async Task<Result<FinalResponse>> Handle(LeaderBoardQuery request, CancellationToken cancellationToken)
     {
-        var students = await _unitOfWork.UserCourseRepository.GetWhereIncludedAsync(x => x.CourseId == request.CourseId, x => x.User);
+        var students = await _unitOfWork.UserCourseRepository.GetWhereIncludedAsync(
+            x => x.CourseId == request.CourseId &&
+            (string.IsNullOrEmpty(request.Text) || x.User.FirstName.Contains(request.Text) || x.User.LastName.Contains(request.Text) || x.User.Email.Contains(request.Text) || x.User.Institution.Contains(request.Text))
+            , x => x.User);
 
         var response = new List<LeaderBoardResponse>();
 
         var quiz = await _unitOfWork.QuizRepository.SingleOrDefaultAsync(x => x.Id == request.QuizId);
 
+        var finalResponse_ = new FinalResponse(response, 0);
+
         if (quiz is null)
-            return Result<List<LeaderBoardResponse>>.Success(response);
+            return Result<FinalResponse>.Success(finalResponse_);
 
         foreach (var student in students)
         {
@@ -66,9 +72,10 @@ public sealed class LeaderBoardQueryHandler(
                 var percentage = totalCount > 0 ? Math.Round((decimal)count.CorrectCount / totalCount * 100, 1) : 0;
                 var finishedAt = session.FinishedAt.HasValue? session.FinishedAt.Value : DateTimeOffset.UtcNow;
                 TimeSpan duration = finishedAt - session.StartedAt;
-                var minutes = duration.Minutes;
+                var minutes = duration.TotalMinutes;
                 var givenMinutes = (answers.Select(x => x.QuestionId).Distinct().Count() * quiz.TimePerQuestion?? 0) / 60;
                 var bonus = Math.Round((decimal) (givenMinutes - minutes )/ 15, 2);
+                bonus = bonus > count.CorrectCount ? count.CorrectCount : bonus;
                 var finalScore = score + bonus;
 
                 var result = new LeaderBoardResponse(
@@ -88,6 +95,10 @@ public sealed class LeaderBoardQueryHandler(
             }
         }
 
+        var final_count = response.Count();
+
+        var skip = (request.Page - 1) * 10;
+
         response = response
             .OrderByDescending(x => x.TotalScore)
             .Select((item, index) => new LeaderBoardResponse(
@@ -102,9 +113,13 @@ public sealed class LeaderBoardQueryHandler(
                 Bonus: item.Bonus,
                 TotalScore: item.TotalScore,
                 Duration: item.Duration))
+            .Skip(skip)
+            .Take(10)
             .ToList();
 
-        return Result<List<LeaderBoardResponse>>.Success(response);
+        var finalResponse = new FinalResponse(response, final_count);
+
+        return Result<FinalResponse>.Success(finalResponse);
     }
 
     private decimal CalculateScore(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)

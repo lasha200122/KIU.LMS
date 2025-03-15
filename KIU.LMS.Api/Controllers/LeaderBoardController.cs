@@ -8,7 +8,7 @@ public class LeaderBoardController(ISender _sender) : ApiController(_sender)
     [HttpGet("leaderboard")]
     public async Task<IResult> GetLeaderBoard([FromQuery] LeaderBoardQuery request)
     {
-        return await Handle<LeaderBoardQuery, List<LeaderBoardResponse>>(request);
+        return await Handle<LeaderBoardQuery, FinalResponse>(request);
     }
 
     [HttpGet("leaderboard/filter")]
