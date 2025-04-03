@@ -50,4 +50,11 @@ public class UserController(ISender _sender) : ApiController(_sender)
     {
         return await Handle(request);
     }
+
+    [HttpPost("register/qr")]
+    [AllowAnonymous]
+    public async Task<IResult> RegisterUserByQR([FromBody] RegisterUserByQRCommand request) 
+    {
+        return await Handle(request);
+    }
 }

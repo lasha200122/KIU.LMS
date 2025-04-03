@@ -5,7 +5,6 @@ public sealed record AddAssignmentCommand(
     Guid TopicId,
     AssignmentType Type,
     string Name,
-    int Order,
     DateTimeOffset? StartDateTime,
     DateTimeOffset? EndDateTime,
     decimal? Score,
@@ -32,9 +31,6 @@ public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentComm
         RuleFor(x => x.Name)
             .NotNull();
 
-        RuleFor(x => x.Order)
-            .NotNull();
-
         RuleFor(x => x.SolutionType)
             .NotNull();
     }
@@ -45,13 +41,25 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
 {
     public async Task<Result> Handle(AddAssignmentCommand request, CancellationToken cancellationToken)
     {
+        var splitted = request.Name.Split(".");
+        string name = string.Empty;
+        int order = 0;
+
+        if (splitted.Count() == 1)
+            name = splitted.First();
+        else 
+        {
+            name = splitted.Last();
+            int.TryParse(splitted.First(), out order);
+        }
+
         var assignment = new Assignment(
             Guid.NewGuid(),
             request.CourseId,
             request.TopicId,
             request.Type,
-            request.Name,
-            request.Order,
+            name,
+            order,
             request.StartDateTime,
             request.EndDateTime,
             request.Score,

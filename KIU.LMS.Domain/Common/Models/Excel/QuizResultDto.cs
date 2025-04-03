@@ -7,7 +7,13 @@ public sealed record QuizResultDto(
     DateTimeOffset StartedAt,
     DateTimeOffset FinishedAt,
     decimal Score,
+    decimal Percentage,
     int TotalQuestions,
     int CorrectAnswers,
+    int WrongAnswers,
     TimeSpan Duration,
-    decimal? MinusPoint);
+    decimal? MinusPoint,
+    string? Institution,
+    decimal Bonus,
+    decimal FinalScore,
+    int Rank);

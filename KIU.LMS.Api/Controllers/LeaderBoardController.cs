@@ -11,6 +11,12 @@ public class LeaderBoardController(ISender _sender) : ApiController(_sender)
         return await Handle<LeaderBoardQuery, FinalResponse>(request);
     }
 
+    [HttpGet("leaderboard/school")]
+    public async Task<IResult> GetLeaderBoardSchool([FromQuery] GetSchoolRankingsQuery request) 
+    {
+        return await Handle<GetSchoolRankingsQuery, GetSchoolRankingsQueryResponse>(request);
+    }
+
     [HttpGet("leaderboard/filter")]
     public async Task<IResult> GetLeaderBoardFilters() 
     {

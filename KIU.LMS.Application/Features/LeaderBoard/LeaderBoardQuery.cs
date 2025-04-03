@@ -65,16 +65,19 @@ public sealed class LeaderBoardQueryHandler(
             foreach (var session in examSessions)
             {
                 var answers = await _answerRepository.FindAsync(a => a.SessionId == session.Id);
-
                 var score = CalculateScore(answers.ToList(), session.Questions, quiz.MinusScore);
                 var count = CountAnswers(answers.ToList(), session.Questions);
                 var totalCount = session.Questions.Count;
                 var percentage = totalCount > 0 ? Math.Round((decimal)count.CorrectCount / totalCount * 100, 1) : 0;
-                var finishedAt = session.FinishedAt.HasValue? session.FinishedAt.Value : DateTimeOffset.UtcNow;
+                var finishedAt = session.FinishedAt.HasValue ? session.FinishedAt.Value : DateTimeOffset.UtcNow;
                 TimeSpan duration = finishedAt - session.StartedAt;
-                var minutes = duration.TotalMinutes;
-                var givenMinutes = (answers.Select(x => x.QuestionId).Distinct().Count() * quiz.TimePerQuestion?? 0) / 60;
-                var bonus = Math.Round((decimal) (givenMinutes - minutes )/ 15, 2);
+                var minutes = (decimal) duration.TotalMinutes;
+
+                var totalAllowedMinutes = totalCount * (quiz.TimePerQuestion ?? 0) / 60.0m;
+
+                var timeBonus = Math.Round((decimal)(totalAllowedMinutes - minutes) / 15, 2);
+
+                var bonus = Math.Max(0, timeBonus);
                 bonus = bonus > count.CorrectCount ? count.CorrectCount : bonus;
                 var finalScore = score + bonus;
 

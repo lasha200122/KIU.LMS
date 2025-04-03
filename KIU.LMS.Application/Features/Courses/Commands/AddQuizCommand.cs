@@ -5,7 +5,6 @@ public sealed record AddQuizCommand(
     Guid TopicId,
     string Title,
     QuizType Type,
-    int Order,
     int? Attempts,
     DateTimeOffset StartDateTime,
     DateTimeOffset? EndDateTime,
@@ -32,9 +31,6 @@ public sealed class AddQuizCommandValidator : AbstractValidator<AddQuizCommand>
             .NotNull();
 
         RuleFor(x => x.Type)
-            .NotNull();
-
-        RuleFor(x => x.Order)
             .NotNull();
 
         RuleFor(x => x.StartDateTime)
@@ -73,13 +69,25 @@ public sealed class AddQuizCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserS
         if (!topicExist)
             return Result.Failure("Can't find topic");
 
+        var splitted = request.Title.Split(".");
+        string name = string.Empty;
+        int order = 0;
+
+        if (splitted.Count() == 1)
+            name = splitted.First();
+        else
+        {
+            name = splitted.Last();
+            int.TryParse(splitted.First(), out order);
+        }
+
         var quiz = new Quiz(
             Guid.NewGuid(),
             request.CourseId,
             request.TopicId,
-            request.Title,
+            name,
             request.Type,
-            request.Order,
+            order,
             request.Attempts,
             request.StartDateTime,
             request.EndDateTime,

@@ -247,17 +247,22 @@ public class ExcelProcessor : IExcelProcessor
         using (var workbook = new XLWorkbook())
         {
             var worksheet = workbook.Worksheets.Add("Quiz Results");
-
-            worksheet.Cell(1, 1).Value = "სახელი";
-            worksheet.Cell(1, 2).Value = "გვარი";
-            worksheet.Cell(1, 3).Value = "ელ.ფოსტა";
-            worksheet.Cell(1, 4).Value = "დაწყების დრო";
-            worksheet.Cell(1, 5).Value = "დასრულების დრო";
-            worksheet.Cell(1, 6).Value = "ქულა";
-            worksheet.Cell(1, 7).Value = "კითხვების რაოდენობა";
-            worksheet.Cell(1, 8).Value = "სწორი პასუხები";
-            worksheet.Cell(1, 9).Value = "ხანგრძლივობა";
-            worksheet.Cell(1, 10).Value = "უარყოფითი ქულა";
+            worksheet.Cell(1, 1).Value = "ადგილი";
+            worksheet.Cell(1, 2).Value = "სახელი";
+            worksheet.Cell(1, 3).Value = "გვარი";
+            worksheet.Cell(1, 4).Value = "ელ.ფოსტა";
+            worksheet.Cell(1, 5).Value = "სკოლა";
+            worksheet.Cell(1, 6).Value = "დაწყების დრო";
+            worksheet.Cell(1, 7).Value = "დასრულების დრო";
+            worksheet.Cell(1, 8).Value = "ქულა";
+            worksheet.Cell(1, 9).Value = "პროცენტი";
+            worksheet.Cell(1, 10).Value = "კითხვების რაოდენობა";
+            worksheet.Cell(1, 11).Value = "სწორი პასუხები";
+            worksheet.Cell(1, 12).Value = "არასწორი პასუხები";
+            worksheet.Cell(1, 13).Value = "ხანგრძლივობა";
+            worksheet.Cell(1, 14).Value = "უარყოფითი ქულა";
+            worksheet.Cell(1, 15).Value = "ბონუს ქულა";
+            worksheet.Cell(1, 16).Value = "საბოლოო ქულა";
 
             var headerRow = worksheet.Row(1);
             headerRow.Style.Font.Bold = true;
@@ -266,19 +271,25 @@ public class ExcelProcessor : IExcelProcessor
             int row = 2;
             foreach (var result in quizResults)
             {
-                worksheet.Cell(row, 1).Value = result.FirstName;
-                worksheet.Cell(row, 2).Value = result.LastName;
-                worksheet.Cell(row, 3).Value = result.Email;
-                worksheet.Cell(row, 4).Value = result.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
-                worksheet.Cell(row, 5).Value = result.FinishedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
-                worksheet.Cell(row, 6).Value = result.Score;
-                worksheet.Cell(row, 7).Value = result.TotalQuestions;
-                worksheet.Cell(row, 8).Value = result.CorrectAnswers;
+                worksheet.Cell(row, 1).Value = result.Rank;
+                worksheet.Cell(row, 2).Value = result.FirstName;
+                worksheet.Cell(row, 3).Value = result.LastName;
+                worksheet.Cell(row, 4).Value = result.Email;
+                worksheet.Cell(row, 5).Value = result.Institution;
+                worksheet.Cell(row, 6).Value = result.StartedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
+                worksheet.Cell(row, 7).Value = result.FinishedAt.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss");
+                worksheet.Cell(row, 8).Value = result.Score;
+                worksheet.Cell(row, 9).Value = result.Percentage;
+                worksheet.Cell(row, 10).Value = result.TotalQuestions;
+                worksheet.Cell(row, 11).Value = result.CorrectAnswers;
+                worksheet.Cell(row, 12).Value = result.WrongAnswers;
 
                 var duration = result.Duration;
-                worksheet.Cell(row, 9).Value = $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
+                worksheet.Cell(row, 13).Value = $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
 
-                worksheet.Cell(row, 10).Value = result.MinusPoint;
+                worksheet.Cell(row, 14).Value = result.MinusPoint;
+                worksheet.Cell(row, 15).Value = result.Bonus;
+                worksheet.Cell(row, 16).Value = result.FinalScore;
 
                 row++;
             }
@@ -289,13 +300,17 @@ public class ExcelProcessor : IExcelProcessor
             dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
             dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
 
-            worksheet.Column(4).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
-            worksheet.Column(5).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
+            worksheet.Column(6).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
+            worksheet.Column(7).Style.DateFormat.Format = "yyyy-MM-dd HH:mm:ss";
 
-            worksheet.Column(6).Style.NumberFormat.Format = "0.00";
+            worksheet.Column(8).Style.NumberFormat.Format = "0.00";
+            worksheet.Column(9).Style.NumberFormat.Format = "0.00";
+            worksheet.Column(15).Style.NumberFormat.Format = "0.00";
+            worksheet.Column(16).Style.NumberFormat.Format = "0.00";
+
             if (quizResults.Any(r => r.MinusPoint.HasValue))
             {
-                worksheet.Column(10).Style.NumberFormat.Format = "0.00";
+                worksheet.Column(14).Style.NumberFormat.Format = "0.00";
             }
 
             workbook.SaveAs(stream);
