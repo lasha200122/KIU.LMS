@@ -21,8 +21,8 @@ public sealed class GetTopicsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHan
             x => new GetTopicsQueryResponse(
                 x.Id,
                 x.Name,
-                x.StartDateTime.ToString("dd/MM/yyyy"),
-                $"{x.StartDateTime.ToString("HH:mm")} - {x.EndDateTime.ToString("HH:mm")}"),
+                x.StartDateTime.HasValue? x.StartDateTime.Value.ToString("dd/MM/yyyy") : string.Empty,
+                $"{ x.StartDateTime.Value.ToString("HH:mm")?? string.Empty } - {x.EndDateTime.Value.ToString("HH:mm")?? string.Empty}"),
             x => x.StartDateTime,
             cancellationToken);
 

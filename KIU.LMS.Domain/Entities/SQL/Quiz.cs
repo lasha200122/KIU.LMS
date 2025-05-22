@@ -15,6 +15,7 @@ public class Quiz : Aggregate
     public int? TimePerQuestion { get; private set; }
     public decimal? MinusScore { get; private set; }
     public DateTimeOffset? PublicTill { get; private set; }
+    public bool IsTraining { get; private set; } 
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
@@ -42,6 +43,7 @@ public class Quiz : Aggregate
         int? timePerQuestion,
         decimal? minusScore,
         DateTimeOffset? publicTill,
+        bool isTraining,
         Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
         CourseId = courseId;
@@ -57,6 +59,18 @@ public class Quiz : Aggregate
         TimePerQuestion = timePerQuestion;
         MinusScore = minusScore;
         PublicTill = publicTill;
+        IsTraining = isTraining;
+    }
+
+    public void StartQuiz() 
+    {
+        StartDateTime = DateTimeOffset.UtcNow;
+    }
+
+    public void Reschedule(DateTimeOffset start, DateTimeOffset end) 
+    {
+        StartDateTime = start;
+        EndDateTime = end;
     }
 }
 

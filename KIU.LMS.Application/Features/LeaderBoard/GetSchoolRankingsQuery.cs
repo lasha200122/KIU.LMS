@@ -203,7 +203,8 @@ public sealed class GetSchoolRankingsQueryHandler(
                     Score: 0,
                     Bonus: 0,
                     Duration: string.Empty,
-                    TotalScore: 0);
+                    TotalScore: 0,
+                    Email: student.User.Email);
 
                 response.Add(defaultResponse);
                 continue;
@@ -237,7 +238,8 @@ public sealed class GetSchoolRankingsQueryHandler(
                     Score: score,
                     Bonus: bonus,
                     TotalScore: finalScore,
-                    Duration: duration.ToString());
+                    Duration: duration.ToString(),
+                    Email: student.User.Email);
 
                 response.Add(result);
             }

@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Queries;
 
-public sealed record GetCourseAssignmentsQuery(Guid CourseId, AssignmentType Type) : IRequest<Result<IEnumerable<GetCourseAssignmentsQueryResponse>>>;
+public sealed record GetCourseAssignmentsQuery(Guid CourseId, AssignmentType Type, bool IsTraining) : IRequest<Result<IEnumerable<GetCourseAssignmentsQueryResponse>>>;
 
 public sealed record GetCourseAssignmentsQueryResponse(
     Guid Id,
@@ -17,7 +17,7 @@ public sealed class GetCourseAssignmentsHandler(IUnitOfWork _unitOfWork, ICurren
     public async Task<Result<IEnumerable<GetCourseAssignmentsQueryResponse>>> Handle(GetCourseAssignmentsQuery request, CancellationToken cancellationToken)
     {
         var result = await _unitOfWork.AssignmentRepository.GetMappedAsync(
-            x => x.CourseId == request.CourseId && x.Type == request.Type && x.StartDateTime.HasValue && x.StartDateTime <= DateTimeOffset.UtcNow,
+            x => x.CourseId == request.CourseId && x.Type == request.Type && x.StartDateTime.HasValue && x.StartDateTime <= DateTimeOffset.UtcNow && x.IsTraining == request.IsTraining,
             x => new GetCourseAssignmentsQueryResponse(
                 x.Id,
                 x.Name,

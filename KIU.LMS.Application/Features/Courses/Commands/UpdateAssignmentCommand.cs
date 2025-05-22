@@ -16,6 +16,7 @@ public sealed record UpdateAssignmentCommand(
     SolutionType SolutionType,
     bool FullScreen,
     int? RuntimeAttempt,
+    bool IsTraining,
     Guid? PromptId) : IRequest<Result>;
 
 
@@ -67,6 +68,7 @@ public class UpdateAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.PromptId,
             request.FullScreen,
             request.RuntimeAttempt,
+            request.IsTraining,
             _current.UserId);
 
         _unitOfWork.AssignmentRepository.Update(assignment);

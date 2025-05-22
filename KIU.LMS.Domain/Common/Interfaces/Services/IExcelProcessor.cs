@@ -10,4 +10,12 @@ public interface IExcelProcessor
     void GenerateEmailListTemplate(Stream stream); 
     Task<List<string>> ProcessEmailListFile(IFormFile file);
     void GenerateQuizResults(Stream stream, IEnumerable<QuizResultDto> quizResults);
+    void GenerateFinalists(Stream stream, IEnumerable<SchoolRankingItemFinal> quizResults);
 }
+
+
+public sealed record SchoolRankingItemFinal(
+    int Rank,
+    string Name,
+    string Value,
+    string Email);

@@ -2,7 +2,7 @@
 
 public sealed record GetTopicDetailsQuery(Guid Id) : IRequest<Result<GetTopicDetailsQueryResponse>>;
 
-public sealed record GetTopicDetailsQueryResponse(Guid Id, string Name, DateTimeOffset StartTime, DateTimeOffset EndTime);
+public sealed record GetTopicDetailsQueryResponse(Guid Id, string Name, DateTimeOffset? StartTime, DateTimeOffset? EndTime);
 
 public sealed class GetTopicDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetTopicDetailsQuery, Result<GetTopicDetailsQueryResponse>>
 {
@@ -16,8 +16,8 @@ public sealed class GetTopicDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequ
         var result = new GetTopicDetailsQueryResponse(
             topic.Id,
             topic.Name,
-            topic.StartDateTime.ToLocalTime(),
-            topic.EndDateTime.ToLocalTime());
+            topic.StartDateTime.HasValue? topic.StartDateTime.Value.ToLocalTime(): null,
+            topic.EndDateTime.HasValue? topic.EndDateTime.Value.ToLocalTime(): null);
 
         return Result<GetTopicDetailsQueryResponse>.Success(result);
     }

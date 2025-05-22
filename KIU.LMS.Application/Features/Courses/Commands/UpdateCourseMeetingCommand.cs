@@ -3,7 +3,7 @@
 public sealed record UpdateCourseMeetingCommand(
     Guid Id,
     string Name,
-    string Url,
+    string? Url,
     DateTimeOffset StartDateTime,
     DateTimeOffset EndDateTime) : IRequest<Result>;
 
@@ -17,10 +17,6 @@ public class UpdateCourseMeetingCommandValidator : AbstractValidator<UpdateCours
         RuleFor(x => x.Name)
             .NotNull()
             .NotEmpty();
-
-        RuleFor(x => x.Url)
-            .NotEmpty()
-            .NotNull();
 
         RuleFor(x => x.StartDateTime)
             .NotNull();

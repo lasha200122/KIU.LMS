@@ -19,7 +19,8 @@ public sealed record GetAssignmentDetailsQueryResponse(
     SolutionType SolutionType,
     Guid? PromptId,
     bool FullScreen,
-    int? RuntimeAttempt);
+    int? RuntimeAttempt,
+    bool IsTraining);
 
 public class GetAssignmentDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetAssignmentDetailsQuery, Result<GetAssignmentDetailsQueryResponse>>
 {
@@ -47,7 +48,8 @@ public class GetAssignmentDetailsQueryHandler(IUnitOfWork _unitOfWork) : IReques
             course.SolutionType,
             course.PromptId,
             course.FullScreen,
-            course.RuntimeAttempt);
+            course.RuntimeAttempt,
+            course.IsTraining);
 
         return Result<GetAssignmentDetailsQueryResponse>.Success(response);
     }

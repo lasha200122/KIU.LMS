@@ -4,7 +4,7 @@ public class CourseMeeting : Aggregate
 {
     public Guid CourseId { get; private set; }
     public string Name { get; private set; } = null!;
-    public string Url { get; private set; } = null!;
+    public string? Url { get; private set; } = null!;
     public DateTimeOffset StartTime { get; private set; }
     public DateTimeOffset EndTime { get; private set; }
 
@@ -16,7 +16,7 @@ public class CourseMeeting : Aggregate
         Guid id,
         Guid courseId,
         string name,
-        string url,
+        string? url,
         DateTimeOffset startTime,
         DateTimeOffset endTime,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
@@ -31,7 +31,7 @@ public class CourseMeeting : Aggregate
 
     public void Update(
         string name,
-        string url,
+        string? url,
         DateTimeOffset startTime,
         DateTimeOffset endTime,
         Guid userId) 

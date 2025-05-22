@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Queries;
 
-public sealed record GetCourseQuizzesQuery(Guid CourseId, QuizType Type) : IRequest<Result<IEnumerable<GetCourseQuizzesQueryResponse>>>;
+public sealed record GetCourseQuizzesQuery(Guid CourseId, QuizType Type, bool IsTraining) : IRequest<Result<IEnumerable<GetCourseQuizzesQueryResponse>>>;
 
 public sealed record GetCourseQuizzesQueryResponse(
     Guid Id,
@@ -18,7 +18,7 @@ public sealed class GetCourseQuizzesQueryHandler(IUnitOfWork _unitOfWork, ICurre
     public async Task<Result<IEnumerable<GetCourseQuizzesQueryResponse>>> Handle(GetCourseQuizzesQuery request, CancellationToken cancellationToken)
     {
         var result = await _unitOfWork.QuizRepository.GetMappedAsync(
-            x => x.CourseId == request.CourseId && x.Type == request.Type && x.StartDateTime <= DateTimeOffset.UtcNow,
+            x => x.CourseId == request.CourseId && x.Type == request.Type && x.StartDateTime <= DateTimeOffset.UtcNow && x.IsTraining == request.IsTraining,
             x => new GetCourseQuizzesQueryResponse(
                 x.Id,
                 x.Title,

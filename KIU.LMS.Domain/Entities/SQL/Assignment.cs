@@ -19,6 +19,7 @@ public class Assignment : Aggregate
     public Guid? PromptId { get; private set; }
     public bool FullScreen { get; private set; }
     public int? RuntimeAttempt { get; private set; }
+    public bool IsTraining { get; private set; }
 
 
     public virtual Course Course { get; private set; } = null!;
@@ -47,6 +48,7 @@ public class Assignment : Aggregate
         Guid? promptId,
         bool fullScreen,
         int? runtimeAttempt,
+        bool isTraining,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         CourseId = courseId;
@@ -65,6 +67,7 @@ public class Assignment : Aggregate
         SolutionType = solutionType;
         PromptId = promptId;
         FullScreen = fullScreen;
+        IsTraining = isTraining;
         RuntimeAttempt = runtimeAttempt;
     }
 
@@ -85,6 +88,7 @@ public class Assignment : Aggregate
         Guid? promptId,
         bool fullScreen,
         int? runtimeAttempt,
+        bool isTraining,
         Guid updateUserId) 
     {
         TopicId = topicId;
@@ -103,6 +107,7 @@ public class Assignment : Aggregate
         PromptId = promptId;
         FullScreen = fullScreen;
         RuntimeAttempt = runtimeAttempt;
+        IsTraining = isTraining;
 
         Update(updateUserId, DateTimeOffset.UtcNow);
     }
@@ -115,7 +120,8 @@ public enum AssignmentType
     Homework,
     ClassWork,
     IPEQ,
-    Project
+    Project,
+    C2RS
 }
 
 public enum SolutionType 

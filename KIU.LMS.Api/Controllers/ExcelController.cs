@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Api.Controllers;
+﻿using DocumentFormat.OpenXml.Office2010.Excel;
+
+namespace KIU.LMS.Api.Controllers;
 
 [Route("api/excel")]
 [Authorize]
@@ -27,5 +29,11 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
     public async Task<IResult> GetQuizResults(Guid id)
     {
         return await HandleFile(new GetQuizResultsQuery(id), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "quiz-result.xlsx");
+    }
+
+    [HttpGet("finalists")]
+    public async Task<IResult> GetFinalists([FromQuery] GeneretaFinalistExcel request) 
+    {
+        return await HandleFile(request, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "finalists.xlsx");
     }
 }

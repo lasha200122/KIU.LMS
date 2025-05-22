@@ -5,6 +5,7 @@ public sealed record CreateSubModuleCommand(
         string Name,
         string? Problem,
         string? Code,
+        Guid? PromptId,
         SubModuleType Type) : IRequest<Result>;
 
 public sealed class CreateSubModuleCommandValidator : AbstractValidator<CreateSubModuleCommand> 
@@ -30,6 +31,7 @@ public sealed class CreateSubModuleCommandHandler(IUnitOfWork _unitOfWork, ICurr
             request.Problem,
             request.Code,
             request.Type,
+            request.PromptId,
             _current.UserId);
 
         await _unitOfWork.SubModuleRepository.AddAsync(subModule);

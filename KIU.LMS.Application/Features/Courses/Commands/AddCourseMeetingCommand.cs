@@ -19,10 +19,6 @@ public class AddCourseMeetingCommandValidator : AbstractValidator<AddCourseMeeti
             .NotNull()
             .NotEmpty();
 
-        RuleFor(x => x.Url)
-            .NotEmpty()
-            .NotNull();
-
         RuleFor(x => x.StartDateTime)
             .NotNull();
 

@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Infrastructure.Services;
+﻿using KIU.LMS.Application.Features.Excel.Queries;
+
+namespace KIU.LMS.Infrastructure.Services;
 
 public class ExcelProcessor : IExcelProcessor
 {
@@ -312,6 +314,42 @@ public class ExcelProcessor : IExcelProcessor
             {
                 worksheet.Column(14).Style.NumberFormat.Format = "0.00";
             }
+
+            workbook.SaveAs(stream);
+        }
+    }
+
+    public void GenerateFinalists(Stream stream, IEnumerable<SchoolRankingItemFinal> quizResults)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Final Results");
+            worksheet.Cell(1, 1).Value = "ადგილი";
+            worksheet.Cell(1, 2).Value = "მონაწილე";
+            worksheet.Cell(1, 3).Value = "ელ.ფოსტა";
+            worksheet.Cell(1, 4).Value = "ქულა";
+
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+            int row = 2;
+            foreach (var result in quizResults)
+            {
+                worksheet.Cell(row, 1).Value = result.Rank;
+                worksheet.Cell(row, 2).Value = result.Name;
+                worksheet.Cell(row, 3).Value = result.Email;
+                worksheet.Cell(row, 4).Value = result.Value;
+                row++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            var dataRange = worksheet.Range(2, 1, row - 1, 10);
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            worksheet.Column(4).Style.NumberFormat.Format = "0.00";
 
             workbook.SaveAs(stream);
         }

@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Commands;
 
-public sealed record UpdateCourseTopicCommand(Guid Id, string Name, DateTimeOffset StartDate, DateTimeOffset EndDate) : IRequest<Result>;
+public sealed record UpdateCourseTopicCommand(Guid Id, string Name, DateTimeOffset? StartDate, DateTimeOffset? EndDate) : IRequest<Result>;
 
 
 public class UpdateCourseTopicCommandValidator : AbstractValidator<UpdateCourseTopicCommand>
@@ -13,12 +13,6 @@ public class UpdateCourseTopicCommandValidator : AbstractValidator<UpdateCourseT
         RuleFor(x => x.Name)
             .NotNull()
             .NotEmpty();
-
-        RuleFor(x => x.StartDate)
-            .NotNull();
-
-        RuleFor(x => x.EndDate)
-            .NotNull();
     }
 }
 

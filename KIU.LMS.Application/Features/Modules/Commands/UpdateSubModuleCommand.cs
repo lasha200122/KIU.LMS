@@ -4,7 +4,8 @@ public sealed record UpdateSubModuleCommand(
         Guid Id,
         string Name,
         string? Problem,
-        string? Code) : IRequest<Result>;
+        string? Code,
+        Guid? PromptId) : IRequest<Result>;
 
 public sealed class UpdateSubModuleCommandValidator : AbstractValidator<UpdateSubModuleCommand>
 {
@@ -31,6 +32,7 @@ public sealed class UpdateSubModuleCommandHandler(IUnitOfWork _unitOfWork, ICurr
             request.Name,
             request.Problem,
             request.Code,
+            request.PromptId,
             _current.UserId);
 
         await _unitOfWork.SaveChangesAsync();

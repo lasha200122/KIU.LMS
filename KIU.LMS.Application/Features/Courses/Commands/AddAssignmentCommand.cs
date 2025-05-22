@@ -15,7 +15,8 @@ public sealed record AddAssignmentCommand(
     SolutionType SolutionType,
     bool FullScreen,
     int? RuntimeAttempt,
-    Guid? PromptId) : IRequest<Result>;
+    Guid? PromptId,
+    bool IsTraining) : IRequest<Result>;
 
 
 public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
@@ -72,6 +73,7 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             request.PromptId,
             request.FullScreen,
             request.RuntimeAttempt,
+            request.IsTraining,
             _current.UserId);
     
         await _unitOfWork.AssignmentRepository.AddAsync(assignment);

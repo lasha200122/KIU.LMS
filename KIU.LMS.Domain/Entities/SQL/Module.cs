@@ -36,6 +36,7 @@ public class SubModule : Aggregate
     public string? Problem { get; private set; }
     public string? Code { get; private set; }
     public SubModuleType SubModuleType { get; private set; }
+    public Guid? PromptId { get; private set; }
 
     public virtual Module Module { get; private set; } = null!;
 
@@ -48,6 +49,7 @@ public class SubModule : Aggregate
         string? problem,
         string? code,
         SubModuleType subModuleType,
+        Guid? promptId,
         Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
         ModuleId = moduleId;
@@ -55,13 +57,15 @@ public class SubModule : Aggregate
         Problem = problem;
         Code = code;
         SubModuleType = subModuleType;
+        PromptId = promptId;
     }
 
-    public void USub(string name, string? problem, string? code, Guid userId) 
+    public void USub(string name, string? problem, string? code, Guid? promptId ,Guid userId) 
     {
         Name = name;
         Problem = problem;
         Code = code;
+        PromptId = promptId;
 
         Update(userId, DateTimeOffset.UtcNow);
     }
@@ -74,5 +78,6 @@ public enum SubModuleType
     Classwork = 2,
     IPEQ = 3,
     MCQ = 4,
-    Project = 5
+    Project = 5,
+    C2RS = 6,
 }

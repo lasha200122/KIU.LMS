@@ -6,6 +6,12 @@ public class CourseController(ISender sender) : ApiController(sender)
 {
     #region Courses
 
+    [HttpGet("tasks")]
+    public async Task<IResult> GetAllTasks([FromQuery] GetAllAssignmentsQuery request) 
+    {
+        return await Handle<GetAllAssignmentsQuery, GetAllAssignmentsQueryResponse>(request);
+    }
+
     [HttpGet("user")]
     public async Task<IResult> GetUserCourses()
     {
@@ -239,6 +245,24 @@ public class CourseController(ISender sender) : ApiController(sender)
     public async Task<IResult> GetQuizDetails(Guid id) 
     {
         return await Handle<GetQuizDetailsQuery, GetQuizDetailsQueryResponse>(new GetQuizDetailsQuery(id));
+    }
+
+    [HttpDelete("quiz/{id}")]
+    public async Task<IResult> DeleteQuiz(Guid id) 
+    {
+        return await Handle(new DeleteQuizCommand(id));
+    }
+
+    [HttpPut("quiz/{id}/start")]
+    public async Task<IResult> StartQuiz(Guid id) 
+    {
+        return await Handle(new StartQuizCommand(id));
+    }
+
+    [HttpPut("quiz/reschedule")]
+    public async Task<IResult> RescheduleQuiz([FromBody] RescheduleQuizCommand request) 
+    {
+        return await Handle(request);
     }
 
     #endregion Quizzes

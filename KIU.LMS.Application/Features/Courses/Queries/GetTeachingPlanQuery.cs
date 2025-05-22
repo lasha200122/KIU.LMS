@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Queries;
 
-public sealed record GetTeachingPlanQuery(Guid CourseId) : IRequest<Result<IEnumerable<GetTeachingPlanQueryResponse>>>;
+public sealed record GetTeachingPlanQuery(Guid CourseId, bool? IsTraining) : IRequest<Result<IEnumerable<GetTeachingPlanQueryResponse>>>;
 
 
 public sealed record GetTeachingPlanQueryResponse(
@@ -9,12 +9,11 @@ public sealed record GetTeachingPlanQueryResponse(
     string Date,
     string Time,
     IEnumerable<AssignmentItem> Homeworks,
-    IEnumerable<AssignmentItem> ClassWorks,
     IEnumerable<AssignmentItem> MCQs,
     IEnumerable<AssignmentItem> IPEQs,
     IEnumerable<AssignmentItem> Projects);
 
-public sealed record AssignmentItem(Guid Id, string Number);
+public sealed record AssignmentItem(Guid Id, string Number, string Deadline, bool IsTraining, string RedirectUrl);
 
 
 public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetTeachingPlanQuery, Result<IEnumerable<GetTeachingPlanQueryResponse>>>
@@ -26,23 +25,20 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             x => new GetTeachingPlanQueryResponse(
                 x.Id,
                 x.Name,
-                x.StartDateTime.ToLocalTime().ToString("dd/MM/yyyy"),
-                $"{x.StartDateTime.ToLocalTime().ToString("HH:mm")} - {x.EndDateTime.ToLocalTime().ToString("HH:mm")}",
-                x.Assignments.Where(a => a.Type == AssignmentType.Homework && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
+                x.StartDateTime.Value.ToLocalTime().ToString("dd/MM/yyyy")?? string.Empty,
+                $"{x.StartDateTime.Value.ToLocalTime().ToString("HH:mm")?? string.Empty} - {x.EndDateTime.Value.ToLocalTime().ToString("HH:mm")??string.Empty}",
+                x.Assignments.Where(a => a.Type == AssignmentType.Homework && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.ClassWork && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
+                x.Quizzes.Where(a => a.Type == QuizType.MCQ && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Quizzes.Where(a => a.Type == QuizType.MCQ && a.StartDateTime <= DateTimeOffset.UtcNow)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.IsTraining, y.Id))),
+                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
+                x.Assignments.Where(a => a.Type == AssignmentType.Project && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString())),
-                x.Assignments.Where(a => a.Type == AssignmentType.Project && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow)
-                    .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString()))
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id)))
             ),
             x => x.StartDateTime,
             false,
@@ -50,5 +46,31 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
         );
 
         return Result<IEnumerable<GetTeachingPlanQueryResponse>>.Success(result);
+    }
+
+    private static string GetDateTime(DateTimeOffset? dateTime)
+    {
+        return dateTime.HasValue ? dateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty;
+    }
+
+    private static string RedirectUrl(AssignmentType type, bool isTraining, Guid id)
+    {
+        var baseUrl = isTraining ? "/learning/training" : "/learning/graiding";
+
+        return type switch
+        {
+            AssignmentType.Homework => $"{baseUrl}/c2rs/{id}",
+            AssignmentType.IPEQ => $"{baseUrl}/ipeq/{id}",
+            AssignmentType.Project => $"{baseUrl}/project/{id}",
+            AssignmentType.C2RS => $"{baseUrl}/c2rs/{id}",
+            _ => string.Empty
+        };
+    }
+
+    private static string RedirectUrl(bool isTraining, Guid id)
+    {
+        var baseUrl = isTraining ? "/learning/training" : "/learning/graiding";
+
+        return $"{baseUrl}/mcq/{id}";
     }
 }

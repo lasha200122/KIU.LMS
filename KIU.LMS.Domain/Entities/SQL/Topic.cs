@@ -4,8 +4,8 @@ public class Topic : Aggregate
 {
     public Guid CourseId { get; private set; }
     public string Name { get; private set; } = string.Empty;
-    public DateTimeOffset StartDateTime { get; private set; }
-    public DateTimeOffset EndDateTime { get; private set; }
+    public DateTimeOffset? StartDateTime { get; private set; }
+    public DateTimeOffset? EndDateTime { get; private set; }
 
     public virtual Course Course { get; private set; } = null!;
     public List<Assignment> Assignments { get; private set; } = null!;
@@ -15,7 +15,7 @@ public class Topic : Aggregate
 
     public Topic() {}
 
-    public Topic(Guid id, Guid courseId, string name, DateTimeOffset startDateTime, DateTimeOffset endDateTime, Guid userId) : base(id, DateTimeOffset.Now, userId)
+    public Topic(Guid id, Guid courseId, string name, DateTimeOffset? startDateTime, DateTimeOffset? endDateTime, Guid userId) : base(id, DateTimeOffset.Now, userId)
     {
         CourseId = courseId;
         Name = name;
@@ -23,7 +23,7 @@ public class Topic : Aggregate
         EndDateTime = endDateTime;
     }
 
-    public void Update(string name, DateTimeOffset startDateTime, DateTimeOffset endDateTime, Guid userId) 
+    public void Update(string name, DateTimeOffset? startDateTime, DateTimeOffset? endDateTime, Guid userId) 
     {
         Name = name;
         StartDateTime = startDateTime;

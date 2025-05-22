@@ -1,48 +1,83 @@
-﻿using KIU.LMS.Domain.Entities.NoSQL;
+﻿using KIU.LMS.Application.Features.LeaderBoard;
+using KIU.LMS.Domain.Entities.NoSQL;
 
-namespace KIU.LMS.Application.Features.LeaderBoard;
+namespace KIU.LMS.Application.Features.Excel.Queries;
 
-public sealed record LeaderBoardQuery(Guid CourseId, Guid QuizId, int Page, string? Text) : IRequest<Result<FinalResponse>>;
+public sealed record GeneretaFinalistExcel(Guid QuizId, Guid CourseId) : IRequest<Result<byte[]>>;
 
-public sealed record FinalResponse(List<LeaderBoardResponse> Students, int Count);
-public sealed record LeaderBoardResponse(
-    int Rank,
-    string FirstName,
-    string LastName,
-    string School,
-    decimal Percentage,
-    int CorrectAnswers,
-    int TotalAnswers,
-    decimal Score,
-    string Duration,
-    decimal Bonus,
-    decimal TotalScore,
-    string Email);
 
-public sealed class LeaderBoardQueryHandler(
-    IUnitOfWork _unitOfWork,
-    IMongoRepository<ExamSession> _sessionRepository,
-    IMongoRepository<StudentAnswer> _answerRepository) : IRequestHandler<LeaderBoardQuery, Result<FinalResponse>>
+public sealed class GeneretaFinalistExcelHandler(IUnitOfWork _unitOfWork, IMongoRepository<ExamSession> _sessionRepository,
+    IMongoRepository<StudentAnswer> _answerRepository, IExcelProcessor _excel) : IRequestHandler<GeneretaFinalistExcel, Result<byte[]>>
 {
-    public async Task<Result<FinalResponse>> Handle(LeaderBoardQuery request, CancellationToken cancellationToken)
+    public async Task<Result<byte[]>> Handle(GeneretaFinalistExcel request, CancellationToken cancellationToken)
     {
         var students = await _unitOfWork.UserCourseRepository.GetWhereIncludedAsync(
-            x => x.CourseId == request.CourseId &&
-            (string.IsNullOrEmpty(request.Text) || x.User.FirstName.Contains(request.Text) || x.User.LastName.Contains(request.Text) || x.User.Email.Contains(request.Text) || x.User.Institution.Contains(request.Text))
+            x => x.CourseId == request.CourseId
             , x => x.User);
-
-        var response = new List<LeaderBoardResponse>();
 
         var quiz = await _unitOfWork.QuizRepository.SingleOrDefaultAsync(x => x.Id == request.QuizId);
 
-        var finalResponse_ = new FinalResponse(response, 0);
+        var firstQuz = await _unitOfWork.QuizRepository.SingleOrDefaultAsync(x => x.Id == new Guid("4A9358AF-F19A-4598-9B06-A6D72BFF9A50"));
+        var Firststudents = await _unitOfWork.UserCourseRepository.GetWhereIncludedAsync(
+            x => x.CourseId == new Guid("83FF3527-5F38-4414-84B1-5C4417D7020A") 
+            , x => x.User);
 
-        if (quiz is null)
-            return Result<FinalResponse>.Success(finalResponse_);
+        var scores1 = await GetStudentScores(students, quiz);
+        var scores2 = await GetStudentScores(Firststudents, firstQuz);
 
+        var combinedScores = new List<LeaderBoardResponse>();
+
+        combinedScores.AddRange(scores1);
+
+        foreach (var score2 in scores2)
+        {
+            var existingScore = combinedScores.FirstOrDefault(s =>
+                s.FirstName == score2.FirstName &&
+                s.LastName == score2.LastName);
+
+            if (existingScore != null)
+            {
+                int index = combinedScores.IndexOf(existingScore);
+
+                var updatedScore = existingScore with
+                {
+                    Score = existingScore.Score + score2.Score,
+                    TotalScore = existingScore.TotalScore + score2.TotalScore
+                };
+
+                combinedScores[index] = updatedScore;
+            }
+            else
+            {
+                combinedScores.Add(score2);
+            }
+        }
+
+        var schoolRanking = combinedScores
+            .Where(x => x.Score >= (decimal)13.5 || x.TotalScore >= (decimal)17.39)
+            .OrderByDescending(x => x.TotalScore)
+            .Select((item, index) => new SchoolRankingItemFinal(
+                index + 1,
+                $"{item.FirstName} {item.LastName}",
+                item.TotalScore.ToString("F2"),
+                item.Email))
+            .ToList();
+
+
+        using (var stream = new MemoryStream())
+        {
+            _excel.GenerateFinalists(stream, schoolRanking);
+            return Result<byte[]>.Success(stream.ToArray());
+        }
+    }
+
+
+    private async Task<List<LeaderBoardResponse>> GetStudentScores(ICollection<UserCourse> students, Quiz quiz)
+    {
+        var response = new List<LeaderBoardResponse>();
         foreach (var student in students)
         {
-            var examSessions = await _sessionRepository.FindAsync(x => x.StudentId == student.UserId.ToString() && x.QuizId == request.QuizId.ToString());
+            var examSessions = await _sessionRepository.FindAsync(x => x.StudentId == student.UserId.ToString() && x.QuizId == quiz.Id.ToString());
 
             if (!examSessions.Any())
             {
@@ -57,7 +92,7 @@ public sealed class LeaderBoardQueryHandler(
                     Score: 0,
                     Bonus: 0,
                     Duration: string.Empty,
-                    TotalScore:0,
+                    TotalScore: 0,
                     Email: student.User.Email);
 
                 response.Add(defaultResponse);
@@ -67,18 +102,16 @@ public sealed class LeaderBoardQueryHandler(
             foreach (var session in examSessions)
             {
                 var answers = await _answerRepository.FindAsync(a => a.SessionId == session.Id);
+
                 var score = CalculateScore(answers.ToList(), session.Questions, quiz.MinusScore);
                 var count = CountAnswers(answers.ToList(), session.Questions);
                 var totalCount = session.Questions.Count;
                 var percentage = totalCount > 0 ? Math.Round((decimal)count.CorrectCount / totalCount * 100, 1) : 0;
                 var finishedAt = session.FinishedAt.HasValue ? session.FinishedAt.Value : DateTimeOffset.UtcNow;
                 TimeSpan duration = finishedAt - session.StartedAt;
-                var minutes = (decimal) duration.TotalMinutes;
-
-                var totalAllowedMinutes = totalCount * (quiz.TimePerQuestion ?? 0) / 60.0m;
-
-                var timeBonus = Math.Round((decimal)(totalAllowedMinutes - minutes) / 15, 2);
-
+                var minutes = duration.TotalMinutes;
+                var givenMinutes = (answers.Select(x => x.QuestionId).Distinct().Count() * quiz.TimePerQuestion ?? 0) / 60;
+                var timeBonus = Math.Round((decimal)(givenMinutes - minutes) / 15, 2);
                 var bonus = Math.Max(0, timeBonus);
                 bonus = bonus > count.CorrectCount ? count.CorrectCount : bonus;
                 var finalScore = score + bonus;
@@ -101,32 +134,7 @@ public sealed class LeaderBoardQueryHandler(
             }
         }
 
-        var final_count = response.Count();
-
-        var skip = (request.Page - 1) * 10;
-
-        response = response
-            .OrderByDescending(x => x.TotalScore)
-            .Select((item, index) => new LeaderBoardResponse(
-                Rank: index + 1,
-                FirstName: item.FirstName,
-                LastName: item.LastName,
-                School: item.School,
-                Percentage: item.Percentage,
-                CorrectAnswers: item.CorrectAnswers,
-                TotalAnswers: item.TotalAnswers,
-                Score: item.Score, 
-                Bonus: item.Bonus,
-                TotalScore: item.TotalScore,
-                Duration: item.Duration,
-                Email: item.Email))
-            .Skip(skip)
-            .Take(10)
-            .ToList();
-
-        var finalResponse = new FinalResponse(response, final_count);
-
-        return Result<FinalResponse>.Success(finalResponse);
+        return response;
     }
 
     private decimal CalculateScore(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)
