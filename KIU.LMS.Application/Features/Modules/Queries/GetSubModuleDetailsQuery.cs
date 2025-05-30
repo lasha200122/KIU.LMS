@@ -1,24 +1,23 @@
 ﻿namespace KIU.LMS.Application.Features.Modules.Queries;
 
-public sealed record GetSubModuleDetailsQuery(Guid Id) : IRequest<Result<GetSubModuleDetailsQueryResponse>>;
+public sealed record GetModuleBankDetailsQuery(Guid Id) : IRequest<Result<GetModuleBankDetailsQueryResponse>>;
 
-public sealed record GetSubModuleDetailsQueryResponse(Guid Id, string Name, string? Problem, string? Code);
+public sealed record GetModuleBankDetailsQueryResponse(Guid Id, string Name, SubModuleType Type);
 
-public sealed class GetSubModuleDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetSubModuleDetailsQuery, Result<GetSubModuleDetailsQueryResponse>>
+public sealed class GetSubModuleDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetModuleBankDetailsQuery, Result<GetModuleBankDetailsQueryResponse>>
 {
-    public async Task<Result<GetSubModuleDetailsQueryResponse>> Handle(GetSubModuleDetailsQuery request, CancellationToken cancellationToken)
+    public async Task<Result<GetModuleBankDetailsQueryResponse>> Handle(GetModuleBankDetailsQuery request, CancellationToken cancellationToken)
     {
-        var module = await _unitOfWork.SubModuleRepository.SingleOrDefaultAsync(x => x.Id == request.Id);
+        var module = await _unitOfWork.ModuleBankRepository.SingleOrDefaultAsync(x => x.Id == request.Id);
 
         if (module is null)
-            return Result<GetSubModuleDetailsQueryResponse>.Failure("Can't find sub module");
+            return Result<GetModuleBankDetailsQueryResponse>.Failure("Can't find sub module");
 
-        var response = new GetSubModuleDetailsQueryResponse(
+        var response = new GetModuleBankDetailsQueryResponse(
             module.Id,
             module.Name,
-            module.Problem,
-            module.Code);
+            module.Type);
 
-        return Result<GetSubModuleDetailsQueryResponse>.Success(response);
+        return Result<GetModuleBankDetailsQueryResponse>.Success(response);
     }
 }

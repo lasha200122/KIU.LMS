@@ -36,4 +36,11 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
     {
         return await HandleFile(request, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "finalists.xlsx");
     }
+
+
+    [HttpGet("c2rs")]
+    public async Task<IResult> GetC2RsTemplate()
+    {
+        return await HandleFile(new C2RSTemplateQuery(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "c2rs-tempalte.xlsx");
+    }
 }

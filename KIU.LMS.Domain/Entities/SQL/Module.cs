@@ -7,7 +7,7 @@ public class Module : Aggregate
 
 
     public virtual Course Course { get; private set; } = null!;
-    public virtual List<SubModule> SubModules { get; private set; } = null!;
+    public virtual List<ModuleBank> ModuleBanks { get; private set; } = null!;
     private List<QuestionBank> _questionBanks = new();
     public IReadOnlyCollection<QuestionBank> QuestionBanks => _questionBanks;
 
@@ -28,44 +28,83 @@ public class Module : Aggregate
     }
 }
 
+public class ModuleBank : Aggregate
+{
+    public string Name { get; private set; } = null!;
+    public Guid ModuleId { get; private set; }
+    public SubModuleType Type { get; private set; }
+
+    public virtual Module Module { get; private set; } = null!;
+    public virtual List<SubModule> SubModules { get; private set; } = null!;
+
+    public ModuleBank() { }
+
+    public ModuleBank(Guid id, string name, Guid moduleId, SubModuleType subModuleType, Guid userId)
+        : base(id, DateTimeOffset.UtcNow, userId)
+    {
+        Name = name;
+        ModuleId = moduleId;
+        Type = subModuleType;
+    }
+
+    public void UModuleBank(string name, SubModuleType subModuleType, Guid userId)
+    {
+        Name = name;
+        Type = subModuleType;
+        Update(userId, DateTimeOffset.UtcNow);
+    }
+}
+
 
 public class SubModule : Aggregate 
 {
-    public Guid ModuleId { get; private set; }
-    public string Name { get; private set; } = string.Empty;
-    public string? Problem { get; private set; }
-    public string? Code { get; private set; }
-    public SubModuleType SubModuleType { get; private set; }
-    public Guid? PromptId { get; private set; }
+    public Guid ModuleBankId { get; private set; }
+    public string? TaskDescription { get; private set; } 
+    public string? CodeSolution { get; private set; } 
+    public string? CodeGenerationPrompt { get; private set; }
+    public string? CodeGraidingPrompt { get; private set; }
+    public string? Solution { get; private set; }
+    public DifficultyType? Difficulty { get; private set; } = null;
 
-    public virtual Module Module { get; private set; } = null!;
+    public virtual ModuleBank ModuleBank { get; private set; } = null!;
 
     public SubModule() {}
 
     public SubModule(
         Guid id,
-        Guid moduleId,
-        string name,
-        string? problem,
-        string? code,
-        SubModuleType subModuleType,
-        Guid? promptId,
+        Guid moduleBankId,
+        string? taskDescription,
+        string? codeSolution,
+        string? codeGenerationPrompt,
+        string? codeGraidingPrompt,
+        string? solution,
+        DifficultyType? difficulty,
         Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
-        ModuleId = moduleId;
-        Name = name;
-        Problem = problem;
-        Code = code;
-        SubModuleType = subModuleType;
-        PromptId = promptId;
+        ModuleBankId = moduleBankId;
+        TaskDescription = taskDescription;
+        CodeSolution = codeSolution;
+        CodeGenerationPrompt = codeGenerationPrompt;
+        CodeGraidingPrompt = codeGraidingPrompt;
+        Solution = solution;
+        Difficulty = difficulty;
     }
 
-    public void USub(string name, string? problem, string? code, Guid? promptId ,Guid userId) 
+    public void USub(
+        string? taskDescription,
+        string? codeSolution,
+        string? codeGenerationPrompt,
+        string? codeGraidingPrompt,
+        string? solution,
+        DifficultyType? difficulty, 
+        Guid userId) 
     {
-        Name = name;
-        Problem = problem;
-        Code = code;
-        PromptId = promptId;
+        TaskDescription = taskDescription;
+        CodeSolution = codeSolution;
+        CodeGenerationPrompt = codeGenerationPrompt;
+        CodeGraidingPrompt = codeGraidingPrompt;
+        Solution = solution;
+        Difficulty = difficulty;
 
         Update(userId, DateTimeOffset.UtcNow);
     }
@@ -80,4 +119,12 @@ public enum SubModuleType
     MCQ = 4,
     Project = 5,
     C2RS = 6,
+}
+
+public enum DifficultyType
+{
+    None = 0,
+    Easy = 1,
+    Medium = 2,
+    Hard = 3,
 }

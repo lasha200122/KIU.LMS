@@ -39,6 +39,7 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IExamResultRepository, ExamResultRepository>();
         services.AddScoped<IModuleRepository, ModuleRepository>();
         services.AddScoped<ISubModuleRepository, SubModuleRepository>();
+        services.AddScoped<IModuleBankRepository, ModuleBankRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

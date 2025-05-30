@@ -21,6 +21,7 @@ public interface IUnitOfWork
     IExamResultRepository ExamResultRepository { get; }
     IModuleRepository ModuleRepository { get; }
     ISubModuleRepository SubModuleRepository { get; }
+    IModuleBankRepository ModuleBankRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();
     Task RollbackAsync();

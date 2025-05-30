@@ -11,6 +11,8 @@ public interface IExcelProcessor
     Task<List<string>> ProcessEmailListFile(IFormFile file);
     void GenerateQuizResults(Stream stream, IEnumerable<QuizResultDto> quizResults);
     void GenerateFinalists(Stream stream, IEnumerable<SchoolRankingItemFinal> quizResults);
+    void GenerateC2RSTemplate(Stream stream);
+    Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file);
 }
 
 

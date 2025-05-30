@@ -354,4 +354,175 @@ public class ExcelProcessor : IExcelProcessor
             workbook.SaveAs(stream);
         }
     }
+
+
+    public void GenerateC2RSTemplate(Stream stream)
+    {
+        using (var workbook = new XLWorkbook())
+        {
+            var worksheet = workbook.Worksheets.Add("Tasks");
+
+            // Set headers
+            worksheet.Cell(1, 1).Value = "Task Description";
+            worksheet.Cell(1, 2).Value = "Code Solution";
+            worksheet.Cell(1, 3).Value = "Code Generation Prompt";
+            worksheet.Cell(1, 4).Value = "Code Grading Prompt";
+            worksheet.Cell(1, 5).Value = "Difficulty";
+
+            // Style the header row
+            var headerRow = worksheet.Row(1);
+            headerRow.Style.Font.Bold = true;
+            headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+            headerRow.Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            headerRow.Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+            // Set column widths for better readability
+            worksheet.Column(1).Width = 40; // Task Description
+            worksheet.Column(2).Width = 50; // Code Solution
+            worksheet.Column(3).Width = 45; // Code Generation Prompt
+            worksheet.Column(4).Width = 45; // Code Grading Prompt
+            worksheet.Column(5).Width = 15; // Difficulty
+
+            // Apply text wrapping to all columns except Difficulty
+            worksheet.Column(1).Style.Alignment.WrapText = true;
+            worksheet.Column(2).Style.Alignment.WrapText = true;
+            worksheet.Column(3).Style.Alignment.WrapText = true;
+            worksheet.Column(4).Style.Alignment.WrapText = true;
+
+            // Add sample row to demonstrate the template
+            worksheet.Cell(2, 1).Value = "Create a function called calculate_factorial_recursive that calculates the factorial of a number using recursion (5! = 5×4×3×2×1 = 120)";
+            worksheet.Cell(2, 2).Value = @"python<br>def calculate_factorial_recursive(n: int) -> int:<br>if n <= 1:<br>return 1<br>return n * calculate_factorial_recursive(n - 1)";
+            worksheet.Cell(2, 3).Value = "Write a Python function called 'calculate_factorial_recursive' that calculates factorial using recursion. Include proper base case for n <= 1 and recursive case. Use proper type annotations.";
+            worksheet.Cell(2, 4).Value = "Evaluate this calculate_factorial_recursive function: Does it correctly implement recursion with proper base case? Does it calculate factorial correctly? Are type annotations appropriate?";
+            worksheet.Cell(2, 5).Value = "Easy";
+
+            // Style the sample row
+            worksheet.Range(2, 1, 2, 5).Style.Fill.BackgroundColor = XLColor.LightBlue;
+            worksheet.Range(2, 1, 2, 5).Style.Alignment.Vertical = XLAlignmentVerticalValues.Top;
+
+            // Apply borders to the header and sample row
+            var dataRange = worksheet.Range(1, 1, 2, 5);
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+
+            // Adjust row heights
+            worksheet.Row(1).Height = 30;
+            worksheet.Row(2).Height = 100;
+
+            workbook.SaveAs(stream);
+        }
+    }
+
+    public async Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file)
+    {
+        var result = new ExcelValidationResult();
+
+        using (var stream = new MemoryStream())
+        {
+            await file.CopyToAsync(stream);
+            using (var workbook = new XLWorkbook(stream))
+            {
+                var worksheet = workbook.Worksheet(1);
+                var rows = worksheet.RowsUsed().Skip(1); // Skip header row
+
+                foreach (var row in rows)
+                {
+                    var rowNum = row.RowNumber();
+                    try
+                    {
+                        var task = new C2RSExcelDto(
+                            row.Cell(1).GetString().Trim(), // Task Description
+                            row.Cell(2).GetString().Trim(), // Code Solution
+                            row.Cell(3).GetString().Trim(), // Code Generation Prompt
+                            row.Cell(4).GetString().Trim(), // Code Grading Prompt
+                            row.Cell(5).GetString().Trim()  // Difficulty
+                        );
+
+                        // Validate Task Description
+                        if (string.IsNullOrWhiteSpace(task.TaskDescription))
+                        {
+                            result.Errors.Add(new ExcelRowError(
+                                rowNum,
+                                "TaskDescription",
+                                "დავალების აღწერა სავალდებულოა"));
+                            continue;
+                        }
+
+                        // Validate Code Solution
+                        if (string.IsNullOrWhiteSpace(task.CodeSolution))
+                        {
+                            result.Errors.Add(new ExcelRowError(
+                                rowNum,
+                                "CodeSolution",
+                                "კოდის გადაწყვეტა სავალდებულოა"));
+                            continue;
+                        }
+
+                        // Validate Code Generation Prompt
+                        if (string.IsNullOrWhiteSpace(task.CodeGenerationPrompt))
+                        {
+                            result.Errors.Add(new ExcelRowError(
+                                rowNum,
+                                "CodeGenerationPrompt",
+                                "კოდის გენერაციის პრომპტი სავალდებულოა"));
+                            continue;
+                        }
+
+                        // Validate Code Grading Prompt
+                        if (string.IsNullOrWhiteSpace(task.CodeGradingPrompt))
+                        {
+                            result.Errors.Add(new ExcelRowError(
+                                rowNum,
+                                "CodeGradingPrompt",
+                                "კოდის შეფასების პრომპტი სავალდებულოა"));
+                            continue;
+                        }
+
+                        // Validate Difficulty
+                        if (!IsValidDifficulty(task.Difficulty))
+                        {
+                            result.Errors.Add(new ExcelRowError(
+                                rowNum,
+                                "Difficulty",
+                                "სირთულე უნდა იყოს: Easy, Medium ან Hard"));
+                            continue;
+                        }
+
+                        result.ValidTasks.Add(task);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Errors.Add(new ExcelRowError(
+                            rowNum,
+                            "General",
+                            $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
+                    }
+                }
+            }
+        }
+
+        result.IsValid = !result.Errors.Any();
+        return result;
+    }
+
+
+    public static DifficultyType ParseDifficulty(string difficulty)
+    {
+        return difficulty.ToLower() switch
+        {
+            "easy" => DifficultyType.Easy,
+            "medium" => DifficultyType.Medium,
+            "hard" => DifficultyType.Hard,
+            _ => DifficultyType.None
+        };
+    }
+
+    private bool IsValidDifficulty(string difficulty)
+    {
+        if (string.IsNullOrWhiteSpace(difficulty))
+            return false;
+
+        var validDifficulties = new[] { "Easy", "Medium", "Hard" };
+        return validDifficulties.Contains(difficulty, StringComparer.OrdinalIgnoreCase);
+    }
 }

@@ -37,33 +37,76 @@ public class ModulesController(ISender sender) : ApiController(sender)
         return await Handle<GetModuleDetailsQuery, GetModuleDetailsQueryResponse>(new GetModuleDetailsQuery(id));
     }
 
-    [HttpGet("subs")]
-    public async Task<IResult> GetSubModulesQuery([FromQuery] GetSubModulesQuery request) 
+
+
+
+    [HttpGet("banks")]
+    public async Task<IResult> GetBankModulesQuery([FromQuery] GetModulesBankQuery request) 
     {
-        return await Handle<GetSubModulesQuery, PagedEntities<GetSubModulesQueryResponse>>(request);
+        return await Handle<GetModulesBankQuery, PagedEntities<GetModulesBankQueryResponse>>(request);
     }
 
-    [HttpGet("subs/{id}")]
-    public async Task<IResult> GetSubModuleDetails(Guid id) 
+    [HttpGet("banks/{id}")]
+    public async Task<IResult> GetBankModuleDetails(Guid id) 
     {
-        return await Handle<GetSubModuleDetailsQuery, GetSubModuleDetailsQueryResponse>(new GetSubModuleDetailsQuery(id));
+        return await Handle<GetModuleBankDetailsQuery, GetModuleBankDetailsQueryResponse>(new GetModuleBankDetailsQuery(id));
     }
 
-    [HttpPost("subs")]
-    public async Task<IResult> CreateSubModule([FromBody] CreateSubModuleCommand request) 
+    [HttpPost("banks")]
+    public async Task<IResult> CreateBankModule([FromBody] CreateBankModuleCommand request) 
     {
         return await Handle(request);
     }
 
-    [HttpPut("subs")]
+    [HttpPut("banks")]
+    public async Task<IResult> UpdateBankModule([FromBody] UpdateModuleBankCommand request)
+    {
+        return await Handle(request);
+    }
+
+    [HttpDelete("banks/{id}")]
+    public async Task<IResult> DeleteBankModule(Guid id) 
+    {
+        return await Handle(new DeleteModuleBankCommand(id));
+    }
+
+
+    [HttpPost("banks/{id}/submodules")]
+    public async Task<IResult> CreateSubModule(Guid id, [FromBody] CreateSubModuleCommand request)
+    {
+        request = request with { ModuleBankId = id };
+        return await Handle(request);
+    }
+
+    [HttpPut("banks/submodules")]
     public async Task<IResult> UpdateSubModule([FromBody] UpdateSubModuleCommand request)
     {
         return await Handle(request);
     }
 
-    [HttpDelete("subs/{id}")]
-    public async Task<IResult> DeleteSubModule(Guid id) 
+    [HttpDelete("banks/submodules/{id}")]
+    public async Task<IResult> DeleteSubModule(Guid id)
     {
         return await Handle(new DeleteSubModuleCommand(id));
+    }
+
+    [HttpGet("banks/{id}/submodules")]
+    public async Task<IResult> GetSubModules(Guid id, [FromQuery] GetSubModulesQuery request)
+    {
+        request = request with { ModuleBankId = id };
+        return await Handle<GetSubModulesQuery, PagedEntities<GetSubModulesQueryResponse>>(request);
+    }
+
+    [HttpGet("banks/submodules/{id}")]
+    public async Task<IResult> GetSubModuleDetails(Guid id)
+    {
+        return await Handle<GetSubModuleByIdQuery, SubModuleDto>(new GetSubModuleByIdQuery(id));
+    }
+
+    [HttpGet("modules/{id}/submodules/list")]
+    public async Task<IResult> GetSubModuleList(Guid id, [FromQuery] GetSubModulesByModuleQuery request)
+    {
+        request = request with { ModuleId = id };
+        return await Handle<GetSubModulesByModuleQuery, List<SubModuleListDto>>(request);
     }
 }

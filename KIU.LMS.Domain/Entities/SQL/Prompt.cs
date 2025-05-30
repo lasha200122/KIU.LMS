@@ -6,6 +6,8 @@ public class Prompt : Aggregate
     public string Value { get; set; } = string.Empty;
 
     public virtual List<Assignment> Assignments { get; set; } = null!;
+
+
     public Prompt() { }
 
     public Prompt(

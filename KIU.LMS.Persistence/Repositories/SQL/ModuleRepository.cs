@@ -8,3 +8,7 @@ public class ModuleRepository(LmsDbContext db) : BaseRepository<Domain.Entities.
 public class SubModuleRepository(LmsDbContext db) : BaseRepository<SubModule>(db), ISubModuleRepository
 {
 }
+
+public class ModuleBankRepository(LmsDbContext db) : BaseRepository<ModuleBank>(db), IModuleBankRepository
+{
+}
