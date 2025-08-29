@@ -80,6 +80,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IGradingService, GradingService>();
         services.AddScoped<IExamService, ExamService>();
         services.AddScoped<IClaudeService, ClaudeService>();
+        services.AddScoped<IFileService, FileService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

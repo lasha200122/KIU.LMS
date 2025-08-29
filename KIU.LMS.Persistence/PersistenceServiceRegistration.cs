@@ -40,6 +40,7 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IModuleRepository, ModuleRepository>();
         services.AddScoped<ISubModuleRepository, SubModuleRepository>();
         services.AddScoped<IModuleBankRepository, ModuleBankRepository>();
+        services.AddScoped<IFileRepository, FileRepository>();
 
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 

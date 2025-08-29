@@ -15,6 +15,7 @@
 	
   <ItemGroup>
     <ProjectReference Include="..\KIU.LMS.Application\KIU.LMS.Application.csproj" />
+    <ProjectReference Include="..\KIU.LMS.Persistence\KIU.LMS.Persistence.csproj" />
   </ItemGroup>
 
 </Project>

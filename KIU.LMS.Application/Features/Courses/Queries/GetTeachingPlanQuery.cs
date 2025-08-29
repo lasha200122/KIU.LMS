@@ -11,7 +11,8 @@ public sealed record GetTeachingPlanQueryResponse(
     IEnumerable<AssignmentItem> Homeworks,
     IEnumerable<AssignmentItem> MCQs,
     IEnumerable<AssignmentItem> IPEQs,
-    IEnumerable<AssignmentItem> Projects);
+    IEnumerable<AssignmentItem> Projects,
+    IEnumerable<Guid> Files);
 
 public sealed record AssignmentItem(Guid Id, string Number, string Deadline, bool IsTraining, string RedirectUrl);
 
@@ -20,6 +21,12 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
 {
     public async Task<Result<IEnumerable<GetTeachingPlanQueryResponse>>> Handle(GetTeachingPlanQuery request, CancellationToken cancellationToken)
     {
+        var fileIds = await _unitOfWork.CourseMaterialRepository.GetMappedAsync(
+            x => x.CourseId == request.CourseId,
+            x => x.Id,
+            cancellationToken
+        );
+
         var result = await _unitOfWork.TopicRepository.GetSortedMappedAsync(
             x => x.CourseId == request.CourseId,
             x => new GetTeachingPlanQueryResponse(
@@ -27,18 +34,19 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
                 x.Name,
                 x.StartDateTime.Value.ToLocalTime().ToString("dd/MM/yyyy")?? string.Empty,
                 $"{x.StartDateTime.Value.ToLocalTime().ToString("HH:mm")?? string.Empty} - {x.EndDateTime.Value.ToLocalTime().ToString("HH:mm")??string.Empty}",
-                x.Assignments.Where(a => a.Type == AssignmentType.Homework && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
+                x.Assignments.Where(a => a.Type == AssignmentType.Homework && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
-                x.Quizzes.Where(a => a.Type == QuizType.MCQ && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
+                x.Quizzes.Where(a => a.Type == QuizType.MCQ && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.IsTraining, y.Id))),
-                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
+                x.Assignments.Where(a => a.Type == AssignmentType.IPEQ && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
-                x.Assignments.Where(a => a.Type == AssignmentType.Project && a.StartDateTime.HasValue && a.StartDateTime <= DateTimeOffset.UtcNow && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
+                x.Assignments.Where(a => a.Type == AssignmentType.Project && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
-                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id)))
+                    .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
+                fileIds
             ),
             x => x.StartDateTime,
             false,
