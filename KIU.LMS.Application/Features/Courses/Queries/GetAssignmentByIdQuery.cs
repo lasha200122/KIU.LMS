@@ -19,7 +19,10 @@ public sealed record GetAssignmentByIdQueryResponse(
     string Submeted,
     bool FullScreen,
     int? RuntimeAttempt,
-    SolutionType SolutionType);
+    SolutionType SolutionType,
+    string? PromptText,
+    string? CodeSolution,
+    Guid StudentId);
 
 
 public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetAssignmentByIdQuery, Result<GetAssignmentByIdQueryResponse>>
@@ -53,7 +56,10 @@ public class GetAssignmentByIdQueryHandler(IUnitOfWork _unitOfWork, ICurrentUser
             studentSolution == null ? string.Empty :studentSolution.CreateDate.ToLocalTime().ToString("MMM dd, HH:mm"),
             assignment.FullScreen,
             assignment.RuntimeAttempt,
-            assignment.SolutionType);
+            assignment.SolutionType,
+            assignment.PromptText,
+            assignment.CodeSolution,
+            studentSolution?.UserId?? Guid.Empty);
 
         return Result<GetAssignmentByIdQueryResponse>.Success(result);
     }

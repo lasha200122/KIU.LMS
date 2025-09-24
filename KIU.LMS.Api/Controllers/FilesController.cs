@@ -38,9 +38,16 @@ public class FileController : ControllerBase
     }
 
     [HttpGet("list/{objectId}/{objectType}")]
-    public async Task<ActionResult<List<FileRecord>>> GetFiles(string objectId, string objectType)
+    public async Task<IActionResult> GetFiles(string objectId, string objectType)
     {
         var files = await _fileService.GetFilesByObjectAsync(objectId, objectType);
+        return Ok(files);
+    }
+
+    [HttpGet("all")]
+    public async Task<ActionResult<List<FileRecord>>> GetAllFiles()
+    {
+        var files = await _fileService.GetAllFiles();
         return Ok(files);
     }
 

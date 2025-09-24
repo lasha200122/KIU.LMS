@@ -1,4 +1,6 @@
-﻿using Anthropic.SDK;
+﻿using System.Net.Http;
+using Anthropic.SDK;
+using KIU.LMS.Domain.Common.Settings;
 using Microsoft.Extensions.Options;
 
 namespace KIU.LMS.Infrastructure;

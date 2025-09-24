@@ -7,4 +7,7 @@ public interface IFileService
     Task<FileRecord> GetFileByIdAsync(Guid fileId);
     Task<bool> DeleteFileAsync(Guid fileId);
     Task<(byte[] fileData, string fileName, string contentType)> DownloadFileAsync(Guid fileId);
+    Task<List<FileRecordDTO>> GetAllFiles();
 }
+
+public sealed record FileRecordDTO(Guid Id, string ObjectId, string FileName);

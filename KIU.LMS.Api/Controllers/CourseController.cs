@@ -171,6 +171,12 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle<GetCourseAssignmentsQuery, IEnumerable<GetCourseAssignmentsQueryResponse>>(request);
     }
 
+    [HttpPost("assignment/solution/grade")]
+    public async Task<IResult> GradeAssignmentSolution([FromBody] GradeAssignmentSolutionCommand request)
+    {
+        return await Handle(request);
+    }
+
     [HttpPost("assignment")]
     public async Task<IResult> AddAssignment([FromBody] AddAssignmentCommand request) 
     {
@@ -210,7 +216,7 @@ public class CourseController(ISender sender) : ApiController(sender)
     [HttpPost("assignment/submit")]
     public async Task<IResult> SubmitAssignment([FromBody] SubmitAssignmentCommand request) 
     {
-        return await Handle(request);
+        return await Handle<SubmitAssignmentCommand, Guid>(request);
     }
 
     [HttpPost("assignment/ipeq/execute")]

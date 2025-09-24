@@ -8,7 +8,7 @@ public sealed record GetTeachingPlanQueryResponse(
     string Topic,
     string Date,
     string Time,
-    IEnumerable<AssignmentItem> Homeworks,
+    IEnumerable<AssignmentItem> C2RS,
     IEnumerable<AssignmentItem> MCQs,
     IEnumerable<AssignmentItem> IPEQs,
     IEnumerable<AssignmentItem> Projects,
@@ -34,7 +34,7 @@ public class GetTeachingPlanQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
                 x.Name,
                 x.StartDateTime.Value.ToLocalTime().ToString("dd/MM/yyyy")?? string.Empty,
                 $"{x.StartDateTime.Value.ToLocalTime().ToString("HH:mm")?? string.Empty} - {x.EndDateTime.Value.ToLocalTime().ToString("HH:mm")??string.Empty}",
-                x.Assignments.Where(a => a.Type == AssignmentType.Homework && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
+                x.Assignments.Where(a => a.Type == AssignmentType.C2RS && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))
                     .OrderBy(a => a.Order)
                     .Select(y => new AssignmentItem(y.Id, y.Order.ToString(), GetDateTime(y.EndDateTime), y.IsTraining, RedirectUrl(y.Type, y.IsTraining, y.Id))),
                 x.Quizzes.Where(a => a.Type == QuizType.MCQ && (!request.IsTraining.HasValue || request.IsTraining.Value == a.IsTraining))

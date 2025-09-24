@@ -20,7 +20,9 @@ public sealed record GetAssignmentDetailsQueryResponse(
     Guid? PromptId,
     bool FullScreen,
     int? RuntimeAttempt,
-    bool IsTraining);
+    bool IsTraining,
+    string? PromptText,
+    string? CodeSolution);
 
 public class GetAssignmentDetailsQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetAssignmentDetailsQuery, Result<GetAssignmentDetailsQueryResponse>>
 {
@@ -49,7 +51,9 @@ public class GetAssignmentDetailsQueryHandler(IUnitOfWork _unitOfWork) : IReques
             course.PromptId,
             course.FullScreen,
             course.RuntimeAttempt,
-            course.IsTraining);
+            course.IsTraining,
+            course.PromptText,
+            course.CodeSolution);
 
         return Result<GetAssignmentDetailsQueryResponse>.Success(response);
     }

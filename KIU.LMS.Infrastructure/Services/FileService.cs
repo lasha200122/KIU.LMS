@@ -11,7 +11,7 @@ public class FileService : IFileService
     public FileService(LmsDbContext context)
     {
         _context = context;
-        _uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        _uploadPath = "C:\\inetpub\\files";
 
         // Ensure upload directory exists
         if (!Directory.Exists(_uploadPath))
@@ -32,11 +32,13 @@ public class FileService : IFileService
             Directory.CreateDirectory(objectDirectory);
         }
 
+        var id = Guid.NewGuid();
+
         // Generate unique filename to avoid conflicts
         var fileName = file.FileName;
         var fileExtension = Path.GetExtension(fileName);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-        var uniqueFileName = $"{fileNameWithoutExtension}_{Guid.NewGuid()}{fileExtension}";
+        var uniqueFileName = $"{fileNameWithoutExtension}_{id}{fileExtension}";
 
         var filePath = Path.Combine(objectDirectory, uniqueFileName);
 
@@ -47,16 +49,15 @@ public class FileService : IFileService
         }
 
         // Save file record to database
-        var fileRecord = new FileRecord
-        {
-            ObjectId = objectId,
-            ObjectType = objectType,
-            FileName = fileName,
-            FilePath = filePath,
-            ContentType = file.ContentType,
-            FileSize = file.Length,
-            UploadDate = DateTime.UtcNow
-        };
+        var fileRecord = new FileRecord(
+            id,
+            objectId,
+            objectType,
+            fileName,
+            filePath,
+            file.ContentType,
+            file.Length,
+            DateTime.UtcNow);
 
         _context.FileRecords.Add(fileRecord);
         await _context.SaveChangesAsync();
@@ -69,6 +70,13 @@ public class FileService : IFileService
         return await _context.FileRecords
             .Where(f => f.ObjectId == objectId && f.ObjectType == objectType)
             .OrderByDescending(f => f.UploadDate)
+            .ToListAsync();
+    }
+
+    public async Task<List<FileRecordDTO>> GetAllFiles()
+    {
+        return await _context.FileRecords
+            .Select(x => new FileRecordDTO(x.Id, x.ObjectId, x.FileName))
             .ToListAsync();
     }
 
@@ -106,3 +114,4 @@ public class FileService : IFileService
         return (fileData, fileRecord.FileName, fileRecord.ContentType);
     }
 }
+

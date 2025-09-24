@@ -17,7 +17,9 @@ public sealed record UpdateAssignmentCommand(
     bool FullScreen,
     int? RuntimeAttempt,
     bool IsTraining,
-    Guid? PromptId) : IRequest<Result>;
+    Guid? PromptId,
+    string? PromptText,
+    string? CodeSolution) : IRequest<Result>;
 
 
 public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignmentCommand>
@@ -69,6 +71,8 @@ public class UpdateAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.FullScreen,
             request.RuntimeAttempt,
             request.IsTraining,
+            request.PromptText,
+            request.CodeSolution,
             _current.UserId);
 
         _unitOfWork.AssignmentRepository.Update(assignment);

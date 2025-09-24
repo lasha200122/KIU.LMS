@@ -1,24 +1,35 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace KIU.LMS.Domain.Entities.SQL;
 
-namespace KIU.LMS.Domain.Entities.SQL;
-
-public class FileRecord
+public class FileRecord : Aggregate
 {
-    public Guid Id { get; set; }
+    public FileRecord(
+        Guid id,
+        string objectId,
+        string objectType,
+        string fileName,
+        string? filePath,
+        string? contentType,
+        long fileSize,
+        DateTime uploadDate) : base(id, DateTimeOffset.UtcNow, id) 
+    {
+        ObjectId = objectId;
+        ObjectType = objectType;
+        FileName = fileName;
+        FilePath = filePath;
+        ContentType = contentType;
+        FileSize = fileSize;
+        UploadDate = uploadDate;
+    }
 
-    [Required]
-    public string ObjectId { get; set; }
+    public string ObjectId { get; set; } = string.Empty;
 
-    [Required]
-    public string ObjectType { get; set; }
+    public string ObjectType { get; set; } = string.Empty;
 
-    [Required]
-    public string FileName { get; set; }
+    public string FileName { get; set; } = string.Empty;
 
-    [Required]
-    public string FilePath { get; set; }
+    public string? FilePath { get; set; }
 
-    public string ContentType { get; set; }
+    public string? ContentType { get; set; }
 
     public long FileSize { get; set; }
 

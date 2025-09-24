@@ -20,6 +20,8 @@ public class Assignment : Aggregate
     public bool FullScreen { get; private set; }
     public int? RuntimeAttempt { get; private set; }
     public bool IsTraining { get; private set; }
+    public string? PromptText { get; private set; }
+    public string? CodeSolution { get; private set; }
 
 
     public virtual Course Course { get; private set; } = null!;
@@ -49,6 +51,8 @@ public class Assignment : Aggregate
         bool fullScreen,
         int? runtimeAttempt,
         bool isTraining,
+        string? promptText,
+        string? codeSolution,
         Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
     {
         CourseId = courseId;
@@ -69,7 +73,10 @@ public class Assignment : Aggregate
         FullScreen = fullScreen;
         IsTraining = isTraining;
         RuntimeAttempt = runtimeAttempt;
+        PromptText = promptText;
+        CodeSolution = codeSolution;
     }
+
 
     public void Update(
         Guid topicId,
@@ -89,6 +96,8 @@ public class Assignment : Aggregate
         bool fullScreen,
         int? runtimeAttempt,
         bool isTraining,
+        string? promptText,
+        string? codeSolution,
         Guid updateUserId) 
     {
         TopicId = topicId;
@@ -108,6 +117,8 @@ public class Assignment : Aggregate
         FullScreen = fullScreen;
         RuntimeAttempt = runtimeAttempt;
         IsTraining = isTraining;
+        PromptText = promptText;
+        CodeSolution = codeSolution;
 
         Update(updateUserId, DateTimeOffset.UtcNow);
     }
