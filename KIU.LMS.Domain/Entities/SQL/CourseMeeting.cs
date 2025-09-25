@@ -19,7 +19,7 @@ public class CourseMeeting : Aggregate
         string? url,
         DateTimeOffset startTime,
         DateTimeOffset endTime,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         CourseId = courseId;
         Name = name;

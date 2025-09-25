@@ -15,7 +15,7 @@ public class Topic : Aggregate
 
     public Topic() {}
 
-    public Topic(Guid id, Guid courseId, string name, DateTimeOffset? startDateTime, DateTimeOffset? endDateTime, Guid userId) : base(id, DateTimeOffset.Now, userId)
+    public Topic(Guid id, Guid courseId, string name, DateTimeOffset? startDateTime, DateTimeOffset? endDateTime, Guid userId) : base(id, DateTimeOffset.UtcNow, userId)
     {
         CourseId = courseId;
         Name = name;

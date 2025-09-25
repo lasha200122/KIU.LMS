@@ -62,6 +62,8 @@ public sealed class RegisterUserByQRCommandHandler(
                 DateTimeOffset.UtcNow.AddYears(1),
                 userExist.Id);
 
+            await _unitOfWork.UserCourseRepository.AddAsync(add);
+
             await _unitOfWork.SaveChangesAsync();
 
             return Result.Success();

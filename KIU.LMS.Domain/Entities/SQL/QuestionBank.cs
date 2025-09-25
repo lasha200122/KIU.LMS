@@ -16,7 +16,7 @@ public class QuestionBank : Aggregate
         Guid id,
         string name,
         Guid moduleId,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         Name = name;
         ModuleId = moduleId;

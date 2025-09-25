@@ -19,7 +19,7 @@ public class EmailQueue : Aggregate
         Guid templateId,
         string toEmail,
         string variables,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         TemplateId = templateId;
         ToEmail = toEmail;
@@ -35,7 +35,7 @@ public class EmailQueue : Aggregate
         FailureReason = failureReason;
         if (status == EmailStatus.Sent)
         {
-            SentAt = DateTimeOffset.Now;
+            SentAt = DateTimeOffset.UtcNow;
         }
     }
 

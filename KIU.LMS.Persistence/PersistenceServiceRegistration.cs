@@ -1,4 +1,6 @@
-﻿using StackExchange.Redis;
+﻿using KIU.LMS.Persistence.Database.Services;
+using Microsoft.AspNetCore.Builder;
+using StackExchange.Redis;
 
 namespace KIU.LMS.Persistence;
 
@@ -16,9 +18,13 @@ public static class PersistenceServiceRegistration
         services.AddSingleton<IConnectionMultiplexer>(sp => ConnectionMultiplexer.Connect(redisOptions.ConnectionString));
         services.AddScoped(typeof(IRedisRepository<>), typeof(RedisRepository<>));
 
-
         services.AddDbContext<LmsDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+        services.AddDbContext<LmsMssqlDbContext>(options =>
+            options.UseSqlServer(configuration.GetConnectionString("MssqlConnection")));
+
+        services.AddScoped<DataMigrationService>();
 
         services.AddScoped<ICourseRepository, CourseRepository>();
         services.AddScoped<ICourseMaterialRepository, CourseMaterialRepository>();
@@ -47,5 +53,56 @@ public static class PersistenceServiceRegistration
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
         return services;
+    }
+
+    public static async Task<IApplicationBuilder> ApplyMigrationsAsync(this IApplicationBuilder app, Serilog.ILogger logger)
+    {
+        using (var scope = app.ApplicationServices.CreateScope())
+        {
+            try
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<LmsDbContext>();
+
+                // Check if there are any pending migrations
+                var pendingMigrations = await dbContext.Database.GetPendingMigrationsAsync();
+
+                if (pendingMigrations.Any())
+                {
+                    logger.Information("Found {Count} pending migration(s). Applying...", pendingMigrations.Count());
+
+                    foreach (var migration in pendingMigrations)
+                    {
+                        logger.Information("Pending migration: {MigrationName}", migration);
+                    }
+
+                    // Apply pending migrations
+                    await dbContext.Database.MigrateAsync();
+
+                    logger.Information("All pending migrations applied successfully");
+                }
+                else
+                {
+                    logger.Information("Database is up to date. No pending migrations");
+                }
+
+                // Verify connection
+                var canConnect = await dbContext.Database.CanConnectAsync();
+                if (canConnect)
+                {
+                    logger.Information("Database connection verified successfully");
+                }
+                else
+                {
+                    logger.Error("Unable to connect to the database");
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "An error occurred while applying migrations");
+                throw; // Re-throw to stop application startup if migrations fail
+            }
+        }
+
+        return app;
     }
 }

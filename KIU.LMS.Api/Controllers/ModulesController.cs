@@ -109,4 +109,10 @@ public class ModulesController(ISender sender) : ApiController(sender)
         request = request with { ModuleId = id };
         return await Handle<GetSubModulesByModuleQuery, List<SubModuleListDto>>(request);
     }
+
+    [HttpPost("modules/import/submodules")]
+    public async Task<IResult> ImportSubModules([FromForm] IFormFile file, [FromQuery] Guid moduleId)
+    {
+        return await Handle(new ImportC2RSCommand(file, moduleId));
+    }
 }

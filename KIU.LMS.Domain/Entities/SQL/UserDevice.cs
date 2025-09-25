@@ -13,7 +13,7 @@ public class UserDevice : Aggregate
         Guid id,
         Guid userId,
         string deviceIdentifier,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         UserId = userId;
         DeviceIdentifier = deviceIdentifier;

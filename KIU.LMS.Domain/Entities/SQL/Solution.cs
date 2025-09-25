@@ -22,7 +22,7 @@ public class Solution : Aggregate
         string grade,
         string feedBack,
         GradingStatus gradingStatus,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         AssignmentId = assignmentId;
         UserId = userId;

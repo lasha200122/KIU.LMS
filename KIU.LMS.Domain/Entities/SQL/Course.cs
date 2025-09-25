@@ -28,7 +28,7 @@ public class Course : Aggregate
     public Course(
         Guid id,
         string name,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         Name = name;
         Validate(this);

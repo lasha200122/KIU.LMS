@@ -53,7 +53,7 @@ public class Assignment : Aggregate
         bool isTraining,
         string? promptText,
         string? codeSolution,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         CourseId = courseId;
         TopicId = topicId;

@@ -23,7 +23,7 @@ public class CourseMaterial : Aggregate
         string name,
         string url,
         int order,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         CourseId = courseId;
         CourseMaterialParentId = parentId;

@@ -18,7 +18,7 @@ public class EmailTemplate : Aggregate
         string body,
         string variables,
         string subject,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         Type = type;
         Body = body;

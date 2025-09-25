@@ -34,7 +34,7 @@ public class User : Aggregate
         string passwordHash,
         string passwordSalt,
         string? institution,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         FirstName = firstName;
         LastName = lastName;

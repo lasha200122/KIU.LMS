@@ -87,6 +87,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 var app = builder.Build();
 {
+    await app.ApplyMigrationsAsync(Log.Logger);
+
+
     app.UseExceptionHandler();
 
     app.UseSwagger();

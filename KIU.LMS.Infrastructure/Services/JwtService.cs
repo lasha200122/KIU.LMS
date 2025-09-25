@@ -37,7 +37,7 @@ public class JwtService(JwtSettings _settings) : IJwtService
         using var rng = RandomNumberGenerator.Create();
         rng.GetBytes(randomNumber);
 
-        RefreshToken result = new(Convert.ToBase64String(randomNumber), DateTimeOffset.Now.AddDays(refreshTokenValidityInDays));
+        RefreshToken result = new(Convert.ToBase64String(randomNumber), DateTimeOffset.UtcNow.AddDays(refreshTokenValidityInDays));
 
         return result;
     }

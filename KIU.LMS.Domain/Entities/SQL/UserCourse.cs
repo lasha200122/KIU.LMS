@@ -16,7 +16,7 @@ public class UserCourse : Aggregate
         Guid userId,
         Guid courseId,
         DateTimeOffset canAccessTill,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         UserId = userId;
         CourseId = courseId;

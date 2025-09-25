@@ -19,7 +19,7 @@ public class LoginAttempt : Aggregate
         string userAgent,
         string status,
         string deviceIdentifier,
-        Guid createUserId) : base(id, DateTimeOffset.Now, createUserId)
+        Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         UserId = userId;
         IpAddress = ipAddress;
