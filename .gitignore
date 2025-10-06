@@ -121,6 +121,9 @@ ipch/
 # Visual Studio Trace Files
 *.e2e
 
+# RIDER
+.idea
+
 # TFS 2012 Local Workspace
 $tf/
 
