@@ -4,15 +4,14 @@ namespace KIU.LMS.Application.Features.Analytics.Queries;
 
 using Microsoft.Extensions.Logging;
 
-
 public sealed record StudentAnalyticsQuery(Guid StudentId) : IRequest<Result<StudentAnalyticsDto>>;
 
 public sealed class StudentAnalyticsQueryHandler(
-        IUnitOfWork _unitOfWork,
-        IMongoRepository<ExamSession> _examSessionRepository,
-        IMongoRepository<StudentAnswer> _studentAnswerRepository,
-        IMongoRepository<Question> _questionRepository,
-        ILogger<StudentAnalyticsQueryHandler> _logger) : IRequestHandler<StudentAnalyticsQuery, Result<StudentAnalyticsDto>>
+    IUnitOfWork _unitOfWork,
+    IMongoRepository<ExamSession> _examSessionRepository,
+    IMongoRepository<StudentAnswer> _studentAnswerRepository,
+    IMongoRepository<Question> _questionRepository,
+    ILogger<StudentAnalyticsQueryHandler> _logger) : IRequestHandler<StudentAnalyticsQuery, Result<StudentAnalyticsDto>>
 {
     public async Task<Result<StudentAnalyticsDto>> Handle(StudentAnalyticsQuery request, CancellationToken cancellationToken)
     {
@@ -226,8 +225,10 @@ public sealed class StudentAnalyticsQueryHandler(
 
     private async Task<StudentProfileDto> BuildStudentProfile(User user)
     {
-        var devices = await _unitOfWork.UserDeviceRepository.GetByUserIdAsync(user.Id) ?? Enumerable.Empty<UserDevice>();
-        var loginAttempts = await _unitOfWork.LoginAttemptRepository.GetByUserIdAsync(user.Id) ?? Enumerable.Empty<LoginAttempt>();
+        var devices = await _unitOfWork.UserDeviceRepository.GetByUserIdAsync(user.Id) ??
+                      Enumerable.Empty<UserDevice>();
+        var loginAttempts = await _unitOfWork.LoginAttemptRepository.GetByUserIdAsync(user.Id) ??
+                            Enumerable.Empty<LoginAttempt>();
 
         return new StudentProfileDto
         {
@@ -249,7 +250,8 @@ public sealed class StudentAnalyticsQueryHandler(
 
     private async Task<CourseAnalyticsDto> BuildCourseAnalytics(Guid userId)
     {
-        var userCourses = await _unitOfWork.UserCourseRepository.GetByUserIdWithDetailsAsync(userId) ?? Enumerable.Empty<UserCourse>();
+        var userCourses = await _unitOfWork.UserCourseRepository.GetByUserIdWithDetailsAsync(userId) ??
+                          Enumerable.Empty<UserCourse>();
         var courseDetails = new List<CourseDetailDto>();
 
         foreach (var userCourse in userCourses)
@@ -259,12 +261,18 @@ public sealed class StudentAnalyticsQueryHandler(
                 var course = await _unitOfWork.CourseRepository.GetByIdWithDetailsAsync(userCourse.CourseId);
                 if (course == null) continue;
 
-                var assignments = await _unitOfWork.AssignmentRepository.GetByCourseIdAsync(course.Id) ?? Enumerable.Empty<Assignment>();
-                var solutions = await _unitOfWork.SolutionRepository.GetByUserAndCourseAsync(userId, course.Id) ?? Enumerable.Empty<Solution>();
-                var quizzes = await _unitOfWork.QuizRepository.GetByCourseIdAsync(course.Id) ?? Enumerable.Empty<Quiz>();
-                var examResults = await _unitOfWork.ExamResultRepository.GetByUserAndCourseAsync(userId, course.Id) ?? Enumerable.Empty<ExamResult>();
-                var topics = await _unitOfWork.TopicRepository.GetByCourseIdAsync(course.Id) ?? Enumerable.Empty<Topic>();
-                var modules = await _unitOfWork.ModuleRepository.GetByCourseIdAsync(course.Id); //?? Enumerable.Empty<Module>();
+                var assignments = await _unitOfWork.AssignmentRepository.GetByCourseIdAsync(course.Id) ??
+                                  Enumerable.Empty<Assignment>();
+                var solutions = await _unitOfWork.SolutionRepository.GetByUserAndCourseAsync(userId, course.Id) ??
+                                Enumerable.Empty<Solution>();
+                var quizzes = await _unitOfWork.QuizRepository.GetByCourseIdAsync(course.Id) ??
+                              Enumerable.Empty<Quiz>();
+                var examResults = await _unitOfWork.ExamResultRepository.GetByUserAndCourseAsync(userId, course.Id) ??
+                                  Enumerable.Empty<ExamResult>();
+                var topics = await _unitOfWork.TopicRepository.GetByCourseIdAsync(course.Id) ??
+                             Enumerable.Empty<Topic>();
+                var modules =
+                    await _unitOfWork.ModuleRepository.GetByCourseIdAsync(course.Id); //?? Enumerable.Empty<Module>();
 
                 var assignmentsList = assignments.ToList();
                 var solutionsList = solutions.ToList();
@@ -302,7 +310,8 @@ public sealed class StudentAnalyticsQueryHandler(
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing course {CourseId} for user {UserId}", userCourse.CourseId, userId);
+                _logger.LogError(ex, "Error processing course {CourseId} for user {UserId}", userCourse.CourseId,
+                    userId);
             }
         }
 
@@ -320,7 +329,8 @@ public sealed class StudentAnalyticsQueryHandler(
 
     private async Task<AssignmentAnalyticsDto> BuildAssignmentAnalytics(Guid userId)
     {
-        var allSolutions = await _unitOfWork.SolutionRepository.GetByUserIdWithDetailsAsync(userId) ?? Enumerable.Empty<Solution>();
+        var allSolutions = await _unitOfWork.SolutionRepository.GetByUserIdWithDetailsAsync(userId) ??
+                           Enumerable.Empty<Solution>();
         var solutionsList = allSolutions.ToList();
 
         var submissionsByType = new Dictionary<string, int>();
@@ -408,11 +418,13 @@ public sealed class StudentAnalyticsQueryHandler(
 
     private async Task<ExamAnalyticsDto> BuildExamAnalytics(Guid userId)
     {
-        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ?? Enumerable.Empty<ExamResult>();
+        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ??
+                          Enumerable.Empty<ExamResult>();
         var examResultsList = examResults.ToList();
 
         var userIdStr = userId.ToString();
-        var examSessions = await _examSessionRepository.FindAsync(es => es.StudentId == userIdStr) ?? Enumerable.Empty<ExamSession>();
+        var examSessions = await _examSessionRepository.FindAsync(es => es.StudentId == userIdStr) ??
+                           Enumerable.Empty<ExamSession>();
         var examSessionsList = examSessions.ToList();
 
         var examResultDetails = new List<ExamResultDetailDto>();
@@ -450,7 +462,8 @@ public sealed class StudentAnalyticsQueryHandler(
         {
             try
             {
-                var studentAnswers = await _studentAnswerRepository.FindAsync(sa => sa.SessionId == session.Id) ?? Enumerable.Empty<StudentAnswer>();
+                var studentAnswers = await _studentAnswerRepository.FindAsync(sa => sa.SessionId == session.Id) ??
+                                     Enumerable.Empty<StudentAnswer>();
                 var questionAttempts = new List<QuestionAttemptDto>();
 
                 foreach (var answer in studentAnswers)
@@ -523,7 +536,8 @@ public sealed class StudentAnalyticsQueryHandler(
     private async Task<PerformanceMetricsDto> BuildPerformanceMetrics(Guid userId)
     {
         var solutions = await _unitOfWork.SolutionRepository.GetByUserIdAsync(userId) ?? Enumerable.Empty<Solution>();
-        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ?? Enumerable.Empty<ExamResult>();
+        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ??
+                          Enumerable.Empty<ExamResult>();
 
         var solutionsList = solutions.ToList();
         var examResultsList = examResults.ToList();
@@ -555,7 +569,8 @@ public sealed class StudentAnalyticsQueryHandler(
         try
         {
             // Add assignment submissions
-            var solutions = await _unitOfWork.SolutionRepository.GetByUserIdWithDetailsAsync(userId) ?? Enumerable.Empty<Solution>();
+            var solutions = await _unitOfWork.SolutionRepository.GetByUserIdWithDetailsAsync(userId) ??
+                            Enumerable.Empty<Solution>();
             foreach (var solution in solutions.Take(20))
             {
                 try
@@ -577,7 +592,8 @@ public sealed class StudentAnalyticsQueryHandler(
             }
 
             // Add exam completions
-            var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ?? Enumerable.Empty<ExamResult>();
+            var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ??
+                              Enumerable.Empty<ExamResult>();
             foreach (var exam in examResults.Take(20))
             {
                 try
@@ -599,7 +615,8 @@ public sealed class StudentAnalyticsQueryHandler(
             }
 
             // Add course enrollments
-            var userCourses = await _unitOfWork.UserCourseRepository.GetByUserIdAsync(userId) ?? Enumerable.Empty<UserCourse>();
+            var userCourses = await _unitOfWork.UserCourseRepository.GetByUserIdAsync(userId) ??
+                              Enumerable.Empty<UserCourse>();
             foreach (var enrollment in userCourses)
             {
                 try
@@ -700,6 +717,7 @@ public sealed class StudentAnalyticsQueryHandler(
         {
             return (int)(answer.AnsweredAt - question.StartedAt.Value).TotalSeconds;
         }
+
         return null;
     }
 
@@ -733,9 +751,9 @@ public sealed class StudentAnalyticsQueryHandler(
                     AccuracyRate = Math.Round((decimal)g.Count(a => a.IsCorrect) / g.Count() * 100, 2),
                     AverageTime = TimeSpan.FromSeconds(
                         g.Where(a => a.TimeSpentSeconds.HasValue)
-                         .Select(a => a.TimeSpentSeconds.Value)
-                         .DefaultIfEmpty(0)
-                         .Average())
+                            .Select(a => a.TimeSpentSeconds.Value)
+                            .DefaultIfEmpty(0)
+                            .Average())
                 });
 
         var avgTimeSeconds = attempts
@@ -760,7 +778,7 @@ public sealed class StudentAnalyticsQueryHandler(
         // This would analyze performance across topics
         // Implementation depends on your specific business logic
         return (new List<string> { "Programming Basics", "Data Structures" },
-                new List<string> { "Advanced Algorithms" });
+            new List<string> { "Advanced Algorithms" });
     }
 
     private decimal CalculateOverallGPA(IEnumerable<Solution> solutions, IEnumerable<ExamResult> examResults)
@@ -829,7 +847,8 @@ public sealed class StudentAnalyticsQueryHandler(
         var solutions = await _unitOfWork.SolutionRepository.GetByUserIdAsync(userId) ?? Enumerable.Empty<Solution>();
         activities.AddRange(solutions.Select(s => s.CreateDate));
 
-        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ?? Enumerable.Empty<ExamResult>();
+        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ??
+                          Enumerable.Empty<ExamResult>();
         activities.AddRange(examResults.Select(e => e.FinishedAt));
 
         if (!activities.Any()) return 0;
@@ -863,7 +882,8 @@ public sealed class StudentAnalyticsQueryHandler(
         if (solutions.Any())
             dates.Add(solutions.Max(s => s.CreateDate));
 
-        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ?? Enumerable.Empty<ExamResult>();
+        var examResults = await _unitOfWork.ExamResultRepository.GetByStudentIdAsync(userId) ??
+                          Enumerable.Empty<ExamResult>();
         if (examResults.Any())
             dates.Add(examResults.Max(e => e.FinishedAt));
 

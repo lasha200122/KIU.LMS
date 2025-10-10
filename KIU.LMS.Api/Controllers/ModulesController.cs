@@ -37,9 +37,6 @@ public class ModulesController(ISender sender) : ApiController(sender)
         return await Handle<GetModuleDetailsQuery, GetModuleDetailsQueryResponse>(new GetModuleDetailsQuery(id));
     }
 
-
-
-
     [HttpGet("banks")]
     public async Task<IResult> GetBankModulesQuery([FromQuery] GetModulesBankQuery request) 
     {
@@ -69,8 +66,7 @@ public class ModulesController(ISender sender) : ApiController(sender)
     {
         return await Handle(new DeleteModuleBankCommand(id));
     }
-
-
+    
     [HttpPost("banks/{id}/submodules")]
     public async Task<IResult> CreateSubModule(Guid id, [FromBody] CreateSubModuleCommand request)
     {

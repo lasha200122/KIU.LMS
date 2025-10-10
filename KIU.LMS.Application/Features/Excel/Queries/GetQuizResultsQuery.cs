@@ -121,8 +121,7 @@ public sealed class GetQuizResultsQueryHandler(IUnitOfWork _unitOfWork, IExcelPr
         }
     }
 
-
-    private decimal CalculateScore(List<StudentAnswer> answers, List<Domain.Entities.NoSQL.ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)
+    private decimal CalculateScore(List<StudentAnswer> answers, List<ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)
     {
         var (correctCount, wrongCount) = CountAnswers(answers, questions);
 

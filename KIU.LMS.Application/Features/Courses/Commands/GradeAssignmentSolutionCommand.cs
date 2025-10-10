@@ -1,8 +1,6 @@
-﻿
-namespace KIU.LMS.Application.Features.Courses.Commands;
+﻿namespace KIU.LMS.Application.Features.Courses.Commands;
 
 public sealed record GradeAssignmentSolutionCommand(Guid UserId, Guid AssignmentId, string Feedback, string Grade) : IRequest<Result>;
-
 
 public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GradeAssignmentSolutionCommand, Result>
 {

@@ -2,7 +2,6 @@
 
 namespace KIU.LMS.Api.Controllers;
 
-
 [ApiController]
 [Route("api/[controller]")]
 public class MigrationController : ControllerBase
