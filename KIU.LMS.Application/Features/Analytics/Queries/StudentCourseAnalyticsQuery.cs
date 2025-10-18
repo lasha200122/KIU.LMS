@@ -1,4 +1,3 @@
-using KIU.LMS.Domain.Entities.NoSQL;
 using Microsoft.Extensions.Logging;
 
 namespace KIU.LMS.Application.Features.Analytics.Queries;
@@ -8,9 +7,6 @@ public sealed record StudentCourseAnalyticsQuery(Guid StudentId, Guid CourseId)
 
 public sealed class StudentCourseAnalyticsQueryHandler(
     IUnitOfWork _unitOfWork,
-    IMongoRepository<ExamSession> _examSessionRepository,
-    IMongoRepository<StudentAnswer> _studentAnswerRepository,
-    IMongoRepository<Question> _questionRepository,
     ILogger<StudentCourseAnalyticsQueryHandler> _logger) 
     : IRequestHandler<StudentCourseAnalyticsQuery, Result<StudentCourseAnalyticsDto>>
 {
@@ -20,7 +16,7 @@ public sealed class StudentCourseAnalyticsQueryHandler(
     {
         try
         {
-            var dto = await GetStudentCourseAnalyticsAsync(request.StudentId, request.CourseId);
+            var dto = await GetStudentCourseAnalyticsAsync(request.StudentId, request.CourseId, cancellationToken);
             return dto != null
                 ? Result<StudentCourseAnalyticsDto>.Success(dto)
                 : Result<StudentCourseAnalyticsDto>.Failure("Student or course not found.");
@@ -35,24 +31,32 @@ public sealed class StudentCourseAnalyticsQueryHandler(
     }
 
     private async Task<StudentCourseAnalyticsDto> GetStudentCourseAnalyticsAsync(
-        Guid studentId, Guid courseId)
+        Guid studentId, Guid courseId, CancellationToken ct)
     {
-        var user = await _unitOfWork.UserRepository.GetByIdAsync(studentId);
-        if (user == null || user.Role != UserRole.Student)
+        var user = await _unitOfWork.UserRepository
+            .FirstOrDefaultMappedAsync(
+                u => u.Id == studentId && u.Role == UserRole.Student,
+                u => new { u.Id, u.Role },
+                ct);
+
+        if (user == null)
         {
             _logger.LogWarning("User {UserId} not found or not a student", studentId);
             return null;
         }
 
-        var course = await _unitOfWork.CourseRepository.GetByIdWithDetailsAsync(courseId);
-        if (course == null)
+        var courseExists = await _unitOfWork.CourseRepository.ExistsAsync(c => c.Id == courseId, ct);
+        if (!courseExists)
         {
             _logger.LogWarning("Course {CourseId} not found", courseId);
             return null;
         }
 
         var userCourse = await _unitOfWork.UserCourseRepository
-            .FirstOrDefaultAsync(x => x.UserId == studentId && x.CourseId == courseId);
+            .FirstOrDefaultMappedAsync(
+                uc => uc.UserId == studentId && uc.CourseId == courseId,
+                uc => new { uc.CreateDate },
+                ct);
         
         if (userCourse == null)
         {
@@ -61,71 +65,130 @@ public sealed class StudentCourseAnalyticsQueryHandler(
             return null;
         }
 
-        var courseInfoTask = BuildCourseInfoAsync(course, userCourse);
-        var assignmentStatsTask = BuildAssignmentStatisticsAsync(studentId, courseId);
-        var quizStatsTask = BuildQuizStatisticsAsync(studentId, courseId);
-        var topicProgressTask = BuildTopicProgressAsync(studentId, courseId);
-        var moduleProgressTask = BuildModuleProgressAsync(studentId, courseId);
-        var performanceTask = BuildCoursePerformanceAsync(studentId, courseId);
+        _logger.LogInformation("Loading analytics data for student {StudentId} in course {CourseId}", 
+            studentId, courseId);
 
-        await Task.WhenAll(
-            courseInfoTask,
-            assignmentStatsTask,
-            quizStatsTask,
-            topicProgressTask,
-            moduleProgressTask,
-            performanceTask
-        );
+        var courseInfo = await BuildCourseInfo(courseId, userCourse.CreateDate, ct);
+        var assignmentStats = await BuildAssignmentStatistics(studentId, courseId, ct);
+        var quizStats = await BuildQuizStatistics(studentId, courseId, ct);
+        var topicProgress = await BuildTopicProgress(studentId, courseId, ct);
+        var moduleProgress = await BuildModuleProgress(courseId, ct);
+        var performance = await BuildCoursePerformance(studentId, courseId, ct);
 
         return new StudentCourseAnalyticsDto
         {
             StudentId = studentId,
             CourseId = courseId,
-            CourseInfo = await courseInfoTask,
-            AssignmentStatistics = await assignmentStatsTask,
-            QuizStatistics = await quizStatsTask,
-            TopicProgress = await topicProgressTask,
-            ModuleProgress = await moduleProgressTask,
-            Performance = await performanceTask,
+            CourseInfo = courseInfo,
+            AssignmentStatistics = assignmentStats,
+            QuizStatistics = quizStats,
+            TopicProgress = topicProgress,
+            ModuleProgress = moduleProgress,
+            Performance = performance,
             GeneratedAt = DateTimeOffset.UtcNow
         };
     }
-
-    private async Task<CourseInfoDto> BuildCourseInfoAsync(Course course, UserCourse userCourse)
+    
+    private async Task<CourseInfoDto> BuildCourseInfo(
+        Guid courseId, 
+        DateTimeOffset enrolledAt,
+        CancellationToken ct)
     {
         try
         {
+            var courseName = await _unitOfWork.CourseRepository
+                .FirstOrDefaultMappedAsync(
+                    c => c.Id == courseId,
+                    c => c.Name,
+                    ct);
+
+            var materialsCount = await _unitOfWork.CourseMaterialRepository
+                .CountWithPredicateAsync(cm => cm.CourseId == courseId, ct);
+            
+            var meetingsCount = await _unitOfWork.CourseMeetingRepository
+                .CountWithPredicateAsync(cm => cm.CourseId == courseId, ct);
+            
+            var assignmentsCount = await _unitOfWork.AssignmentRepository
+                .CountWithPredicateAsync(a => a.CourseId == courseId, ct);
+            
+            var quizzesCount = await _unitOfWork.QuizRepository
+                .CountWithPredicateAsync(q => q.CourseId == courseId, ct);
+            
+            var topicsCount = await _unitOfWork.TopicRepository
+                .CountWithPredicateAsync(t => t.CourseId == courseId, ct);
+            
+            var modulesCount = await _unitOfWork.ModuleRepository
+                .CountWithPredicateAsync(m => m.CourseId == courseId, ct);
+
             return new CourseInfoDto
             {
-                CourseName = course.Name,
-                EnrolledAt = userCourse.CreateDate,
-                TotalMaterials = course.Materials.Count,
-                TotalMeetings = course.Meetings.Count,
-                TotalAssignments = course.Assignments.Count,
-                TotalQuizzes = course.Quizzes.Count,
-                TotalTopics = course.Topics.Count,
-                TotalModules = course.Modules.Count
+                CourseName = courseName ?? "Unknown Course",
+                EnrolledAt = enrolledAt,
+                TotalMaterials = materialsCount,
+                TotalMeetings = meetingsCount,
+                TotalAssignments = assignmentsCount,
+                TotalQuizzes = quizzesCount,
+                TotalTopics = topicsCount,
+                TotalModules = modulesCount
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building course info");
-            return new CourseInfoDto { CourseName = course.Name };
+            _logger.LogError(ex, "Error building course info for course {CourseId}", courseId);
+            return new CourseInfoDto { CourseName = "Unknown" };
         }
     }
 
-    private async Task<AssignmentStatisticsDto> BuildAssignmentStatisticsAsync(
-        Guid studentId, Guid courseId)
+    private async Task<AssignmentStatisticsDto> BuildAssignmentStatistics(
+        Guid studentId, 
+        Guid courseId,
+        CancellationToken ct)
     {
         try
         {
             var assignments = await _unitOfWork.AssignmentRepository
-                .GetByCourseIdAsync(courseId) ?? Enumerable.Empty<Assignment>();
-            var solutions = await _unitOfWork.SolutionRepository
-                .GetByUserAndCourseAsync(studentId, courseId) ?? Enumerable.Empty<Solution>();
+                .GetMappedAsync(
+                    a => a.CourseId == courseId,
+                    a => new AssignmentMinimalDto
+                    {
+                        Id = a.Id,
+                        Name = a.Name,
+                        Type = a.Type.ToString(),
+                        EndDateTime = a.EndDateTime,
+                        IsTraining = a.IsTraining,
+                        TopicId = a.TopicId
+                    },
+                    ct);
 
             var assignmentsList = assignments.ToList();
+            
+            if (!assignmentsList.Any())
+            {
+                return new AssignmentStatisticsDto 
+                { 
+                    Submissions = new List<AssignmentSubmissionDetailDto>(),
+                    SubmissionsByType = new Dictionary<string, int>(),
+                    AverageGradeByType = new Dictionary<string, decimal>()
+                };
+            }
+
+            var assignmentIds = assignmentsList.Select(a => a.Id).ToList();
+
+            var solutions = await _unitOfWork.SolutionRepository
+                .GetMappedAsync(
+                    s => assignmentIds.Contains(s.AssignmentId) && s.UserId == studentId,
+                    s => new SolutionMinimalDto
+                    {
+                        AssignmentId = s.AssignmentId,
+                        Grade = s.Grade,
+                        GradingStatus = s.GradingStatus.ToString(),
+                        FeedBack = s.FeedBack,
+                        CreateDate = s.CreateDate
+                    },
+                    ct);
+
             var solutionsList = solutions.ToList();
+            var solutionsByAssignmentId = solutionsList.ToDictionary(s => s.AssignmentId);
 
             var submissionDetails = new List<AssignmentSubmissionDetailDto>();
             var submissionsByType = new Dictionary<string, int>();
@@ -133,14 +196,11 @@ public sealed class StudentCourseAnalyticsQueryHandler(
 
             foreach (var assignment in assignmentsList)
             {
-                var solution = solutionsList.FirstOrDefault(s => s.AssignmentId == assignment.Id);
-                var typeName = assignment.Type.ToString();
-
-                if (solution != null)
+                if (solutionsByAssignmentId.TryGetValue(assignment.Id, out var solution))
                 {
-                    if (!submissionsByType.ContainsKey(typeName))
-                        submissionsByType[typeName] = 0;
-                    submissionsByType[typeName]++;
+                    var typeName = assignment.Type;
+                    
+                    submissionsByType[typeName] = submissionsByType.GetValueOrDefault(typeName, 0) + 1;
 
                     if (!string.IsNullOrEmpty(solution.Grade) && 
                         decimal.TryParse(solution.Grade, out var gradeValue))
@@ -150,31 +210,33 @@ public sealed class StudentCourseAnalyticsQueryHandler(
                         gradesByType[typeName].Add(gradeValue);
                     }
 
+                    var isLate = assignment.EndDateTime.HasValue && 
+                                solution.CreateDate > assignment.EndDateTime.Value;
+
                     submissionDetails.Add(new AssignmentSubmissionDetailDto
                     {
                         AssignmentId = assignment.Id,
-                        AssignmentName = assignment.Name,
+                        AssignmentName = assignment.Name ?? "Unknown Assignment",
                         Type = typeName,
                         SubmittedAt = solution.CreateDate,
                         Grade = solution.Grade,
-                        GradingStatus = solution.GradingStatus.ToString(),
+                        GradingStatus = solution.GradingStatus,
                         Feedback = solution.FeedBack,
-                        IsLate = assignment.EndDateTime.HasValue && 
-                                solution.CreateDate > assignment.EndDateTime.Value,
+                        IsLate = isLate,
                         IsTraining = assignment.IsTraining,
                         DueDate = assignment.EndDateTime
                     });
                 }
             }
 
-            var gradedCount = solutionsList.Count(s => s.GradingStatus == GradingStatus.Completed);
-            var pendingCount = solutionsList.Count(s => s.GradingStatus == GradingStatus.InProgress);
+            var gradedCount = solutionsList.Count(s => s.GradingStatus == "Completed");
+            var pendingCount = solutionsList.Count(s => s.GradingStatus == "InProgress");
             var allGrades = gradesByType.SelectMany(kvp => kvp.Value).ToList();
             var averageGrade = allGrades.Any() ? Math.Round(allGrades.Average(), 2) : 0;
 
             var averageByType = gradesByType.ToDictionary(
                 kvp => kvp.Key,
-                kvp => kvp.Value.Any() ? Math.Round(kvp.Value.Average(), 2) : 0
+                kvp => Math.Round(kvp.Value.Average(), 2)
             );
 
             return new AssignmentStatisticsDto
@@ -193,50 +255,85 @@ public sealed class StudentCourseAnalyticsQueryHandler(
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building assignment statistics");
-            return new AssignmentStatisticsDto();
+            _logger.LogError(ex, "Error building assignment statistics for student {StudentId}, course {CourseId}", 
+                studentId, courseId);
+            return new AssignmentStatisticsDto 
+            { 
+                Submissions = new List<AssignmentSubmissionDetailDto>(),
+                SubmissionsByType = new Dictionary<string, int>(),
+                AverageGradeByType = new Dictionary<string, decimal>()
+            };
         }
     }
 
-    private async Task<QuizStatisticsDto> BuildQuizStatisticsAsync(
-        Guid studentId, Guid courseId)
+    private async Task<QuizStatisticsDto> BuildQuizStatistics(
+        Guid studentId, 
+        Guid courseId,
+        CancellationToken ct)
     {
         try
         {
             var quizzes = await _unitOfWork.QuizRepository
-                .GetByCourseIdAsync(courseId) ?? Enumerable.Empty<Quiz>();
-            var examResults = await _unitOfWork.ExamResultRepository
-                .GetByUserAndCourseAsync(studentId, courseId) ?? Enumerable.Empty<ExamResult>();
+                .GetMappedAsync(
+                    q => q.CourseId == courseId,
+                    q => new { q.Id, q.Title },
+                    ct);
 
             var quizzesList = quizzes.ToList();
-            var examResultsList = examResults.ToList();
+            var quizIds = quizzesList.Select(q => q.Id).ToList();
 
-            var quizDetails = new List<QuizResultDetailDto>();
-
-            foreach (var result in examResultsList)
+            if (!quizIds.Any())
             {
-                var quiz = quizzesList.FirstOrDefault(q => q.Id == result.QuizId);
-                if (quiz != null)
-                {
-                    quizDetails.Add(new QuizResultDetailDto
-                    {
-                        QuizId = result.QuizId,
-                        QuizName = quiz.Title,
-                        TakenAt = result.StartedAt,
-                        FinishedAt = result.FinishedAt,
-                        Score = result.Score,
-                        TotalQuestions = result.TotalQuestions,
-                        CorrectAnswers = result.CorrectAnswers,
-                        Duration = result.Duration,
-                        PerformanceLevel = DeterminePerformanceLevel(result.Score)
-                    });
-                }
+                return new QuizStatisticsDto { QuizResults = new List<QuizResultDetailDto>() };
             }
 
-            var averageScore = examResultsList.Any() 
-                ? Math.Round(examResultsList.Average(e => e.Score), 2) : 0;
-            var highestScore = examResultsList.Any() ? examResultsList.Max(e => e.Score) : 0;
-            var lowestScore = examResultsList.Any() ? examResultsList.Min(e => e.Score) : 0;
+            var examResults = await _unitOfWork.ExamResultRepository
+                .GetMappedAsync(
+                    er => quizIds.Contains(er.QuizId) && er.StudentId == studentId,
+                    er => new ExamResultMinimalDto
+                    {
+                        QuizId = er.QuizId,
+                        Score = er.Score,
+                        TotalQuestions = er.TotalQuestions,
+                        CorrectAnswers = er.CorrectAnswers,
+                        StartedAt = er.StartedAt,
+                        FinishedAt = er.FinishedAt,
+                        Duration = er.Duration
+                    },
+                    ct);
+
+            var examResultsList = examResults.ToList();
+
+            if (!examResultsList.Any())
+            {
+                return new QuizStatisticsDto 
+                { 
+                    TotalQuizzes = quizzesList.Count,
+                    QuizResults = new List<QuizResultDetailDto>() 
+                };
+            }
+
+            var quizzesById = quizzesList.ToDictionary(q => q.Id, q => q.Title);
+            
+            var quizDetails = examResultsList
+                .Select(result => new QuizResultDetailDto
+                {
+                    QuizId = result.QuizId,
+                    QuizName = quizzesById.GetValueOrDefault(result.QuizId, "Unknown Quiz") ?? "Unknown Quiz",
+                    TakenAt = result.StartedAt,
+                    FinishedAt = result.FinishedAt,
+                    Score = result.Score,
+                    TotalQuestions = result.TotalQuestions,
+                    CorrectAnswers = result.CorrectAnswers,
+                    Duration = result.Duration,
+                    PerformanceLevel = DeterminePerformanceLevel(result.Score)
+                })
+                .OrderByDescending(q => q.TakenAt)
+                .ToList();
+
+            var averageScore = Math.Round(examResultsList.Average(e => e.Score), 2);
+            var highestScore = examResultsList.Max(e => e.Score);
+            var lowestScore = examResultsList.Min(e => e.Score);
 
             return new QuizStatisticsDto
             {
@@ -245,40 +342,68 @@ public sealed class StudentCourseAnalyticsQueryHandler(
                 AverageScore = averageScore,
                 HighestScore = highestScore,
                 LowestScore = lowestScore,
-                QuizResults = quizDetails.OrderByDescending(q => q.TakenAt).ToList()
+                QuizResults = quizDetails
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building quiz statistics");
-            return new QuizStatisticsDto();
+            _logger.LogError(ex, "Error building quiz statistics for student {StudentId}, course {CourseId}", 
+                studentId, courseId);
+            return new QuizStatisticsDto { QuizResults = new List<QuizResultDetailDto>() };
         }
     }
 
-    private async Task<List<TopicProgressDetailDto>> BuildTopicProgressAsync(
-        Guid studentId, Guid courseId)
+    private async Task<List<TopicProgressDetailDto>> BuildTopicProgress(
+        Guid studentId, 
+        Guid courseId,
+        CancellationToken ct)
     {
         try
         {
             var topics = await _unitOfWork.TopicRepository
-                .GetByCourseIdAsync(courseId) ?? Enumerable.Empty<Topic>();
+                .GetMappedAsync(
+                    t => t.CourseId == courseId,
+                    t => new { t.Id, t.Name },
+                    ct);
+
+            var topicsList = topics.ToList();
+            if (!topicsList.Any())
+                return new List<TopicProgressDetailDto>();
+
+            var topicIds = topicsList.Select(t => t.Id).ToList();
+
             var assignments = await _unitOfWork.AssignmentRepository
-                .GetByCourseIdAsync(courseId) ?? Enumerable.Empty<Assignment>();
-            var solutions = await _unitOfWork.SolutionRepository
-                .GetByUserAndCourseAsync(studentId, courseId) ?? Enumerable.Empty<Solution>();
+                .GetMappedAsync(
+                    a => topicIds.Contains(a.TopicId),
+                    a => new { a.Id, a.TopicId },
+                    ct);
 
             var assignmentsList = assignments.ToList();
+            var assignmentIds = assignmentsList.Select(a => a.Id).ToList();
+
+            var solutions = await _unitOfWork.SolutionRepository
+                .GetMappedAsync(
+                    s => assignmentIds.Contains(s.AssignmentId) && s.UserId == studentId,
+                    s => new { s.AssignmentId, s.Grade },
+                    ct);
+
             var solutionsList = solutions.ToList();
+            var assignmentsByTopic = assignmentsList
+                .GroupBy(a => a.TopicId)
+                .ToDictionary(g => g.Key, g => g.Select(a => a.Id).ToList());
 
-            return topics.Select(topic =>
+            var solutionsByAssignmentId = solutionsList.ToLookup(s => s.AssignmentId);
+
+            return topicsList.Select(topic =>
             {
-                var topicAssignments = assignmentsList.Where(a => a.TopicId == topic.Id).ToList();
-                var completedAssignments = solutionsList
-                    .Count(s => topicAssignments.Any(a => a.Id == s.AssignmentId));
+                var topicAssignmentIds = assignmentsByTopic.GetValueOrDefault(topic.Id, new List<Guid>());
+                
+                var completedAssignments = topicAssignmentIds
+                    .Count(aId => solutionsByAssignmentId[aId].Any());
 
-                var topicGrades = solutionsList
-                    .Where(s => topicAssignments.Any(a => a.Id == s.AssignmentId) && 
-                               !string.IsNullOrEmpty(s.Grade))
+                var topicGrades = topicAssignmentIds
+                    .SelectMany(aId => solutionsByAssignmentId[aId])
+                    .Where(s => !string.IsNullOrEmpty(s.Grade))
                     .Select(s => decimal.TryParse(s.Grade, out var g) ? g : 0)
                     .Where(g => g > 0)
                     .ToList();
@@ -286,84 +411,108 @@ public sealed class StudentCourseAnalyticsQueryHandler(
                 return new TopicProgressDetailDto
                 {
                     TopicId = topic.Id,
-                    TopicName = topic.Name,
-                    TotalAssignments = topicAssignments.Count,
+                    TopicName = topic.Name ?? "Unknown Topic",
+                    TotalAssignments = topicAssignmentIds.Count,
                     CompletedAssignments = completedAssignments,
                     AverageGrade = topicGrades.Any() ? Math.Round(topicGrades.Average(), 2) : 0,
-                    CompletionRate = topicAssignments.Any() 
-                        ? Math.Round((decimal)completedAssignments / topicAssignments.Count * 100, 2) 
+                    CompletionRate = topicAssignmentIds.Any() 
+                        ? Math.Round((decimal)completedAssignments / topicAssignmentIds.Count * 100, 2) 
                         : 0
                 };
             }).ToList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building topic progress");
+            _logger.LogError(ex, "Error building topic progress for student {StudentId}, course {CourseId}", 
+                studentId, courseId);
             return new List<TopicProgressDetailDto>();
         }
     }
 
-    private async Task<List<ModuleProgressDetailDto>> BuildModuleProgressAsync(
-        Guid studentId, Guid courseId)
+    private async Task<List<ModuleProgressDetailDto>> BuildModuleProgress(
+        Guid courseId,
+        CancellationToken ct)
     {
         try
         {
-            var modules = await _unitOfWork.ModuleRepository.GetByCourseIdAsync(courseId);
+            var modules = await _unitOfWork.ModuleRepository
+                .GetMappedAsync(
+                    m => m.CourseId == courseId,
+                    m => new { m.Id, m.Name },
+                    ct);
             
             return modules.Select(module => new ModuleProgressDetailDto
             {
                 ModuleId = module.Id,
-                ModuleName = module.Name,
-                IsCompleted = false // Implement your completion logic
+                ModuleName = module.Name ?? "Unknown Module",
+                IsCompleted = false // TODO: Implement completion logic
             }).ToList();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building module progress");
+            _logger.LogError(ex, "Error building module progress for course {CourseId}", courseId);
             return new List<ModuleProgressDetailDto>();
         }
     }
 
-    private async Task<CoursePerformanceDto> BuildCoursePerformanceAsync(
-        Guid studentId, Guid courseId)
+    private async Task<CoursePerformanceDto> BuildCoursePerformance(
+        Guid studentId, 
+        Guid courseId,
+        CancellationToken ct)
     {
         try
         {
             var solutions = await _unitOfWork.SolutionRepository
-                .GetByUserAndCourseAsync(studentId, courseId) ?? Enumerable.Empty<Solution>();
+                .GetMappedAsync(
+                    s => s.UserId == studentId && s.Assignment.CourseId == courseId,
+                    s => new { s.Grade, s.CreateDate },
+                    ct);
+
             var examResults = await _unitOfWork.ExamResultRepository
-                .GetByUserAndCourseAsync(studentId, courseId) ?? Enumerable.Empty<ExamResult>();
+                .GetMappedAsync(
+                    er => er.StudentId == studentId && er.Quiz.CourseId == courseId,
+                    er => new { er.Score, er.FinishedAt },
+                    ct);
 
             var solutionsList = solutions.ToList();
             var examResultsList = examResults.ToList();
 
-            var allGrades = new List<decimal>();
+            var solutionGrades = solutionsList
+                .Where(s => !string.IsNullOrEmpty(s.Grade) && decimal.TryParse(s.Grade, out _))
+                .Select(s => new { Grade = decimal.Parse(s.Grade), Date = s.CreateDate })
+                .ToList();
 
-            foreach (var solution in solutionsList.Where(s => !string.IsNullOrEmpty(s.Grade)))
-            {
-                if (decimal.TryParse(solution.Grade, out var grade))
-                    allGrades.Add(grade);
-            }
+            var examGrades = examResultsList
+                .Select(e => new { Grade = e.Score, Date = e.FinishedAt })
+                .ToList();
 
-            allGrades.AddRange(examResultsList.Select(e => e.Score));
+            var allGrades = solutionGrades.Concat(examGrades).ToList();
+            var overallGrade = allGrades.Any() 
+                ? Math.Round(allGrades.Average(g => g.Grade), 2) 
+                : 0;
 
-            var overallGrade = allGrades.Any() ? Math.Round(allGrades.Average(), 2) : 0;
-            var trend = AnalyzeTrend(solutionsList, examResultsList);
+            var trend = AnalyzeTrend([allGrades]);
+            var lastActivity = allGrades.Any() 
+                ? allGrades.Max(g => g.Date) 
+                : DateTimeOffset.MinValue;
 
             return new CoursePerformanceDto
             {
                 OverallGrade = overallGrade,
                 PerformanceTrend = trend,
                 TotalActivities = solutionsList.Count + examResultsList.Count,
-                LastActivityDate = GetLastActivity(solutionsList, examResultsList)
+                LastActivityDate = lastActivity
             };
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building course performance");
+            _logger.LogError(ex, "Error building course performance for student {StudentId}, course {CourseId}", 
+                studentId, courseId);
             return new CoursePerformanceDto();
         }
     }
+
+    // ===== HELPER METHODS =====
 
     private string DeterminePerformanceLevel(decimal score)
     {
@@ -376,61 +525,63 @@ public sealed class StudentCourseAnalyticsQueryHandler(
         };
     }
 
-    private string AnalyzeTrend(IEnumerable<Solution> solutions, IEnumerable<ExamResult> examResults)
+    private string AnalyzeTrend(List<dynamic> allGrades)
     {
+        if (!allGrades.Any())
+            return "Stable";
+
         var recentDate = DateTimeOffset.UtcNow.AddDays(-30);
-        var recentGrades = new List<decimal>();
-        var olderGrades = new List<decimal>();
-
-        foreach (var solution in solutions.Where(s => !string.IsNullOrEmpty(s.Grade)))
-        {
-            if (decimal.TryParse(solution.Grade, out var grade))
-            {
-                if (solution.CreateDate >= recentDate)
-                    recentGrades.Add(grade);
-                else
-                    olderGrades.Add(grade);
-            }
-        }
-
-        foreach (var exam in examResults)
-        {
-            if (exam.FinishedAt >= recentDate)
-                recentGrades.Add(exam.Score);
-            else
-                olderGrades.Add(exam.Score);
-        }
+        
+        var recentGrades = allGrades.Where(g => g.Date >= recentDate).Select(g => (decimal)g.Grade).ToList();
+        var olderGrades = allGrades.Where(g => g.Date < recentDate).Select(g => (decimal)g.Grade).ToList();
 
         if (!recentGrades.Any() || !olderGrades.Any())
             return "Stable";
 
         var recentAvg = recentGrades.Average();
         var olderAvg = olderGrades.Average();
+        var difference = recentAvg - olderAvg;
 
-        if (recentAvg > olderAvg + 5)
-            return "Improving";
-        else if (recentAvg < olderAvg - 5)
-            return "Declining";
-        else
-            return "Stable";
-    }
-
-    private DateTimeOffset GetLastActivity(IEnumerable<Solution> solutions, IEnumerable<ExamResult> examResults)
-    {
-        var dates = new List<DateTimeOffset>();
-
-        var solutionsList = solutions.ToList();
-        if (solutionsList.Any())
-            dates.Add(solutionsList.Max(s => s.CreateDate));
-
-        var examResultsList = examResults.ToList();
-        if (examResultsList.Any())
-            dates.Add(examResultsList.Max(e => e.FinishedAt));
-
-        return dates.Any() ? dates.Max() : DateTimeOffset.MinValue;
+        return difference switch
+        {
+            > 5 => "Improving",
+            < -5 => "Declining",
+            _ => "Stable"
+        };
     }
 }
 
+internal class AssignmentMinimalDto
+{
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string Type { get; set; }
+    public DateTimeOffset? EndDateTime { get; set; }
+    public bool IsTraining { get; set; }
+    public Guid TopicId { get; set; }
+}
+
+internal class SolutionMinimalDto
+{
+    public Guid AssignmentId { get; set; }
+    public string Grade { get; set; }
+    public string GradingStatus { get; set; }
+    public string FeedBack { get; set; }
+    public DateTimeOffset CreateDate { get; set; }
+}
+
+internal class ExamResultMinimalDto
+{
+    public Guid QuizId { get; set; }
+    public decimal Score { get; set; }
+    public int TotalQuestions { get; set; }
+    public int CorrectAnswers { get; set; }
+    public DateTimeOffset StartedAt { get; set; }
+    public DateTimeOffset FinishedAt { get; set; }
+    public TimeSpan Duration { get; set; }
+}
+
+// ===== PUBLIC DTOs =====
 
 public class StudentCourseAnalyticsDto
 {
@@ -464,11 +615,11 @@ public class AssignmentStatisticsDto
     public int GradedAssignments { get; set; }
     public int PendingGrading { get; set; }
     public decimal AverageGrade { get; set; }
-    public Dictionary<string, int> SubmissionsByType { get; set; }
-    public Dictionary<string, decimal> AverageGradeByType { get; set; }
+    public Dictionary<string, int> SubmissionsByType { get; set; } = new();
+    public Dictionary<string, decimal> AverageGradeByType { get; set; } = new();
     public int OnTimeSubmissions { get; set; }
     public int LateSubmissions { get; set; }
-    public List<AssignmentSubmissionDetailDto> Submissions { get; set; }
+    public List<AssignmentSubmissionDetailDto> Submissions { get; set; } = new();
 }
 
 public class AssignmentSubmissionDetailDto
@@ -492,7 +643,7 @@ public class QuizStatisticsDto
     public decimal AverageScore { get; set; }
     public decimal HighestScore { get; set; }
     public decimal LowestScore { get; set; }
-    public List<QuizResultDetailDto> QuizResults { get; set; }
+    public List<QuizResultDetailDto> QuizResults { get; set; } = new();
 }
 
 public class QuizResultDetailDto

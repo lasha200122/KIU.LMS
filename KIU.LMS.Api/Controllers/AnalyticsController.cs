@@ -18,7 +18,14 @@ public class AnalyticsController(ISender _sender) : ApiController(_sender)
     {
         return await Handle<StudentSummaryQuery, object>(new StudentSummaryQuery(id));
     }
-
+    
+    [HttpGet("course/{id}")]
+    [ProducesResponseType(typeof(CourseFullAnalyticsDto), StatusCodes.Status200OK)]
+    public async Task<IResult> GetCourseAnalytic(Guid id)
+    {
+        return await Handle<CourseAnalyticsQuery, CourseFullAnalyticsDto>(new CourseAnalyticsQuery(id));
+    }
+    
     [HttpGet("student-by-course")]
     [ProducesResponseType(typeof(StudentCourseAnalyticsDto), StatusCodes.Status200OK)]
     public async Task<IResult> GetStudentByCourse(

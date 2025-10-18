@@ -1,12 +1,17 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Commands;
 
-public sealed record GradeAssignmentSolutionCommand(Guid UserId, Guid AssignmentId, string Feedback, string Grade) : IRequest<Result>;
+public sealed record GradeAssignmentSolutionCommand(Guid UserId, Guid AssignmentId, string Feedback, string Grade)
+    : IRequest<Result>;
 
-public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GradeAssignmentSolutionCommand, Result>
+public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork _unitOfWork)
+    : IRequestHandler<GradeAssignmentSolutionCommand, Result>
 {
     public async Task<Result> Handle(GradeAssignmentSolutionCommand request, CancellationToken cancellationToken)
     {
-        var solution = await _unitOfWork.SolutionRepository.SingleOrDefaultWithTrackingAsync(x => x.UserId == request.UserId && x.AssignmentId == request.AssignmentId);
+        var solution = await _unitOfWork.SolutionRepository.FirstOrDefaultWithTrackingAsync(x =>
+            x.UserId == request.UserId &&
+            x.AssignmentId == request.AssignmentId, cancellationToken);
+        
         if (solution is null)
             return Result.Failure("Solution not found");
 

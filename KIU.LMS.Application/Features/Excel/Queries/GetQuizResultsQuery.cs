@@ -5,7 +5,6 @@ namespace KIU.LMS.Application.Features.Excel.Queries;
 
 public sealed record GetQuizResultsQuery(Guid Id) : IRequest<Result<byte[]>>;
 
-
 public sealed class GetQuizResultsQueryHandler(IUnitOfWork _unitOfWork, IExcelProcessor excelProcessor, IMongoRepository<ExamSession> _sessionRepository,
     IMongoRepository<StudentAnswer> _answerRepository) : IRequestHandler<GetQuizResultsQuery, Result<byte[]>>
 {
@@ -94,31 +93,14 @@ public sealed class GetQuizResultsQueryHandler(IUnitOfWork _unitOfWork, IExcelPr
 
         results = results
             .OrderByDescending(x => x.FinalScore)
-            .Select((item, index) => new QuizResultDto(
-                Rank: index + 1,
-                   FirstName: item.FirstName,
-                   LastName: item.LastName,
-                   Email: item.Email,
-                   Institution: item.Institution,
-                   StartedAt: item.StartedAt,
-                   FinishedAt: item.FinishedAt,
-                   Score: item.Score,
-                   Percentage: item.Percentage,
-                   TotalQuestions: item.TotalQuestions,
-                   CorrectAnswers: item.CorrectAnswers,
-                   WrongAnswers: item.WrongAnswers,
-                   Duration: item.Duration,
-                   MinusPoint: item.MinusPoint,
-                   Bonus: item.Bonus,
-                   FinalScore: item.FinalScore))
+            .Select((item, index) => item with { Rank = index + 1 })
             .ToList();
 
-
-        using (var stream = new MemoryStream())
-        {
-            excelProcessor.GenerateQuizResults(stream, results);
-            return Result<byte[]>.Success(stream.ToArray());
-        }
+        using var stream = new MemoryStream();
+        
+        excelProcessor.GenerateQuizResults(stream, results);
+        
+        return Result<byte[]>.Success(stream.ToArray());
     }
 
     private decimal CalculateScore(List<StudentAnswer> answers, List<ExamQuestion> questions, decimal? penaltyPerWrongAnswer = null)

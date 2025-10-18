@@ -24,8 +24,7 @@ public static class ResultExtensions
             }
         );
     }
-
-
+    
     public static IResult ToResult<T>(this Result<T> result)
     {
         if (result.IsSuccess)

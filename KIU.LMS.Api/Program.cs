@@ -1,18 +1,17 @@
-
 var builder = WebApplication.CreateBuilder(args);
 {
     var logger = Log.Logger = new LoggerConfiguration()
-        .WriteTo
-            .Graylog(new GraylogSinkOptions
-            {
-                HostnameOrAddress = builder.Configuration.GetSection("GRAY_LOG_HOSTNAME_OR_ADDRESS").Value!,
-                Port = int.Parse(builder.Configuration.GetSection("GRAY_LOG_PORT").Value!),
-                Facility = "KIU.LMS",
-                TransportType = TransportType.Udp
-            })
-        .WriteTo
-            .Console()
+        .WriteTo.Console(
+            outputTemplate: "[{Timestamp:HH:mm:ss} {Level:u3}] {Message:lj}{NewLine}{Exception}"
+        )
+        .WriteTo.File( 
+            path: "logs/app-.log",                 
+            rollingInterval: RollingInterval.Day,  
+            retainedFileCountLimit: 7,             
+            outputTemplate: "{Timestamp:yyyy-MM-dd HH:mm:ss.fff} [{Level:u3}] {Message:lj}{NewLine}{Exception}"
+        )
         .CreateLogger();
+
 
     builder.Host.UseSerilog(logger);
 
@@ -23,9 +22,9 @@ var builder = WebApplication.CreateBuilder(args);
     });
 
     builder.Services
-    .AddPersistenceServices(builder.Configuration, logger)
-    .AddInfrastructureServices(builder.Configuration, logger)
-    .AddApplicationServices(logger);
+        .AddPersistenceServices(builder.Configuration, logger)
+        .AddInfrastructureServices(builder.Configuration, logger)
+        .AddApplicationServices(logger);
 
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -113,3 +112,4 @@ var app = builder.Build();
 
     app.Run();
 }
+  

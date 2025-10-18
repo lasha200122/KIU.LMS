@@ -1,14 +1,11 @@
 ﻿namespace KIU.LMS.Application.Features.Courses.Queries;
 
-
 public sealed record GetQuizzesQuery(Guid Id, int PageNumber, int PageSize) : IRequest<Result<PagedEntities<GetQuizzesQueryResponse>>>;
-
 
 public sealed record GetQuizzesQueryResponse(
     Guid Id,
     string Name,
     string Type);
-
 
 public sealed class GetQuizzesQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandler<GetQuizzesQuery, Result<PagedEntities<GetQuizzesQueryResponse>>>
 {
