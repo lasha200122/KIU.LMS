@@ -17,11 +17,11 @@ public class SubmitAssignmentCommandValidator : AbstractValidator<SubmitAssignme
     }
 }
 
-public class SubmitAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<SubmitAssignmentCommand, Result<Guid>>
+public class SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<SubmitAssignmentCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(SubmitAssignmentCommand request, CancellationToken cancellationToken)
     {
-        var assignment = await _unitOfWork.AssignmentRepository.SingleOrDefaultAsync(x => x.Id == request.Id);
+        var assignment = await unitOfWork.AssignmentRepository.SingleOrDefaultAsync(x => x.Id == request.Id);
 
         if (assignment is null)
             return Result<Guid>.Failure("Can't find assignment");
@@ -32,17 +32,17 @@ public class SubmitAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
         var solution = new Solution(
             Guid.NewGuid(),
             assignment.Id,
-            _current.UserId,
+            current.UserId,
             request.Value,
             string.Empty,
             string.Empty,
             GradingStatus.None,
-            _current.UserId);
+            current.UserId);
 
-        await _unitOfWork.SolutionRepository.AddAsync(solution);
+        await unitOfWork.SolutionRepository.AddAsync(solution);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
-        return Result<Guid>.Success(_current.UserId);
+        return Result<Guid>.Success(current.UserId);
     }
 }

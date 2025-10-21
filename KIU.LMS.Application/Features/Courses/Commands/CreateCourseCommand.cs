@@ -13,13 +13,13 @@ public class CreateCourseCommandValidator : AbstractValidator<CreateCourseComman
 }
 
 public class CreateCourseCommandHandler(
-    IUnitOfWork _unitOfWork,
-    ICurrentUserService _currentUser) : IRequestHandler<CreateCourseCommand, Result>
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUser) : IRequestHandler<CreateCourseCommand, Result>
 {
     public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
         var name = request.Name.Trim();
-        var courseExist = await _unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken);
+        var courseExist = await unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken);
 
         if (courseExist)
             return Result.Failure("Course is already created");
@@ -27,11 +27,11 @@ public class CreateCourseCommandHandler(
         var newCourse = new Course(
             Guid.NewGuid(),
             name,
-            _currentUser.UserId);
+            currentUser.UserId);
 
-        await _unitOfWork.CourseRepository.AddAsync(newCourse);
+        await unitOfWork.CourseRepository.AddAsync(newCourse);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Course Created Successfully");
     }

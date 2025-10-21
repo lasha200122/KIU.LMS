@@ -11,17 +11,17 @@ public class CourseDeleteStudentCommandValidator : AbstractValidator<CourseDelet
     }
 }
 
-public class CourseDeleteStudentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<CourseDeleteStudentCommand, Result>
+public class CourseDeleteStudentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<CourseDeleteStudentCommand, Result>
 {
     public async Task<Result> Handle(CourseDeleteStudentCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.UserCourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var user = await unitOfWork.UserCourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (user is null)
             return Result.Failure("Can't find user");
 
-        user.Delete(_current.UserId, DateTimeOffset.UtcNow);
-        await _unitOfWork.SaveChangesAsync();
+        user.Delete(current.UserId, DateTimeOffset.UtcNow);
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Student deleted successfully");
     }

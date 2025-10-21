@@ -28,11 +28,11 @@ public class AddCourseMeetingCommandValidator : AbstractValidator<AddCourseMeeti
 }
 
 
-public class AddCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddCourseMeetingCommand, Result>
+public class AddCourseMeetingCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<AddCourseMeetingCommand, Result>
 {
     public async Task<Result> Handle(AddCourseMeetingCommand request, CancellationToken cancellationToken)
     {
-        var course = await _unitOfWork.CourseRepository.SingleOrDefaultAsync(x => x.Id == request.CourseId);
+        var course = await unitOfWork.CourseRepository.SingleOrDefaultAsync(x => x.Id == request.CourseId);
 
         if (course == null)
             return Result.Failure("Can't find course");
@@ -44,29 +44,29 @@ public class AddCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.Url,
             request.StartDateTime,
             request.EndDateTime,
-            _current.UserId);
+            current.UserId);
 
 
-        var emailTemplate = await _unitOfWork.EmailTemplateRepository.SingleOrDefaultAsync(x => x.Type == EmailType.MeetingCreated);
+        var emailTemplate = await unitOfWork.EmailTemplateRepository.SingleOrDefaultAsync(x => x.Type == EmailType.MeetingCreated);
 
         if (emailTemplate != null)
         {
-            var emailsToSend = await _unitOfWork.UserCourseRepository.GetMappedAsync(x => x.CourseId == request.CourseId, x => new EmailQueue(
+            var emailsToSend = await unitOfWork.UserCourseRepository.GetMappedAsync(x => x.CourseId == request.CourseId, x => new EmailQueue(
                 Guid.NewGuid(),
                 emailTemplate.Id,
                 x.User.Email,
                 EmailTemplateUtils.MeetingCreatedVariableBuilder(x.User, meeting, course.Name),
-                _current.UserId));
+                current.UserId), cancellationToken);
 
-            if (emailsToSend != null && emailsToSend.Count() > 0)
+            if (emailsToSend != null && emailsToSend.Any())
             {
-                await _unitOfWork.EmailQueueRepository.AddRangeAsync(emailsToSend);
+                await unitOfWork.EmailQueueRepository.AddRangeAsync(emailsToSend);
             }
         }
 
-        await _unitOfWork.CourseMeetingRepository.AddAsync(meeting);
+        await unitOfWork.CourseMeetingRepository.AddAsync(meeting);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Meeting Created successfully");
     }

@@ -17,24 +17,24 @@ public class UpdateCourseCommandValidator : AbstractValidator<UpdateCourseComman
 }
 
 public class UpdateCourseCommandHandler(
-    IUnitOfWork _unitOfWork,
-    ICurrentUserService _currentUser) : IRequestHandler<UpdateCourseCommand, Result>
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUser) : IRequestHandler<UpdateCourseCommand, Result>
 {
     public async Task<Result> Handle(UpdateCourseCommand request, CancellationToken cancellationToken)
     {
         var name = request.Name.Trim().ToLower();
 
-        if (await _unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name))
+        if (await unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken))
             return Result.Failure("Course name should be unique");
 
-        var course = await _unitOfWork.CourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var course = await unitOfWork.CourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (course is null)
             return Result.Failure("Course not found");
 
-        course.Update(name, _currentUser.UserId);
+        course.Update(name, currentUser.UserId);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Course Updated Successfully");
     }

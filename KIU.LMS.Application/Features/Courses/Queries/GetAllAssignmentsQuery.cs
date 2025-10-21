@@ -16,17 +16,17 @@ public sealed record TaskListItem(
 
 public sealed record GetAllAssignmentsQueryResponse(List<TaskListItem> Tasks);
 
-public sealed class GetAllAssignmentsQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetAllAssignmentsQuery, Result<GetAllAssignmentsQueryResponse>>
+public sealed class GetAllAssignmentsQueryHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<GetAllAssignmentsQuery, Result<GetAllAssignmentsQueryResponse>>
 {
     public async Task<Result<GetAllAssignmentsQueryResponse>> Handle(GetAllAssignmentsQuery request, CancellationToken cancellationToken)
     {
-        var assignments = await _unitOfWork.AssignmentRepository.GetMappedAsync(
+        var assignments = await unitOfWork.AssignmentRepository.GetMappedAsync(
             x => x.CourseId == request.CourseId && !x.IsDeleted && x.StartDateTime.HasValue && x.StartDateTime <= DateTimeOffset.UtcNow && x.EndDateTime.HasValue,
             x => new TaskListItem(
                 x.Id,
                 x.Name,
                 x.Topic.Name,
-                x.Solutions.Any(x => x.UserId == _current.UserId) ? x.Solutions.Where(x => x.UserId == _current.UserId).OrderByDescending(x => x.CreateDate).First().Grade : string.Empty,
+                x.Solutions.Any(x => x.UserId == current.UserId) ? x.Solutions.Where(x => x.UserId == current.UserId).OrderByDescending(x => x.CreateDate).First().Grade : string.Empty,
                 x.Score.HasValue ? x.Score.Value.ToString() : "-",
                 x.EndDateTime.HasValue ? x.EndDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty,
                 x.EndDateTime,
@@ -35,13 +35,13 @@ public sealed class GetAllAssignmentsQueryHandler(IUnitOfWork _unitOfWork, ICurr
                 x.IsTraining),
             cancellationToken);
 
-        var mcqs = await _unitOfWork.QuizRepository.GetMappedAsync(
+        var mcqs = await unitOfWork.QuizRepository.GetMappedAsync(
             x => x.CourseId == request.CourseId && !x.IsDeleted && x.StartDateTime <= DateTimeOffset.UtcNow && x.EndDateTime.HasValue,
             x => new TaskListItem(
                 x.Id,
                 x.Title,
                 x.Topic.Name,
-                x.ExamResults.Any(x => x.StudentId == _current.UserId) ? x.ExamResults.Where(x => x.StudentId == _current.UserId).OrderByDescending(x => x.CreateDate).First().Score.ToString() : string.Empty,
+                x.ExamResults.Any(x => x.StudentId == current.UserId) ? x.ExamResults.Where(x => x.StudentId == current.UserId).OrderByDescending(x => x.CreateDate).First().Score.ToString() : string.Empty,
                 x.Score.HasValue ? x.Score.Value.ToString() : "-",
                 x.EndDateTime.HasValue ? x.EndDateTime.Value.ToLocalTime().ToString("MMM dd, HH:mm") : string.Empty,
                 x.EndDateTime,

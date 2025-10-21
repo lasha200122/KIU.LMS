@@ -16,11 +16,11 @@ public class UpdateCourseTopicCommandValidator : AbstractValidator<UpdateCourseT
     }
 }
 
-public sealed class UpdateCourseTopicCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<UpdateCourseTopicCommand, Result>
+public sealed class UpdateCourseTopicCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<UpdateCourseTopicCommand, Result>
 {
     public async Task<Result> Handle(UpdateCourseTopicCommand request, CancellationToken cancellationToken)
     {
-        var topic = await _unitOfWork.TopicRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var topic = await unitOfWork.TopicRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (topic is null)
             return Result.Failure("Can't find topic");
@@ -29,11 +29,11 @@ public sealed class UpdateCourseTopicCommandHandler(IUnitOfWork _unitOfWork, ICu
             request.Name,
             request.StartDate,
             request.EndDate,
-            _current.UserId);
+            current.UserId);
 
-        _unitOfWork.TopicRepository.Update(topic);
+        unitOfWork.TopicRepository.Update(topic);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Topic Updated successfully");
     }

@@ -16,7 +16,7 @@ public class AddCourseTopicCommandValidator : AbstractValidator<AddCourseTopicCo
     }
 }
 
-public sealed class AddCourseTopicCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddCourseTopicCommand, Result>
+public sealed class AddCourseTopicCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<AddCourseTopicCommand, Result>
 {
     public async Task<Result> Handle(AddCourseTopicCommand request, CancellationToken cancellationToken)
     {
@@ -26,11 +26,11 @@ public sealed class AddCourseTopicCommandHandler(IUnitOfWork _unitOfWork, ICurre
             request.Name,
             request.StartDate,
             request.EndDate,
-            _current.UserId);
+            current.UserId);
 
-        await _unitOfWork.TopicRepository.AddAsync(topic);
+        await unitOfWork.TopicRepository.AddAsync(topic);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Topic Create successfully");
     }

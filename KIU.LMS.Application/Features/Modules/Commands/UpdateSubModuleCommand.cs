@@ -1,6 +1,4 @@
-﻿using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL.Base;
-
-namespace KIU.LMS.Application.Features.Modules.Commands;
+﻿namespace KIU.LMS.Application.Features.Modules.Commands;
 
 public sealed record UpdateModuleBankCommand(
         Guid Id,
@@ -38,7 +36,6 @@ public sealed class UpdateSubModuleCommandHandler(IUnitOfWork _unitOfWork, ICurr
         return Result.Success("Sub module updated successfully");
     }
 }
-
 
 // New Version
 
@@ -90,12 +87,9 @@ public sealed class UpdateSubModulesCommandHandler(
     ICurrentUserService currentUser
 ) : IRequestHandler<UpdateSubModuleCommand, Result>
 {
-    private readonly IUnitOfWork _unitOfWork = unitOfWork;
-    private readonly ICurrentUserService _currentUser = currentUser;
-
     public async Task<Result> Handle(UpdateSubModuleCommand request, CancellationToken cancellationToken)
     {
-        var subModule = await _unitOfWork.SubModuleRepository
+        var subModule = await unitOfWork.SubModuleRepository
             .SingleOrDefaultAsync(
                 predicate: x => x.Id == request.Id, x => x.ModuleBank
             );
@@ -125,11 +119,11 @@ public sealed class UpdateSubModulesCommandHandler(
             request.CodeGradingPrompt,
             request.Solution,
             request.Difficulty,
-            _currentUser.UserId
+            currentUser.UserId
         );
 
-         _unitOfWork.SubModuleRepository.Update(subModule);
-        await _unitOfWork.SaveChangesAsync();
+         unitOfWork.SubModuleRepository.Update(subModule);
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("SubModule updated successfully");
     }

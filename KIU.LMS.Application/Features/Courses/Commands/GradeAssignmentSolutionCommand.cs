@@ -3,12 +3,12 @@
 public sealed record GradeAssignmentSolutionCommand(Guid UserId, Guid AssignmentId, string Feedback, string Grade)
     : IRequest<Result>;
 
-public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork _unitOfWork)
+public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork unitOfWork)
     : IRequestHandler<GradeAssignmentSolutionCommand, Result>
 {
     public async Task<Result> Handle(GradeAssignmentSolutionCommand request, CancellationToken cancellationToken)
     {
-        var solution = await _unitOfWork.SolutionRepository.FirstOrDefaultWithTrackingAsync(x =>
+        var solution = await unitOfWork.SolutionRepository.FirstOrDefaultWithTrackingAsync(x =>
             x.UserId == request.UserId &&
             x.AssignmentId == request.AssignmentId, cancellationToken);
         
@@ -19,8 +19,8 @@ public sealed class GradeAssignmentSolutionCommandHandler(IUnitOfWork _unitOfWor
             return Result.Failure("Solution already graded");
 
         solution.Graded(request.Grade, request.Feedback);
-        _unitOfWork.SolutionRepository.Update(solution);
-        await _unitOfWork.SaveChangesAsync();
+        unitOfWork.SolutionRepository.Update(solution);
+        await unitOfWork.SaveChangesAsync();
         return Result.Success("Solution graded successfully");
     }
 }

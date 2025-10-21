@@ -44,11 +44,11 @@ public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignme
 }
 
 
-public class UpdateAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<UpdateAssignmentCommand, Result>
+public class UpdateAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<UpdateAssignmentCommand, Result>
 {
     public async Task<Result> Handle(UpdateAssignmentCommand request, CancellationToken cancellationToken)
     {
-        var assignment = await _unitOfWork.AssignmentRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var assignment = await unitOfWork.AssignmentRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (assignment == null)
             return Result.Failure("Can't find assignment");
@@ -73,11 +73,11 @@ public class UpdateAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.IsTraining,
             request.PromptText,
             request.CodeSolution,
-            _current.UserId);
+            current.UserId);
 
-        _unitOfWork.AssignmentRepository.Update(assignment);
+        unitOfWork.AssignmentRepository.Update(assignment);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Assignment Updated Successfully");
     }

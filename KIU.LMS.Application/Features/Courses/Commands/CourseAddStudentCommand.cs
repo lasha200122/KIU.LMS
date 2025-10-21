@@ -14,16 +14,16 @@ public class CourseAddStudentCommandValidator : AbstractValidator<CourseAddStude
     }
 }
 
-public class CourseAddStudentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<CourseAddStudentCommand, Result>
+public class CourseAddStudentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<CourseAddStudentCommand, Result>
 {
     public async Task<Result> Handle(CourseAddStudentCommand request, CancellationToken cancellationToken)
     {
-        var user = await _unitOfWork.UserRepository.ExistsAsync(x => x.Id == request.UserId);
+        var user = await unitOfWork.UserRepository.ExistsAsync(x => x.Id == request.UserId);
 
         if (!user)
             return Result.Failure("Can't find user");
 
-        var course = await _unitOfWork.CourseRepository.ExistsAsync(x => x.Id == request.CourseId);
+        var course = await unitOfWork.CourseRepository.ExistsAsync(x => x.Id == request.CourseId);
 
         if (!course)
             return Result.Failure("Can't find course");
@@ -33,11 +33,11 @@ public class CourseAddStudentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUse
             request.UserId,
             request.CourseId,
             request.CanAccessTill,
-            _current.UserId);
+            current.UserId);
 
-        await _unitOfWork.UserCourseRepository.AddAsync(newUserCourse);
+        await unitOfWork.UserCourseRepository.AddAsync(newUserCourse);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("User added successfully");
     }

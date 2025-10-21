@@ -581,8 +581,6 @@ internal class ExamResultMinimalDto
     public TimeSpan Duration { get; set; }
 }
 
-// ===== PUBLIC DTOs =====
-
 public class StudentCourseAnalyticsDto
 {
     public Guid StudentId { get; set; }

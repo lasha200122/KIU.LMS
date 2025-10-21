@@ -26,11 +26,11 @@ public class UpdateCourseMeetingCommandValidator : AbstractValidator<UpdateCours
     }
 }
 
-public class UpdateCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<UpdateCourseMeetingCommand, Result>
+public class UpdateCourseMeetingCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<UpdateCourseMeetingCommand, Result>
 {
     public async Task<Result> Handle(UpdateCourseMeetingCommand request, CancellationToken cancellationToken)
     {
-        var meeting = await _unitOfWork.CourseMeetingRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var meeting = await unitOfWork.CourseMeetingRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (meeting is null)
             return Result.Failure("Can't find meeting");
@@ -40,9 +40,9 @@ public class UpdateCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrent
             request.Url,
             request.StartDateTime,
             request.EndDateTime,
-            _current.UserId);
+            current.UserId);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Meeting updated successfully");
     }

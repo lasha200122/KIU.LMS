@@ -53,19 +53,19 @@ public sealed class AddQuizCommandValidator : AbstractValidator<AddQuizCommand>
     }
 }
 
-public sealed class AddQuizCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddQuizCommand, Result>
+public sealed class AddQuizCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<AddQuizCommand, Result>
 {
     public async Task<Result> Handle(AddQuizCommand request, CancellationToken cancellationToken)
     {
         if (!request.Banks.Any())
             return Result.Failure("Question Banks is required");
 
-        var courseExist = await _unitOfWork.CourseRepository.ExistsAsync(x => x.Id == request.CourseId);
+        var courseExist = await unitOfWork.CourseRepository.ExistsAsync(x => x.Id == request.CourseId, cancellationToken);
 
         if (!courseExist)
             return Result.Failure("Can't find course");
 
-        var topicExist = await _unitOfWork.TopicRepository.ExistsAsync(x => x.Id == request.TopicId);
+        var topicExist = await unitOfWork.TopicRepository.ExistsAsync(x => x.Id == request.TopicId, cancellationToken);
 
         if (!topicExist)
             return Result.Failure("Can't find topic");
@@ -98,20 +98,20 @@ public sealed class AddQuizCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserS
             request.MinusScore,
             request.PublicTill,
             request.IsTraining,
-            _current.UserId);
+            current.UserId);
 
         var quizBanks = request.Banks.Select(x => new QuizBank(
             Guid.NewGuid(),
             quiz.Id,
             x.Id,
             x.Amount,
-            _current.UserId))
+            current.UserId))
         .ToList();
 
-        await _unitOfWork.QuizRepository.AddAsync(quiz);
-        await _unitOfWork.QuizBankRepository.AddRangeAsync(quizBanks);
+        await unitOfWork.QuizRepository.AddAsync(quiz);
+        await unitOfWork.QuizBankRepository.AddRangeAsync(quizBanks);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Quiz Created Successfully");
     }

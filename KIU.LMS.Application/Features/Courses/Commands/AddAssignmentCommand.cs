@@ -20,7 +20,6 @@ public sealed record AddAssignmentCommand(
     string? PromptText,
     string? CodeSolution) : IRequest<Result>;
 
-
 public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
 {
     public AddAssignmentCommandValidator() 
@@ -39,8 +38,7 @@ public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentComm
     }
 }
 
-
-public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddAssignmentCommand, Result>
+public class AddAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService _current) : IRequestHandler<AddAssignmentCommand, Result>
 {
     public async Task<Result> Handle(AddAssignmentCommand request, CancellationToken cancellationToken)
     {
@@ -80,9 +78,9 @@ public class AddAssignmentCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserSe
             request.CodeSolution,
             _current.UserId);
     
-        await _unitOfWork.AssignmentRepository.AddAsync(assignment);
+        await unitOfWork.AssignmentRepository.AddAsync(assignment);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Assignment Created Successfully");
     }

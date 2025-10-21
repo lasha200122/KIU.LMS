@@ -7,6 +7,5 @@ public interface IModuleRepository : IBaseRepository<Module>
 }
 
 
-public interface IModuleBankRepository : IBaseRepository<ModuleBank>
-{
-}
+public interface IModuleBankRepository
+    : IBaseRepository<ModuleBank> { }

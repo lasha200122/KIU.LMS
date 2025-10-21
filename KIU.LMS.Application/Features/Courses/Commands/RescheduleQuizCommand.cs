@@ -2,11 +2,11 @@
 
 public sealed record RescheduleQuizCommand(Guid Id, DateTimeOffset StartDateTime, DateTimeOffset EndDateTime) : IRequest<Result>;
 
-public sealed class RescheduleQuizCommandHandler(IUnitOfWork _unitOfWork) : IRequestHandler<RescheduleQuizCommand, Result>
+public sealed class RescheduleQuizCommandHandler(IUnitOfWork unitOfWork) : IRequestHandler<RescheduleQuizCommand, Result>
 {
     public async Task<Result> Handle(RescheduleQuizCommand request, CancellationToken cancellationToken)
     {
-        var quiz = await _unitOfWork.QuizRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var quiz = await unitOfWork.QuizRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (quiz is null)
         {
@@ -15,9 +15,9 @@ public sealed class RescheduleQuizCommandHandler(IUnitOfWork _unitOfWork) : IReq
 
         quiz.Reschedule(request.StartDateTime, request.EndDateTime);
 
-        _unitOfWork.QuizRepository.Update(quiz);
+        unitOfWork.QuizRepository.Update(quiz);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result<Unit>.Success("Quiz updated Successfully");
     }

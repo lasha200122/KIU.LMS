@@ -13,19 +13,19 @@ public class DeleteCourseCommandValidator : AbstractValidator<DeleteCourseComman
 }
 
 public class DeleteCourseCommandHandler(
-    IUnitOfWork _unitOfWork,
-    ICurrentUserService _currentUser) : IRequestHandler<DeleteCourseCommand, Result>
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUser) : IRequestHandler<DeleteCourseCommand, Result>
 {
     public async Task<Result> Handle(DeleteCourseCommand request, CancellationToken cancellationToken)
     {
-        var course = await _unitOfWork.CourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var course = await unitOfWork.CourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (course is null)
             return Result.Failure("Course not found");
 
-        course.Delete(_currentUser.UserId, DateTimeOffset.UtcNow);
+        course.Delete(currentUser.UserId, DateTimeOffset.UtcNow);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Course Deleted Successfully");
     }

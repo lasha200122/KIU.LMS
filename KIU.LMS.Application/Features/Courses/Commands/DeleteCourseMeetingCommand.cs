@@ -12,18 +12,18 @@ public class DeleteCourseMeetingCommandValidator : AbstractValidator<DeleteCours
     }
 }
 
-public class DeleteCourseMeetingCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<DeleteCourseMeetingCommand, Result>
+public class DeleteCourseMeetingCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<DeleteCourseMeetingCommand, Result>
 {
     public async Task<Result> Handle(DeleteCourseMeetingCommand request, CancellationToken cancellationToken)
     {
-        var meeting = await _unitOfWork.CourseMeetingRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
+        var meeting = await unitOfWork.CourseMeetingRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
 
         if (meeting is null)
             return Result.Failure("Can't find meeting");
 
-        meeting.Delete(_current.UserId, DateTimeOffset.UtcNow);
+        meeting.Delete(current.UserId, DateTimeOffset.UtcNow);
 
-        await _unitOfWork.SaveChangesAsync();
+        await unitOfWork.SaveChangesAsync();
 
         return Result.Success("Meeting deleted successfully");
     }
