@@ -111,4 +111,14 @@ public class ModulesController(ISender sender) : ApiController(sender)
     {
         return await Handle(new ImportC2RSCommand(file, moduleId));
     }
+
+    [HttpGet("banks/submodules")]
+    [ProducesResponseType(typeof(PagedEntities<GetModuleBanksResponse>), 200)]
+    public async Task<IResult> GetModuleBanks(
+        [FromQuery] Guid id,
+        [FromQuery] int pageNumber,
+        [FromQuery] int pageSize)
+    {
+        return await Handle<GetModuleBanksQuery, PagedEntities<GetModuleBanksResponse>>(new GetModuleBanksQuery(id, pageNumber, pageSize));
+    }
 }

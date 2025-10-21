@@ -4,13 +4,11 @@ public class Module : Aggregate
 {
     public Guid CourseId { get; private set; }
     public string Name { get; private set; } = string.Empty;
-
-
+    
     public virtual Course Course { get; private set; } = null!;
     public virtual List<ModuleBank> ModuleBanks { get; private set; } = null!;
     private List<QuestionBank> _questionBanks = new();
     public IReadOnlyCollection<QuestionBank> QuestionBanks => _questionBanks;
-
 
     public Module() {}
 
@@ -54,7 +52,6 @@ public class ModuleBank : Aggregate
         Update(userId, DateTimeOffset.UtcNow);
     }
 }
-
 
 public class SubModule : Aggregate 
 {

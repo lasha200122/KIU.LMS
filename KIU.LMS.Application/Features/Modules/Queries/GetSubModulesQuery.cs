@@ -1,7 +1,4 @@
-﻿using Microsoft.JSInterop;
-
-namespace KIU.LMS.Application.Features.Modules.Queries;
-
+﻿namespace KIU.LMS.Application.Features.Modules.Queries;
 
 public sealed record GetModulesBankQuery(
     Guid ModuleId,
@@ -9,7 +6,6 @@ public sealed record GetModulesBankQuery(
     string? Name,
     int PageNumber,
     int PageSize) : IRequest<Result<PagedEntities<GetModulesBankQueryResponse>>>;
-
 
 public sealed record GetModulesBankQueryResponse(Guid Id, string Name);
 
@@ -38,16 +34,12 @@ public class GetSubModulesQueryHandler(IUnitOfWork _unitOfWork) : IRequestHandle
     }
 }
 
-
-
 // New Code 
-
 
 public sealed record GetSubModulesQuery(
     Guid ModuleBankId,
     int PageNumber,
     int PageSize) : IRequest<Result<PagedEntities<GetSubModulesQueryResponse>>>;
-
 
 public sealed record GetSubModulesQueryResponse(
     Guid Id,
@@ -89,15 +81,6 @@ public class GetSubModulesQuerysHandler(IUnitOfWork _unitOfWork) : IRequestHandl
         return Result<PagedEntities<GetSubModulesQueryResponse>>.Success(courses)!;
     }
 }
-
-
-
-
-
-/// <summary>
-/// 
-/// </summary>
-
 
 public record SubModuleDto
 {
@@ -178,8 +161,6 @@ public sealed class GetSubModuleByIdQueryHandler(
         return Result<SubModuleDto>.Success(dto);
     }
 }
-
-
 
 public sealed record GetSubModulesByModuleQuery(
     Guid ModuleId,

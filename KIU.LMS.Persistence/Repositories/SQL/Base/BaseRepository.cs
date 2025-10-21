@@ -2,6 +2,11 @@
 
 public class BaseRepository<T>(DbContext Context) : IBaseRepository<T> where T : class
 {
+    public IQueryable<T> AsQueryable()
+    {
+        return Context.Set<T>().AsQueryable();
+    }
+
     public async Task<T> AddAsync(T entity, CancellationToken cancellationToken = default)
     {
         var result = await Context.Set<T>().AddAsync(entity, cancellationToken);
@@ -129,6 +134,28 @@ public class BaseRepository<T>(DbContext Context) : IBaseRepository<T> where T :
         }
 
         return await query.Where(predicate).ToListAsync();
+    }
+    
+    public async Task<PagedEntities<TResult>> GetPaginatedWhereIncludedWithSelectAsync<TResult>(
+        Expression<Func<T, bool>> predicate,
+        int skip, int take,
+        Expression<Func<T, TResult>> select,
+        CancellationToken cancellationToken)
+    {
+        var query = Context.Set<T>().AsNoTracking();    
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        query = query.Where(predicate);
+        
+        var result = await query
+            .Order()
+            .Select(select)               
+            .Skip((skip - 1) * take)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+        
+        return new PagedEntities<TResult>(result, totalCount);
     }
 
     public async Task<ICollection<T>> GetWhereAsTrackingIncludedAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties)

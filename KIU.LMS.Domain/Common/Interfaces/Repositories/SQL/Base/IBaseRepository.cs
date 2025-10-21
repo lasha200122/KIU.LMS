@@ -2,6 +2,7 @@
 
 public interface IBaseRepository<T> where T : class
 {
+    IQueryable<T> AsQueryable();
     Task<T> AddAsync(T entity, CancellationToken cancellationToken = default);
     Task AddRangeAsync(ICollection<T> entities, CancellationToken cancellationToken = default);
     T Update(T entity);
@@ -9,7 +10,7 @@ public interface IBaseRepository<T> where T : class
 
     void Remove(T entity);
     void RemoveRange(ICollection<T> entities);
-
+    
     Task<T?> FirstOrDefaultAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     Task<T?> FirstOrDefaultWithTrackingAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     Task<TResult?> FirstOrDefaultMappedAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> select, CancellationToken cancellationToken = default);
@@ -22,6 +23,7 @@ public interface IBaseRepository<T> where T : class
     Task<ICollection<T>> GetAllAsync(CancellationToken cancellationToken = default);
     Task<ICollection<T>> GetWhereAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     Task<ICollection<T>> GetWhereIncludedAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
+    Task<PagedEntities<TResult>> GetPaginatedWhereIncludedWithSelectAsync<TResult>(Expression<Func<T, bool>> predicate, int skip, int take, Expression<Func<T, TResult>> select, CancellationToken cancellationToken);
     Task<ICollection<T>> GetWhereAsTrackingIncludedAsync(Expression<Func<T, bool>> predicate, params Expression<Func<T, object>>[] includeProperties);
     Task<ICollection<T>> GetWhereAsTrackingAsync(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default);
     Task<ICollection<TResult>> GetMappedAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> select, CancellationToken cancellationToken = default);
