@@ -183,6 +183,12 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(request);
     }
 
+    [HttpPost("assignment-by-bank")]
+    public async Task<IResult> AddAssigmentByBank([FromBody] AddAssigmentByModulesCommand request)
+    {
+        return await Handle(request);
+    }
+
     [HttpPost("assignment/update")]
     public async Task<IResult> UpdateAssignment([FromBody] UpdateAssignmentCommand request) 
     {

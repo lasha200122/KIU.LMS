@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Api.Utilities;
 
-public sealed class GlobalExceptionHandler(Serilog.ILogger _logger) : IExceptionHandler
+public sealed class GlobalExceptionHandler(ILogger _logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
