@@ -18,7 +18,8 @@ public sealed record AddAssignmentCommand(
     Guid? PromptId,
     bool IsTraining,
     string? PromptText,
-    string? CodeSolution) : IRequest<Result>;
+    string? CodeSolution,
+    int ValidationsCount) : IRequest<Result>;
 
 public class AddAssignmentCommandValidator : AbstractValidator<AddAssignmentCommand> 
 {
@@ -76,6 +77,7 @@ public class AddAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserSer
             request.IsTraining,
             request.PromptText,
             request.CodeSolution,
+            request.ValidationsCount,
             _current.UserId);
     
         await unitOfWork.AssignmentRepository.AddAsync(assignment);

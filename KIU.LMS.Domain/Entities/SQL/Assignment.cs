@@ -22,7 +22,7 @@ public class Assignment : Aggregate
     public bool IsTraining { get; private set; }
     public string? PromptText { get; private set; }
     public string? CodeSolution { get; private set; }
-
+    public int ValidationsCount { get; private set; } = 0;
 
     public virtual Course Course { get; private set; } = null!;
     public virtual Topic Topic { get; private set; } = null!;
@@ -53,6 +53,7 @@ public class Assignment : Aggregate
         bool isTraining,
         string? promptText,
         string? codeSolution,
+        int validationsCount,
         Guid createUserId) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         CourseId = courseId;
@@ -75,6 +76,7 @@ public class Assignment : Aggregate
         RuntimeAttempt = runtimeAttempt;
         PromptText = promptText;
         CodeSolution = codeSolution;
+        ValidationsCount = validationsCount;
     }
 
 

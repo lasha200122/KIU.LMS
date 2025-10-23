@@ -1,6 +1,7 @@
 ﻿using System.Net.Http;
 using Anthropic.SDK;
 using KIU.LMS.Domain.Common.Settings;
+using KIU.LMS.Infrastructure.Common.Configs;
 using Microsoft.Extensions.Options;
 
 namespace KIU.LMS.Infrastructure;
@@ -28,6 +29,8 @@ public static class InfrastructureServiceRegistration
 
         services.AddAuthorization();
 
+        
+        
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options => {
                 options.RequireHttpsMetadata = false;
@@ -70,6 +73,17 @@ public static class InfrastructureServiceRegistration
             return client;
         });
 
+        services.AddHttpClient("ai-grader", client =>
+        {
+            client.BaseAddress = new Uri("https://ai.hackers.ge/api/v1/");
+            client.Timeout = TimeSpan.FromSeconds(180);
+        });
+
+        services.Configure<AIGradingConfiguration>(
+            configuration.GetSection(nameof(AIGradingConfiguration)));
+        
+        services.AddScoped<IAiGradingService, AIGradingService>();
+        
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IExcelProcessor, ExcelProcessor>();
@@ -83,6 +97,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IExamService, ExamService>();
         services.AddScoped<IClaudeService, ClaudeService>();
         services.AddScoped<IFileService, FileService>();
+        services.AddScoped<IAiGradingService, AIGradingService>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

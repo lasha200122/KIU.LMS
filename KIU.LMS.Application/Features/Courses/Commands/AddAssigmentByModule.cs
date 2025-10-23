@@ -14,6 +14,7 @@ public sealed record AddAssigmentByModulesCommand(
     bool AIGrader,
     bool FullScreen,
     bool IsTraining,
+    int ValidationsCount,
     Dictionary<DifficultyType, int> DifficultyDistribution,
     Guid CreateUserId) : IRequest<Result>;
 
@@ -30,6 +31,9 @@ public sealed class AddAssigmentByModulesCommandValidator : AbstractValidator<Ad
         RuleFor(x => x.CreateUserId)
             .NotEmpty();
 
+        RuleFor(x => x.ValidationsCount)
+            .LessThanOrEqualTo(3);
+        
         RuleForEach(x => x.DifficultyDistribution)
             .Must(kv => Enum.IsDefined(typeof(DifficultyType), kv.Key))
             .WithMessage("Unknown difficulty type");
@@ -135,6 +139,7 @@ public sealed class AddAssigmentByModulesHandler(
                 isTraining: request.IsTraining,
                 promptText: sub.CodeGraidingPrompt,
                 codeSolution: sub.CodeSolution,
+                request.ValidationsCount,
                 createUserId: request.CreateUserId
             );
 

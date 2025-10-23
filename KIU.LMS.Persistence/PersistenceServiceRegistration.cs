@@ -47,7 +47,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<ISubModuleRepository, SubModuleRepository>();
         services.AddScoped<IModuleBankRepository, ModuleBankRepository>();
         services.AddScoped<IFileRepository, FileRepository>();
-
+        services.AddScoped<IAssignmentSolutionJobRepository, AssignmentSolutionJobRepository>();
+        
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);

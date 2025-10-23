@@ -11,8 +11,6 @@ public sealed record SchoolRankingItem(
     string Name,
     string Value);
 
-
-
 public sealed class GetSchoolRankingsQueryHandler(
     IUnitOfWork _unitOfWork,
     IMongoRepository<ExamSession> _sessionRepository,

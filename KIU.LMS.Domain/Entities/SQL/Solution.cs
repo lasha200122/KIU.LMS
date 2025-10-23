@@ -32,10 +32,10 @@ public class Solution : Aggregate
         GradingStatus = gradingStatus;
     }
 
-    public void Failed() 
+    public void Failed(string? reason = null) 
     {
         GradingStatus = GradingStatus.Failed;
-        FeedBack = "Automated grading failed. Requires manual review.";
+        FeedBack = reason ?? "Automated grading failed. Requires manual review.";
     }
 
     public void Graded(string grade, string feedback) 

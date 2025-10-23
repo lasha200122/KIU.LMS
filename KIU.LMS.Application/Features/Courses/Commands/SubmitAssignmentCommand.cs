@@ -17,7 +17,10 @@ public class SubmitAssignmentCommandValidator : AbstractValidator<SubmitAssignme
     }
 }
 
-public class SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<SubmitAssignmentCommand, Result<Guid>>
+public class SubmitAssignmentCommandHandler(
+    IUnitOfWork unitOfWork, 
+    ICurrentUserService current)
+    : IRequestHandler<SubmitAssignmentCommand, Result<Guid>>
 {
     public async Task<Result<Guid>> Handle(SubmitAssignmentCommand request, CancellationToken cancellationToken)
     {
@@ -39,8 +42,16 @@ public class SubmitAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUser
             GradingStatus.None,
             current.UserId);
 
+        var solutionGrateJob = new AssignmentSolutionJob(
+                Guid.NewGuid(),
+                assignment.Id,
+                solution.Id,
+                "mistral-small3.2:latest",
+                current.UserId);
+        
         await unitOfWork.SolutionRepository.AddAsync(solution);
-
+        await unitOfWork.AssignmentSolutionJobRepository.AddAsync(solutionGrateJob);
+        
         await unitOfWork.SaveChangesAsync();
 
         return Result<Guid>.Success(current.UserId);

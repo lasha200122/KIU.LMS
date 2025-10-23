@@ -21,6 +21,8 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<SubModule> SubModules { get; set; } = null!;
     public DbSet<FileRecord> FileRecords { get; set; } = null!;
     public DbSet<Quiz> Quizzes { get; set; } = null!;
+    public DbSet<AssignmentSolutionJob> AssignmentSolutionJobs { get; set; } = null!;
+    
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(LmsDbContext).Assembly);
