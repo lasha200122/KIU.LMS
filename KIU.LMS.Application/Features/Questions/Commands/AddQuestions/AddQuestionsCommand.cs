@@ -42,7 +42,7 @@ public class AddQuestionsCommandHandler : IRequestHandler<AddQuestionsCommand, R
         {
             var options = new List<Option>
         {
-            new Option(q.CorrectAnswer, true)
+            new(q.CorrectAnswer, true)
         };
 
             options.AddRange(q.IncorrectAnswers.Select(x => new Option(x, false)));
@@ -51,7 +51,9 @@ public class AddQuestionsCommandHandler : IRequestHandler<AddQuestionsCommand, R
                 request.Id,
                 q.Question,
                 QuestionType.Single,
-                options
+                options,
+                q.ExplanationCorrectAnswer,
+                q.ExplanationIncorrectAnswer
             );
         }).ToList();
 

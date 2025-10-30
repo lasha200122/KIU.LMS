@@ -1,23 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace KIU.LMS.Domain.Common.Models.Excel;
 
-namespace KIU.LMS.Domain.Common.Models.Excel
+public sealed class QuestionExcelDto
 {
-    public sealed class QuestionExcelDto
+    public string Question { get; set; } = string.Empty;
+    public string CorrectAnswer { get; set; } = string.Empty;
+    public List<string> IncorrectAnswers { get; set; } = new();
+
+    public string ExplanationCorrectAnswer { get; private set; } = string.Empty;
+    public string ExplanationIncorrectAnswer { get; private set; } = string.Empty;
+
+    public QuestionExcelDto(
+        string question, 
+        string correctAnswer, 
+        List<string> incorrectAnswers,
+        string explanationCorrectAnswer,
+        string explanationIncorrectAnswer)
     {
-        public string Question { get; set; } = string.Empty;
-        public string CorrectAnswer { get; set; } = string.Empty;
-        public List<string> IncorrectAnswers { get; set; } = new();
-
-        public QuestionExcelDto(string question, string correctAnswer, List<string> incorrectAnswers)
-        {
-            Question = question;
-            CorrectAnswer = correctAnswer;
-            IncorrectAnswers = incorrectAnswers;
-        }
+        Question = question;
+        CorrectAnswer = correctAnswer;
+        IncorrectAnswers = incorrectAnswers;
+        ExplanationCorrectAnswer = explanationCorrectAnswer;
+        ExplanationIncorrectAnswer = explanationIncorrectAnswer;
     }
-
 }

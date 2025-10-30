@@ -36,6 +36,8 @@ public class ExamService(
                     .Select(x => new Domain.Entities.NoSQL.ExamQuestion(
                         x.Id,
                         x.Text,
+                        x.ExplanationCorrectAnswer,
+                        x.ExplanationIncorrectAnswer,
                         x.Type,
                         x.Options.OrderBy(x => Guid.NewGuid()).ToList(),
                         quiz.TimePerQuestion,

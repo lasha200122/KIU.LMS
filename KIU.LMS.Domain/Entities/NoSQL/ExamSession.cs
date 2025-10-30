@@ -113,6 +113,8 @@ public class ExamQuestion
     public string Text { get; set; } = string.Empty;
     public QuestionType Type { get; set; }
     public List<Option> Options { get; set; } = new();
+    public string ExplanationCorrectAnswer { get; private set; } = string.Empty;
+    public string ExplanationIncorrectAnswer { get; private set; } = string.Empty;
     public int? TimeLimit { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
 
@@ -125,6 +127,8 @@ public class ExamQuestion
     public ExamQuestion(
         string questionId,
         string text,
+        string explanationCorrectAnswer,
+        string explanationIncorrectAnswer,
         QuestionType type,
         List<Option> options,
         int? timeLimit,
@@ -132,6 +136,8 @@ public class ExamQuestion
     {
         QuestionId = questionId;
         Text = text;
+        ExplanationCorrectAnswer = explanationCorrectAnswer;
+        ExplanationIncorrectAnswer = explanationIncorrectAnswer;
         Type = type;
         Options = options;
         TimeLimit = timeLimit;

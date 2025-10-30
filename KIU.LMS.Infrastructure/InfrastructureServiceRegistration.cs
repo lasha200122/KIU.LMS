@@ -1,6 +1,4 @@
-﻿using System.Net.Http;
-using Anthropic.SDK;
-using KIU.LMS.Domain.Common.Settings;
+﻿using Anthropic.SDK;
 using KIU.LMS.Infrastructure.Common.Configs;
 using Microsoft.Extensions.Options;
 
@@ -28,8 +26,6 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton(claudeSetting!);
 
         services.AddAuthorization();
-
-        
         
         services.AddAuthentication(defaultScheme: JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options => {
@@ -87,7 +83,7 @@ public static class InfrastructureServiceRegistration
         services.AddSingleton<IPasswordService, PasswordService>();
         services.AddSingleton<IJwtService, JwtService>();
         services.AddSingleton<IExcelProcessor, ExcelProcessor>();
-
+        
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IActiveSessionService, ActiveSessionService>();
         services.AddScoped<IEmailProcessingService, EmailProcessingService>();
@@ -98,7 +94,9 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IClaudeService, ClaudeService>();
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IAiGradingService, AIGradingService>();
-
+        services.AddScoped<IQrCodeService, QrCodeService>();
+        
+        
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
         return services;

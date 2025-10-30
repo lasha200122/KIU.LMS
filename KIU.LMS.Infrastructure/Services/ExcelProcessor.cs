@@ -1,6 +1,4 @@
-﻿using KIU.LMS.Application.Features.Excel.Queries;
-
-namespace KIU.LMS.Infrastructure.Services;
+﻿namespace KIU.LMS.Infrastructure.Services;
 
 public class ExcelProcessor : IExcelProcessor
 {
@@ -26,11 +24,13 @@ public class ExcelProcessor : IExcelProcessor
                             if (!string.IsNullOrWhiteSpace(answer))
                                 incorrectAnswers.Add(answer);
                         }
-
+                        
                         var question = new QuestionExcelDto(
                             row.Cell(1).GetString().Trim(),
                             row.Cell(2).GetString().Trim(),
-                            incorrectAnswers
+                            incorrectAnswers,
+                            row.Cell(6).GetString().Trim(),
+                            row.Cell(7).GetString().Trim()
                         );
 
                         if (string.IsNullOrWhiteSpace(question.Question))
@@ -45,12 +45,24 @@ public class ExcelProcessor : IExcelProcessor
                             continue;
                         }
 
+                        if (string.IsNullOrWhiteSpace(question.ExplanationCorrectAnswer))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationCorrectAnswer", "სწორი პასუხის ახსნა სავალდებულოა"));
+                            continue;
+                        }
+                        
+                        if (string.IsNullOrWhiteSpace(question.ExplanationIncorrectAnswer))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationIncorrectAnswer", "არასწორი პასუხის ახსნა სავალდებულოა"));
+                            continue;
+                        }
+                        
                         if (!question.IncorrectAnswers.Any())
                         {
                             result.Errors.Add(new ExcelRowError(rowNum, "IncorrectAnswers", "მინიმუმ ერთი არასწორი პასუხი სავალდებულოა"));
                             continue;
                         }
-
+                        
                         result.ValidQuestions.Add(question);
                     }
                     catch (Exception ex)
@@ -181,6 +193,8 @@ public class ExcelProcessor : IExcelProcessor
             worksheet.Cell(1, 4).Value = "არასწორი პასუხი 2";
             worksheet.Cell(1, 5).Value = "არასწორი პასუხი 3";
             worksheet.Cell(1, 6).Value = "არასწორი პასუხი 4";
+            worksheet.Cell(1, 7).Value = "სწორი პასუხის ახსნა";
+            worksheet.Cell(1, 8).Value = "არასწორი პასუხის ახსნა";
 
             var headerRow = worksheet.Row(1);
             headerRow.Style.Font.Bold = true;
