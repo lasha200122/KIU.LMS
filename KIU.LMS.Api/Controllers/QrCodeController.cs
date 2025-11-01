@@ -19,7 +19,7 @@ public class QrCodeController(ISender sender) : ApiController(sender)
     {
         var result = await sender.Send(new GetCourseRegistrationRedirectUrlQuery(token));
         return result.IsSuccess 
-            ? Results.Redirect(result.Message)
+            ? Results.NoContent()
             : Results.StatusCode(404);
     }
 }

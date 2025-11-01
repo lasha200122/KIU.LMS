@@ -16,7 +16,6 @@ public sealed record GetQuizDetailsQueryResponse(
     string TotalTime,
     List<ExamHistory> History);
 
-
 public sealed record ExamHistory(
     string SessionId,
     string StartedAt,
@@ -25,7 +24,6 @@ public sealed record ExamHistory(
     string TotalQuestions,
     string CorrectAnswers,
     string Duration);
-
 
 public sealed class GetQuizDetailsQueryHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<GetQuizDetailsQuery, Result<GetQuizDetailsQueryResponse>>
 {
@@ -38,9 +36,9 @@ public sealed class GetQuizDetailsQueryHandler(IUnitOfWork _unitOfWork, ICurrent
 
         var userAttempts = quiz.ExamResults.Where(x => x.StudentId == _current.UserId).ToList();
 
-        int attempted = userAttempts.Count();
-
-        int totalQuestions = quiz.QuizBanks.Sum(x => x.Amount);
+        int attempted = userAttempts.Count;
+        
+        var totalQuestions = quiz.QuizBanks.Sum(x => x.Amount);
 
         string totalTime = quiz.TimePerQuestion.HasValue ? $"{(totalQuestions * quiz.TimePerQuestion.Value) % 60 + 1}" : string.Empty;
 
