@@ -26,8 +26,8 @@ public sealed class SubmitAnswerCommandHandler(IExamService _service, ICurrentUs
         var result = await _service.SubmitAnswerAsync(request.SessionId, request.QuestionId, request.Options);
 
         if (!result)
-            return Result.Failure("can't submit answser");
+            return Result.Failure("can't submit answer");
 
-        return Result.Success("Answer Submeted successfully");
+        return Result.Success("Answer Submitted successfully");
     }
 }
