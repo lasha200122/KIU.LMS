@@ -18,7 +18,7 @@ public class ExcelProcessor : IExcelProcessor
                     try
                     {
                         var incorrectAnswers = new List<string>();
-                        for (int i = 3; i <= 6; i++)
+                        for (int i = 3; i <= 5; i++)
                         {
                             var answer = row.Cell(i).GetString().Trim();
                             if (!string.IsNullOrWhiteSpace(answer))
@@ -192,9 +192,8 @@ public class ExcelProcessor : IExcelProcessor
             worksheet.Cell(1, 3).Value = "არასწორი პასუხი 1";
             worksheet.Cell(1, 4).Value = "არასწორი პასუხი 2";
             worksheet.Cell(1, 5).Value = "არასწორი პასუხი 3";
-            worksheet.Cell(1, 6).Value = "არასწორი პასუხი 4";
-            worksheet.Cell(1, 7).Value = "სწორი პასუხის ახსნა";
-            worksheet.Cell(1, 8).Value = "არასწორი პასუხის ახსნა";
+            worksheet.Cell(1, 6).Value = "სწორი პასუხის ახსნა";
+            worksheet.Cell(1, 7).Value = "არასწორი პასუხის ახსნა";
 
             var headerRow = worksheet.Row(1);
             headerRow.Style.Font.Bold = true;
