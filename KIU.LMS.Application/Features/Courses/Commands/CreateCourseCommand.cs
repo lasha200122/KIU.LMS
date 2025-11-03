@@ -19,7 +19,8 @@ public class CreateCourseCommandHandler(
     public async Task<Result> Handle(CreateCourseCommand request, CancellationToken cancellationToken)
     {
         var name = request.Name.Trim();
-        var courseExist = await unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken);
+        var courseExist = await unitOfWork.CourseRepository
+            .ExistsAsync(x => x.Name.ToLower() == name.ToLower(), cancellationToken);
 
         if (courseExist)
             return Result.Failure("Course is already created");

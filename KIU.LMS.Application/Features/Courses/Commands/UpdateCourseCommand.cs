@@ -22,20 +22,35 @@ public class UpdateCourseCommandHandler(
 {
     public async Task<Result> Handle(UpdateCourseCommand request, CancellationToken cancellationToken)
     {
-        var name = request.Name.Trim().ToLower();
-
-        if (await unitOfWork.CourseRepository.ExistsAsync(x => x.Name == name, cancellationToken))
-            return Result.Failure("Course name should be unique");
-
         var course = await unitOfWork.CourseRepository.SingleOrDefaultWithTrackingAsync(x => x.Id == request.Id);
-
+        
         if (course is null)
             return Result.Failure("Course not found");
+        
+        var name = request.Name.Trim();
 
+        if (name.Equals(course.Name, StringComparison.CurrentCultureIgnoreCase))
+        {
+            if(name == course.Name) 
+                return Result.Failure($"Course is already named: {name}");
+            
+            course.Update(name,  currentUser.UserId);
+            await unitOfWork.SaveChangesAsync();
+
+            return Result.Success("Course Updated Successfully");
+        }
+        
+        var courseExists = await unitOfWork.CourseRepository.ExistsAsync(x => 
+            x.Name.ToLower() == name.ToLower() && 
+            name.ToLower() != course.Name.ToLower(),
+            cancellationToken); 
+        
+        if(courseExists) 
+            return Result.Failure("Course already exists");
+            
         course.Update(name, currentUser.UserId);
-
         await unitOfWork.SaveChangesAsync();
-
+            
         return Result.Success("Course Updated Successfully");
     }
 }
