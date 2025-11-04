@@ -237,6 +237,13 @@ public class CourseController(ISender sender) : ApiController(sender)
         return await Handle(new GradeSolutionCommand(id));
     }
 
+    [HttpGet("generated-assigments")]
+    [ProducesResponseType(typeof(PagedEntities<GetGeneratedAssignmentsResult>), StatusCodes.Status200OK)]
+    public async Task<IResult> GetGeneratedAssignments([FromQuery] GetGeneratedAssignmentsQuery query)
+    {
+        return await Handle(query);
+    }
+    
     #endregion Assignments
 
     #region Quizzes

@@ -46,7 +46,7 @@ public class SubmitAssignmentCommandHandler(
                 Guid.NewGuid(),
                 assignment.Id,
                 solution.Id,
-                "mistral-small3.2:latest",
+                "gpt-oss:120b",
                 current.UserId);
         
         await unitOfWork.SolutionRepository.AddAsync(solution);

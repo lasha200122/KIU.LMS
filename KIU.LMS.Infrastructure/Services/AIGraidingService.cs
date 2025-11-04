@@ -26,8 +26,9 @@ public class AIGradingService : IAiGradingService
             new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", aiGradingConfiguration.ApiKey);
     }
 
-    public async Task<string?> GradeAsync(string problem, string referenceSolution, string studentSubmission,
-        string rubric)
+    public async Task<string?> GradeAsync(
+        string problem, string referenceSolution, 
+        string studentSubmission, string rubric, decimal score)
     {
         var request = new
         {
@@ -44,7 +45,27 @@ public class AIGradingService : IAiGradingService
                 {
                     role = "user",
                     content =
-                        $"You are an expert grader. Use the provided grading prompt/rubric. Grade strictly by the problem and the reference solution.\n\nReturn ONLY strict JSON with keys grade and feedback, no code fences, no extra text.\nConstraints:\n- grade must be a number between 0 and 12\n- feedback must be concise.\n\nGrading Prompt (rubric):\n{rubric}\n\nInputs:\n- Problem:\n{problem}\n- Reference solution:\n{referenceSolution}\n- Student submission:\n{studentSubmission}\n\nOutput format example:\n{{\"grade\": 10, \"feedback\": \"Good.\"}}"
+                        $@"You are an expert grader. Use the provided grading prompt/rubric. Grade strictly by the problem and the reference solution.
+
+Return ONLY strict JSON with keys grade and feedback, no code fences, no extra text.
+
+Constraints:
+- grade must be a number between 0 and {score}
+- feedback must be concise, but if the solution is correct or nearly correct, do not respond with a single word like 'Good'. Provide a short meaningful comment (1–2 sentences) describing what was done well.
+
+Grading Prompt (rubric):
+{rubric}
+
+Inputs:
+- Problem:
+{problem}
+- Reference solution:
+{referenceSolution}
+- Student submission:
+{studentSubmission}
+
+Output format example:
+{{""grade"": 10, ""feedback"": ""Solution is correct and clearly explained.""}}"
                 }
             },
             stream = false

@@ -95,7 +95,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IFileService, FileService>();
         services.AddScoped<IAiGradingService, AIGradingService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
-        
+        services.AddScoped<IQuestionGenerationService, QuestionGenerationService>();
         
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

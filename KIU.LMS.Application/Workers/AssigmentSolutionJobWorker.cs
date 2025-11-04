@@ -53,7 +53,7 @@ public class AssignmentSolutionJobWorker : BackgroundService
                     if (string.IsNullOrWhiteSpace(problem) || string.IsNullOrWhiteSpace(reference))
                         throw new Exception("Invalid assignment data for grading.");
 
-                    var gradeResult = await aiService.GradeAsync(problem, reference, studentSubmission, rubric);
+                    var gradeResult = await aiService.GradeAsync(problem, reference, studentSubmission, rubric, assignment.Score ?? 10);
                     if (gradeResult == null)
                     {
                         solution.Failed(); 

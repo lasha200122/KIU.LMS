@@ -4,7 +4,6 @@ using Domain.Entities.SQL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-
 public class AssignmentSolutionJobConfiguration : EntityConfiguration<AssignmentSolutionJob>
 {
     public override void Configure(EntityTypeBuilder<AssignmentSolutionJob> builder)

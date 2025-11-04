@@ -13,6 +13,7 @@ public static class ApplicationServiceRegistration
 
         services.AddHostedService<EmailQueueWorker>();
         services.AddHostedService<AssignmentSolutionJobWorker>();
+        services.AddHostedService<AssignmentGenerationWorker>();
         //services.AddHostedService<GradingWorker>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);

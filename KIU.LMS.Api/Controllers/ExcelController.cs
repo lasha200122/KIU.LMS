@@ -43,4 +43,14 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
     {
         return await HandleFile(new C2RSTemplateQuery(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "c2rs-tempalte.xlsx");
     }
+
+    [HttpGet("generated-questions")]
+    public async Task<IResult> GetGeneratedQuestions(
+        [FromQuery] Guid generatedAssigmentId)
+    {
+        return await HandleFile(
+            new GetGeneratedQuestionsQuery(generatedAssigmentId),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"questions-{generatedAssigmentId}.xlsx");
+    }
 }

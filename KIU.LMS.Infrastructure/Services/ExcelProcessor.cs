@@ -426,6 +426,51 @@ public class ExcelProcessor : IExcelProcessor
         }
     }
 
+    public void GetGeneratedAssigmentQuestions(Stream stream, IEnumerable<GeneratedQuestion> questions)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Questions");
+
+        worksheet.Cell(1, 1).Value = "კითხვა";
+        worksheet.Cell(1, 2).Value = "სწორი პასუხი";
+        worksheet.Cell(1, 3).Value = "არასწორი პასუხი 1";
+        worksheet.Cell(1, 4).Value = "არასწორი პასუხი 2";
+        worksheet.Cell(1, 5).Value = "არასწორი პასუხი 3";
+        worksheet.Cell(1, 6).Value = "სწორი პასუხის ახსნა";
+        worksheet.Cell(1, 7).Value = "არასწორი პასუხის ახსნა";
+
+        var headerRow = worksheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        int row = 2;
+        foreach (var question in questions)
+        {
+            worksheet.Cell(row, 1).Value = question.QuestionText;
+            worksheet.Cell(row, 2).Value = question.OptionA; // Always correct
+            worksheet.Cell(row, 3).Value = question.OptionB;
+            worksheet.Cell(row, 4).Value = question.OptionC;
+            worksheet.Cell(row, 5).Value = question.OptionD;
+            worksheet.Cell(row, 6).Value = question.ExplanationCorrect;
+            worksheet.Cell(row, 7).Value = question.ExplanationIncorrect;
+
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        // Apply borders
+        if (row > 2)
+        {
+            var dataRange = worksheet.Range(1, 1, row - 1, 7);
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        }
+
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+    }
+
     public async Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file)
     {
         var result = new ExcelValidationResult();

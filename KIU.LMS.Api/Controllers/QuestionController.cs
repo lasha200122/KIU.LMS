@@ -2,6 +2,7 @@
 using KIU.LMS.Application.Features.Questions.Commands.AddQuestions;
 using KIU.LMS.Application.Features.Questions.Queries;
 using KIU.LMS.Domain.Entities.NoSQL;
+using GetGeneratedQuestionsQuery = KIU.LMS.Application.Features.Questions.Queries.GetGeneratedQuestionsQuery;
 
 namespace KIU.LMS.Api.Controllers;
 
@@ -62,5 +63,19 @@ public class QuestionController(ISender sender) : ApiController(sender)
     public async Task<IResult> ExplainQuestion(string id) 
     {
         return await Handle<GeminiQuestionExplainQuery, string>(new GeminiQuestionExplainQuery(id));
+    }
+
+    [HttpPost("generate-questions")]
+    public async Task<IResult> GenerateQuestions([FromBody] GenerateQuestionsCommand command)
+    {
+        return await Handle(command);
+    }
+    
+    [HttpGet("generated-questions")]
+    [ProducesResponseType(typeof(PagedEntities<GetGeneratedQuestionsQueryResult>), StatusCodes.Status200OK)]
+    public async Task<IResult> GetGeneratedQuestions(
+        [FromQuery] GetGeneratedQuestionsQuery request) // aq aseti ori commandi gvaqvs, es excelis araa
+    {
+        return await Handle(request);
     }
 }
