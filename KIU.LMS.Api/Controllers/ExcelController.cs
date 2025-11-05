@@ -49,7 +49,7 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
         [FromQuery] Guid generatedAssigmentId)
     {
         return await HandleFile(
-            new GetGeneratedQuestionsQuery(generatedAssigmentId),
+            new GetExcelGeneratedQuestionsQuery(generatedAssigmentId),
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"questions-{generatedAssigmentId}.xlsx");
     }

@@ -3,8 +3,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace KIU.LMS.Application.Features.Courses.Queries;
 
-public sealed record GetGeneratedAssignmentsQuery(string Name, int Page = 1, int PageSize = 10)
-    : IRequest<Result<PagedEntities<GetGeneratedAssignmentsResult>>>;
+public sealed record GetGeneratedAssignmentsQuery(string Name = "", int Page = 1, int PageSize = 10)
+    : IRequest<PagedEntities<GetGeneratedAssignmentsResult>>;
 
 public sealed record GetGeneratedAssignmentsResult(
     Guid Id, string Name,
@@ -14,9 +14,9 @@ public sealed record GetGeneratedAssignmentsResult(
 
 public sealed class GetGeneratedAssignmentsHandler(
     IGeneratedAssignmentRepository repository)
-    : IRequestHandler<GetGeneratedAssignmentsQuery, Result<PagedEntities<GetGeneratedAssignmentsResult>>>
+    : IRequestHandler<GetGeneratedAssignmentsQuery, PagedEntities<GetGeneratedAssignmentsResult>>
 {
-    public async Task<Result<PagedEntities<GetGeneratedAssignmentsResult>>> Handle(GetGeneratedAssignmentsQuery request,
+    public async Task<PagedEntities<GetGeneratedAssignmentsResult>> Handle(GetGeneratedAssignmentsQuery request,
         CancellationToken cancellationToken)
     {
         var query = repository.AsQueryable();

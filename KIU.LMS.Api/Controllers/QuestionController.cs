@@ -2,7 +2,6 @@
 using KIU.LMS.Application.Features.Questions.Commands.AddQuestions;
 using KIU.LMS.Application.Features.Questions.Queries;
 using KIU.LMS.Domain.Entities.NoSQL;
-using GetGeneratedQuestionsQuery = KIU.LMS.Application.Features.Questions.Queries.GetGeneratedQuestionsQuery;
 
 namespace KIU.LMS.Api.Controllers;
 
@@ -74,8 +73,9 @@ public class QuestionController(ISender sender) : ApiController(sender)
     [HttpGet("generated-questions")]
     [ProducesResponseType(typeof(PagedEntities<GetGeneratedQuestionsQueryResult>), StatusCodes.Status200OK)]
     public async Task<IResult> GetGeneratedQuestions(
-        [FromQuery] GetGeneratedQuestionsQuery request) // aq aseti ori commandi gvaqvs, es excelis araa
+        [FromQuery] GetGeneratedQuestionsQuery request) 
     {
-        return await Handle(request);
+        var result = await sender.Send(request);
+        return Results.Ok(result);
     }
 }

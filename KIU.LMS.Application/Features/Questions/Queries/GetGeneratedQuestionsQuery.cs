@@ -4,7 +4,8 @@ using Microsoft.EntityFrameworkCore;
 namespace KIU.LMS.Application.Features.Questions.Queries;
 
 public sealed record GetGeneratedQuestionsQuery(Guid GeneratedAssigmentId, int Page = 1, int PageSize = 10)
-    : IRequest<Result<PagedEntities<GetGeneratedQuestionsQueryResult>>>;
+    : IRequest<PagedEntities<GetGeneratedQuestionsQueryResult>>;
+
 public sealed record GetGeneratedQuestionsQueryResult(
     string QuestionText,
     string OptionA,
@@ -15,9 +16,9 @@ public sealed record GetGeneratedQuestionsQueryResult(
     string ExplanationIncorrect);
 
 public sealed class GetGeneratedQuestionsHandler(
-    IGeneratedQuestionRepository generatedQuestionRepository) : IRequestHandler<GetGeneratedQuestionsQuery, Result<PagedEntities<GetGeneratedQuestionsQueryResult>>>
+    IGeneratedQuestionRepository generatedQuestionRepository) : IRequestHandler<GetGeneratedQuestionsQuery, PagedEntities<GetGeneratedQuestionsQueryResult>>
 {
-    public async Task<Result<PagedEntities<GetGeneratedQuestionsQueryResult>>> Handle(GetGeneratedQuestionsQuery request, CancellationToken cancellationToken)
+    public async Task<PagedEntities<GetGeneratedQuestionsQueryResult>> Handle(GetGeneratedQuestionsQuery request, CancellationToken cancellationToken)
     {
         var query = generatedQuestionRepository
             .AsQueryable()

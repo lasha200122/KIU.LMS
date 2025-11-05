@@ -241,7 +241,8 @@ public class CourseController(ISender sender) : ApiController(sender)
     [ProducesResponseType(typeof(PagedEntities<GetGeneratedAssignmentsResult>), StatusCodes.Status200OK)]
     public async Task<IResult> GetGeneratedAssignments([FromQuery] GetGeneratedAssignmentsQuery query)
     {
-        return await Handle(query);
+        var result = await sender.Send(query);
+        return Results.Ok(result);
     }
     
     #endregion Assignments
