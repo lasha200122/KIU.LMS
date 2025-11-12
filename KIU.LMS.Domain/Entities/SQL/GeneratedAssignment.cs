@@ -9,6 +9,7 @@ public class GeneratedAssignment : Aggregate
     public List<string> Models { get; private set; }
     public string TaskContent { get; private set; }
     public DifficultyType Difficulty { get; private set; }
+    public string Prompt { get; private set; }
     public GeneratingStatus Status { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
 
@@ -22,6 +23,7 @@ public class GeneratedAssignment : Aggregate
         Guid id, Guid createUserId,
         string title, string taskContent,
         int count, DifficultyType difficulty,
+        string prompt,
         List<string> models) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         if (string.IsNullOrWhiteSpace(title))
@@ -30,6 +32,7 @@ public class GeneratedAssignment : Aggregate
         Title = title;
         Count = count;
         TaskContent = taskContent;
+        Prompt = prompt;
         Models = models;
         Difficulty = difficulty;
         Status = GeneratingStatus.InProgress;
