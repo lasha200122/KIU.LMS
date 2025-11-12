@@ -6,6 +6,7 @@ public record GenerateQuestionsCommand(
     string Task,
     int Count,
     DifficultyType Difficulty,
+    string Prompt,
     List<string> Models) : IRequest<Result>;
 
 public sealed class GenerateQuestionsHandler(
@@ -20,7 +21,7 @@ public sealed class GenerateQuestionsHandler(
         GeneratedAssignment generatedAssignment = new(
             Guid.NewGuid(), userService.UserId,
             $"Assigment {generatedAssignmentCount}", request.Task,
-            request.Count, request.Difficulty, request.Models);
+            request.Count, request.Difficulty, request.Prompt, request.Models);
         
         await generatedAssignmentRepository.AddAsync(generatedAssignment);
         await unitOfWork.SaveChangesAsync();

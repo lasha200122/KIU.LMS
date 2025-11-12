@@ -57,7 +57,7 @@ public class AssignmentGenerationWorker : BackgroundService
                     int remaining = needed - already;
                     var drafts = await generator.GenerateAsync(
                         models[0],
-                        assignment.TaskContent,
+                        assignment.Prompt,
                         quantity: remaining,
                         difficulty: assignment.Difficulty.ToString()
                     );
@@ -70,7 +70,7 @@ public class AssignmentGenerationWorker : BackgroundService
                         if (already >= needed)
                             break;
 
-                        var validated = await ValidateWithModels(generator, draft, models, stoppingToken);
+                        var validated = await ValidateWithModels(generator, draft, models, assignment.TaskContent, stoppingToken);
                         if (validated == null)
                             continue;
 
@@ -129,13 +129,14 @@ public class AssignmentGenerationWorker : BackgroundService
         IQuestionGenerationService generator,
         GeneratedQuestionDraft input,
         List<string> models,
+        string taskContent,
         CancellationToken ct)
     {
         var current = input;
 
         if (models.Count == 1)
         {
-            var res = await generator.ValidateAsync(models[0], current);
+            var res = await generator.ValidateAsync(models[0], taskContent ,current);
             if (res == null || (!res.IsValid && res.FixedQuestion == null))
                 return null;
 
@@ -144,7 +145,7 @@ public class AssignmentGenerationWorker : BackgroundService
 
         for (int i = 1; i < models.Count; i++)
         {
-            var res = await generator.ValidateAsync(models[i], current);
+            var res = await generator.ValidateAsync(models[i], taskContent,current);
             if (res == null) return null;
             if (!res.IsValid && res.FixedQuestion == null) return null;
             if (res.FixedQuestion != null) current = res.FixedQuestion;

@@ -6,11 +6,12 @@ public interface IQuestionGenerationService
 {
     Task<List<GeneratedQuestionDraft>?> GenerateAsync(
         string model,
-        string taskContent,
+        string prompt,
         int quantity,
         string difficulty);
     
     Task<QuestionValidationResult?> ValidateAsync(
         string model,
+        string taskContent,
         GeneratedQuestionDraft draft);
 }

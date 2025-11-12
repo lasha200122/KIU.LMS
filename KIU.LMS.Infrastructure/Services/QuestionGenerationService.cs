@@ -29,43 +29,10 @@ public class QuestionGenerationService : IQuestionGenerationService
     
     public async Task<List<GeneratedQuestionDraft>?> GenerateAsync(
         string model,
-        string taskContent,
+        string prompt,
         int quantity,
         string difficulty)
     {
-        var prompt = $@"
-You are an expert exam-setter generating mathematics questions.
-
-Your task:
-- Generate **exactly {quantity}** new and distinct question variants.
-- Each variant must be a NEW QUESTION (not a rephrase).
-- Each variant must follow the formatting rules strictly.
-
-Formatting rules:
-1. Output exactly {quantity} numbered items: 1., 2., 3., ..., {quantity}.
-2. Each item must have exactly these 6 lines:
-   Question: <text>
-   A) <correct answer>
-   B) <distractor>
-   C) <distractor>
-   D) <distractor>
-   explainCorrectAnswerDescription: <why A is correct>
-   explainIncorrectAnswersDescription: <why B,C,D are wrong>
-3. No additional text, notes, comments, or explanations.
-4. Do NOT add more than {quantity} questions. If fewer are valid, stop exactly at that number.
-
-Additional constraints:
-- Option A must always be the correct answer.
-- B, C, D must be plausible but incorrect.
-- Each variant must test related but different aspects of the original question.
-- Avoid rewording or trivial copies.
-
-Domain: Mathematics (Linear Algebra)
-Difficulty: {difficulty}
-
-Generate exactly {quantity} valid questions based on:
-{taskContent}";
-
         var request = new
         {
             model = model,
@@ -102,10 +69,17 @@ Generate exactly {quantity} valid questions based on:
     
     public async Task<QuestionValidationResult?> ValidateAsync(
         string model,
+        string taskContent,
         GeneratedQuestionDraft draft)
     {
         var prompt = $@"
-You are an expert mathematics exam validator. Validate a single generated question.
+You are an expert exam validator. First, analyze the task content to identify the subject field, then validate the generated question.
+
+Task Content:
+{taskContent}
+
+Based on the task content above, identify the academic subject/field this question should belong to.
+Then validate the single generated question below.
 
 Return ONLY strict JSON in this format:
 {{
@@ -123,11 +97,12 @@ Return ONLY strict JSON in this format:
 }}
 
 Validation rules:
-- Must be Mathematics (Linear Algebra).
+- Must match the subject field identified from the task content.
+- Must align with the difficulty and topic requirements from the task content.
 - Option A must be correct.
 - Options B, C, D must be plausible but incorrect.
 - If small errors present, provide corrected version in ""fixed"".
-- If nonsense, off-topic or mathematically incorrect without fix → isValid=false.
+- If nonsense, off-topic or fundamentally incorrect without fix → isValid=false.
 
 Question to validate:
 Question: {draft.QuestionText}
@@ -146,7 +121,9 @@ explainIncorrectAnswersDescription: {draft.ExplanationIncorrect}";
                 new {
                     role = "system",
                     content = 
-                        @"You validate mathematics exam questions.
+                        @"You validate exam questions across multiple academic fields.
+First extract the subject field from the provided task content.
+Then validate if the question matches that field and meets quality standards.
 Return ONLY valid JSON with fields: isValid (boolean), reason (string), fixed (object or null).
 DO NOT include <think>, chain-of-thought, natural language explanations, or markdown.
 Answer strictly in JSON."
@@ -155,6 +132,7 @@ Answer strictly in JSON."
             },
             stream = false
         };
+
 
         var response = await _httpClient.PostAsJsonAsync("chat/completions", request);
         if (!response.IsSuccessStatusCode)
