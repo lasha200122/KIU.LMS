@@ -34,33 +34,36 @@ public class QuestionGenerationService : IQuestionGenerationService
         string difficulty)
     {
         var prompt = $@"
-You are an expert exam-setter who generates question variants by changing numbers or other elements.
-RULES:
-0) Do not write thinking text
-1) Each variant must be a NEW QUESTION, not just a rephrase of the original.
-2) Test related or nearby concepts to the original question.
-3) The TRUE ANSWER must change - do not always keep the same correct answer.
-4) False answers must be REALISTIC DISTRACTORS, not random numbers or nonsense.
-5) For EACH variant: produce exactly one question and exactly 4 options labeled A, B, C, D.
-6) Option A MUST ALWAYS be the correct answer. B, C, D MUST be plausible distractors.
-7) Output MUST be concise and self-contained.
-8) No preambles or epilogues; return only the generated variants.
-Difficulty: {difficulty}
-Quantity: {quantity}
+You are an expert exam-setter generating mathematics questions.
 
-Formatting requirements:
-- Use a clear numbered list: 1., 2., 3., ...
-- For each variant return lines in the following order:
-  Question: <text>
-  A) <correct answer>
-  B) <distractor>
-  C) <distractor>
-  D) <distractor>
-  explainCorrectAnswerDescription: <explanation of why A is correct>
-  explainIncorrectAnswersDescription: <explanation of why B, C, D are incorrect>
+Your task:
+- Generate **exactly {quantity}** new and distinct question variants.
+- Each variant must be a NEW QUESTION (not a rephrase).
+- Each variant must follow the formatting rules strictly.
+
+Formatting rules:
+1. Output exactly {quantity} numbered items: 1., 2., 3., ..., {quantity}.
+2. Each item must have exactly these 6 lines:
+   Question: <text>
+   A) <correct answer>
+   B) <distractor>
+   C) <distractor>
+   D) <distractor>
+   explainCorrectAnswerDescription: <why A is correct>
+   explainIncorrectAnswersDescription: <why B,C,D are wrong>
+3. No additional text, notes, comments, or explanations.
+4. Do NOT add more than {quantity} questions. If fewer are valid, stop exactly at that number.
+
+Additional constraints:
+- Option A must always be the correct answer.
+- B, C, D must be plausible but incorrect.
+- Each variant must test related but different aspects of the original question.
+- Avoid rewording or trivial copies.
 
 Domain: Mathematics (Linear Algebra)
-Create {quantity} distinct variants for:
+Difficulty: {difficulty}
+
+Generate exactly {quantity} valid questions based on:
 {taskContent}";
 
         var request = new
@@ -177,18 +180,6 @@ Answer strictly in JSON."
         return QuestionParser.ParseValidationJson(finallRow);
     }
 
-    private string CleanResponse(string raw)
-    {
-        if (string.IsNullOrWhiteSpace(raw))
-            return raw;
-
-        return raw
-            .Trim()
-            .Trim('`') 
-            .Replace("```json", "", StringComparison.OrdinalIgnoreCase)
-            .Replace("```", "", StringComparison.OrdinalIgnoreCase)
-            .Trim();
-    }
     private static string? ExtractJson(string raw)
     {
         if (string.IsNullOrWhiteSpace(raw))

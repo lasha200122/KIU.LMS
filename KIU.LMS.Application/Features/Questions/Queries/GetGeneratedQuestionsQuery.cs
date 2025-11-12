@@ -16,13 +16,16 @@ public sealed record GetGeneratedQuestionsQueryResult(
     string ExplanationIncorrect);
 
 public sealed class GetGeneratedQuestionsHandler(
-    IGeneratedQuestionRepository generatedQuestionRepository) : IRequestHandler<GetGeneratedQuestionsQuery, PagedEntities<GetGeneratedQuestionsQueryResult>>
+    IGeneratedQuestionRepository generatedQuestionRepository,
+    ICurrentUserService userService) : IRequestHandler<GetGeneratedQuestionsQuery, PagedEntities<GetGeneratedQuestionsQueryResult>>
 {
     public async Task<PagedEntities<GetGeneratedQuestionsQueryResult>> Handle(GetGeneratedQuestionsQuery request, CancellationToken cancellationToken)
     {
         var query = generatedQuestionRepository
             .AsQueryable()
-            .Where(x => x.GeneratedAssignmentId == request.GeneratedAssigmentId)
+            .Where(x =>
+                x.GeneratedAssignmentId == request.GeneratedAssigmentId
+                && x.CreateUserId == userService.UserId)
             .OrderByDescending(x => x.CreateDate);
         
         var count = await query.CountAsync(cancellationToken: cancellationToken);

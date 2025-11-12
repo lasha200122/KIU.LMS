@@ -1,5 +1,3 @@
-using System.Data;
-using System.Diagnostics;
 using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,15 +6,18 @@ namespace KIU.LMS.Application.Features.Courses.Commands;
 public sealed record AddAssigmentByModulesCommand(
     Guid CourseId,
     Guid TopicId,
-    Guid ModuleBankId,
     AssignmentType Type,
     bool IsPublic,
     bool AIGrader,
     bool FullScreen,
     bool IsTraining,
     int ValidationsCount,
-    Dictionary<DifficultyType, int> DifficultyDistribution,
-    Guid CreateUserId) : IRequest<Result>;
+    BanksDto[] BanksDto) : IRequest<Result>;
+
+public record BanksDto(
+    Guid ModuleBankId,
+    DifficultyType Difficulty,
+    int Count);
 
 public sealed class AddAssigmentByModulesCommandValidator : AbstractValidator<AddAssigmentByModulesCommand>
 {
@@ -24,36 +25,46 @@ public sealed class AddAssigmentByModulesCommandValidator : AbstractValidator<Ad
     {
         RuleFor(x => x.CourseId)
             .NotEmpty();
+
         RuleFor(x => x.TopicId)
-            .NotEmpty();
-        RuleFor(x => x.ModuleBankId)
-            .NotEmpty();
-        RuleFor(x => x.CreateUserId)
             .NotEmpty();
 
         RuleFor(x => x.ValidationsCount)
-            .LessThanOrEqualTo(3);
-        
-        RuleForEach(x => x.DifficultyDistribution)
-            .Must(kv => Enum.IsDefined(typeof(DifficultyType), kv.Key))
-            .WithMessage("Unknown difficulty type");
+            .LessThanOrEqualTo(3)
+            .WithMessage("ValidationsCount must be <= 3");
 
-        RuleFor(x => x.DifficultyDistribution)
-            .NotEmpty().WithMessage("Must specify at least one difficulty group");
-        RuleFor(x => x.DifficultyDistribution.Values)
-            .Must(vs => vs.All(n => n >= 0))
-            .WithMessage("Value in difficulty distribution must be >= 0");
-        RuleFor(x => x.DifficultyDistribution.Values)
-            .Must(vs => vs.Sum() > 0)
-            .WithMessage("Sum of assignments must be > 0");
+        RuleFor(x => x.BanksDto)
+            .NotNull()
+            .NotEmpty()
+            .WithMessage("At least one bank must be specified");
+
+        RuleForEach(x => x.BanksDto).ChildRules(bank =>
+        {
+            bank.RuleFor(b => b.ModuleBankId)
+                .NotEmpty()
+                .WithMessage("ModuleBankId is required");
+
+            bank.RuleFor(b => b.Count)
+                .GreaterThan(0)
+                .WithMessage("Count must be > 0");
+
+            bank.RuleFor(b => b.Difficulty)
+                .Must(d => Enum.IsDefined(typeof(DifficultyType), d))
+                .WithMessage("Unknown difficulty type");
+        });
+
+        RuleFor(x => x.BanksDto.Sum(b => b.Count))
+            .GreaterThan(0)
+            .WithMessage("Total assignments count across all module banks must be > 0");
     }
 }
 
 public sealed class AddAssigmentByModulesHandler(
     IAssignmentRepository assignmentRepository,
-    IModuleBankRepository moduleBankRepository, 
+    IModuleBankRepository moduleBankRepository,
     IValidator<AddAssigmentByModulesCommand> validator,
-    IUnitOfWork unitOfWork 
+    IUnitOfWork unitOfWork,
+    ICurrentUserService currentUserService
 ) : IRequestHandler<AddAssigmentByModulesCommand, Result>
 {
     private static readonly Dictionary<DifficultyType, decimal> ScoreMapping = new()
@@ -68,82 +79,57 @@ public sealed class AddAssigmentByModulesHandler(
         var validation = await validator.ValidateAsync(request, cancellationToken);
         if (!validation.IsValid)
             return Result.Failure(string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
-        
-        var moduleBank = await moduleBankRepository
-            .AsQueryable()
-            .Include(mb => mb.Module)
-            .Include(mb => mb.SubModules)
-            .FirstOrDefaultAsync(mb => mb.Id == request.ModuleBankId, cancellationToken);
-
-        if (moduleBank is null)
-            return Result.Failure("ModuleBank not found");
-
-        if (moduleBank.Module.CourseId != request.CourseId)
-            return Result.Failure("ModuleBank doesn't belong to the course");
-
-        var available = moduleBank.SubModules
-            .Where(sm => sm.Difficulty.HasValue)
-            .GroupBy(sm => sm.Difficulty!.Value)
-            .ToDictionary(g => g.Key, g => g.ToList());
-
-        foreach (var (difficulty, count) in request.DifficultyDistribution)
-        {
-            var found = available.GetValueOrDefault(difficulty)?.Count ?? 0;
-            if (count > found)
-                return Result.Failure($"Not enough {difficulty} tasks: Available {found}, requested {count}");
-        }
-
-        var random = new Random();
-        var selectedSubmodules = new List<(SubModule SubModule, DifficultyType Difficulty)>();
-        foreach (var (difficulty, count) in request.DifficultyDistribution)
-        {
-            if (count <= 0 || !available.ContainsKey(difficulty)) continue;
-            var subs = available[difficulty]
-                .OrderBy(_ => random.Next())
-                .Take(count)
-                .ToList();
-            selectedSubmodules.AddRange(subs.Select(s => (s, difficulty)));
-        }
 
         int order = await assignmentRepository
             .AsQueryable()
             .Where(a => a.TopicId == request.TopicId)
             .Select(a => (int?)a.Order)
             .MaxAsync(cancellationToken) ?? 0;
-        order++; 
+        order++;
 
         var assignments = new List<Assignment>();
-        foreach (var (sub, difficulty) in selectedSubmodules)
+        var random = new Random();
+
+        foreach (var bank in request.BanksDto)
         {
-            var score = ScoreMapping.GetValueOrDefault(difficulty, 0);
+            var moduleBank = await moduleBankRepository
+                .AsQueryable()
+                .Include(mb => mb.Module)
+                .Include(mb => mb.SubModules)
+                .FirstOrDefaultAsync(mb => mb.Id == bank.ModuleBankId, cancellationToken);
 
-            var assignment = new Assignment(
-                id: Guid.NewGuid(),
-                courseId: request.CourseId,
-                topicId: request.TopicId,
-                type: request.Type,
-                name: $"{moduleBank.Name} - {difficulty} #{order}",
-                order: order++,
-                startDateTime: null,
-                endDateTime: null,
-                score: score,
-                problem: sub.TaskDescription,
-                code: null,
-                fileName: null,
-                isPublic: request.IsPublic,
-                aiGrader: request.AIGrader,
-                solutionType: SolutionType.Code,
-                promptId: null,
-                fullScreen: request.FullScreen,
-                runtimeAttempt: null,
-                isTraining: request.IsTraining,
-                promptText: sub.CodeGraidingPrompt,
-                codeSolution: sub.CodeSolution,
-                request.ValidationsCount,
-                createUserId: request.CreateUserId
-            );
+            if (moduleBank is null)
+                return Result.Failure($"ModuleBank {bank.ModuleBankId} not found");
 
-            assignments.Add(assignment);
+            if (moduleBank.Module.CourseId != request.CourseId)
+                return Result.Failure($"ModuleBank {bank.ModuleBankId} doesn't belong to the course");
+
+            var available = moduleBank.SubModules
+                .Where(sm => sm.Difficulty.HasValue)
+                .GroupBy(sm => sm.Difficulty!.Value)
+                .ToDictionary(g => g.Key, g => g.ToList());
+
+            var found = available.GetValueOrDefault(bank.Difficulty)?.Count ?? 0;
+            if (bank.Count > found)
+                return Result.Failure(
+                    $"Not enough {bank.Difficulty} tasks in bank {moduleBank.Name}. Available {found}, requested {bank.Count}");
+
+            var selectedSubmodules = available[bank.Difficulty]
+                .OrderBy(_ => random.Next())
+                .Take(bank.Count)
+                .ToList();
+
+            assignments.AddRange(
+                from sub in selectedSubmodules
+                let score = ScoreMapping.GetValueOrDefault(bank.Difficulty, 0)
+                select new Assignment(id: Guid.NewGuid(), courseId: request.CourseId, topicId: request.TopicId,
+                    type: request.Type, name: $"{moduleBank.Name} - {bank.Difficulty} #{order}", order: order++,
+                    startDateTime: null, endDateTime: null, score: score, problem: sub.TaskDescription, code: null,
+                    fileName: null, isPublic: request.IsPublic, aiGrader: request.AIGrader,
+                    solutionType: SolutionType.Code, promptId: null, fullScreen: request.FullScreen,
+                    runtimeAttempt: null, isTraining: request.IsTraining, promptText: sub.CodeGraidingPrompt,
+                    codeSolution: sub.CodeSolution, validationsCount: request.ValidationsCount,
+                    createUserId: currentUserService.UserId));
         }
 
         await assignmentRepository.AddRangeAsync(assignments, cancellationToken);

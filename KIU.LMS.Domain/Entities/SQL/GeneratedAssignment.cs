@@ -12,10 +12,17 @@ public class GeneratedAssignment : Aggregate
     public GeneratingStatus Status { get; private set; }
     public DateTimeOffset? CompletedAt { get; private set; }
 
-    private readonly List<GeneratedQuestion> _questions = new();
-    public IReadOnlyCollection<GeneratedQuestion> Questions => _questions;
+    private List<GeneratedQuestion> _questions = new();
+    public IReadOnlyCollection<GeneratedQuestion> Questions => _questions.AsReadOnly();
 
-    public GeneratedAssignment(string title, string taskContent, int count, DifficultyType difficulty, List<string> models)
+
+    public GeneratedAssignment() { }
+    
+    public GeneratedAssignment(
+        Guid id, Guid createUserId,
+        string title, string taskContent,
+        int count, DifficultyType difficulty,
+        List<string> models) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
         if (string.IsNullOrWhiteSpace(title))
             throw new ArgumentException("Title cannot be empty.", nameof(title));
@@ -26,7 +33,6 @@ public class GeneratedAssignment : Aggregate
         Models = models;
         Difficulty = difficulty;
         Status = GeneratingStatus.InProgress;
-        CreateDate = DateTimeOffset.UtcNow; 
     }
 
     public void AddQuestion(GeneratedQuestion question)

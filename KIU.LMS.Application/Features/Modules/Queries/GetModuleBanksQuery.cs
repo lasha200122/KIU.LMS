@@ -5,7 +5,8 @@ namespace KIU.LMS.Application.Features.Modules.Queries;
 public sealed record GetModuleBanksQuery(
     Guid ModuleId,
     int PageNumber,
-    int PageSize        
+    int PageSize,
+    SubModuleType Type
     ) : IRequest<Result<PagedEntities<GetModuleBanksResponse>>>;
 
 public sealed record GetModuleBanksResponse(
@@ -33,12 +34,12 @@ public sealed class GetModuleBanksHandler(
     {
         var result = await validator.ValidateAsync(request, cancellationToken);
         
-        if(!result.IsValid)
+        if (!result.IsValid)
             return Result<PagedEntities<GetModuleBanksResponse>>.Failure("Validation Failed, you must pass a valid query parameter");
         
         var query = unitOfWork.ModuleBankRepository
             .AsQueryable()
-            .Where(x => x.ModuleId == request.ModuleId)
+            .Where(x => x.ModuleId == request.ModuleId && x.Type == request.Type)
             .Include(x => x.SubModules);
 
         var totalCount = await query.CountAsync(cancellationToken);

@@ -13,13 +13,16 @@ public sealed record GetGeneratedAssignmentsResult(
     GeneratingStatus Status, DateTimeOffset? CompletedAt);
 
 public sealed class GetGeneratedAssignmentsHandler(
-    IGeneratedAssignmentRepository repository)
+    IGeneratedAssignmentRepository repository,
+    ICurrentUserService currentUserService)
     : IRequestHandler<GetGeneratedAssignmentsQuery, PagedEntities<GetGeneratedAssignmentsResult>>
 {
     public async Task<PagedEntities<GetGeneratedAssignmentsResult>> Handle(GetGeneratedAssignmentsQuery request,
         CancellationToken cancellationToken)
     {
-        var query = repository.AsQueryable();
+        var query = repository
+            .AsQueryable()
+            .Where(x => x.CreateUserId == currentUserService.UserId);
 
         if (!string.IsNullOrWhiteSpace(request.Name))
         {

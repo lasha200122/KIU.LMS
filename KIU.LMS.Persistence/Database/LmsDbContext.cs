@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Persistence.Database;
+﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+
+namespace KIU.LMS.Persistence.Database;
 
 public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbContext(options)
 {
@@ -19,13 +21,34 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<ExamResult> ExamResults { get; set; } = null!;
     public DbSet<Domain.Entities.SQL.Module> Modules { get; set; } = null!;
     public DbSet<SubModule> SubModules { get; set; } = null!;
+    public DbSet<ModuleBank> ModuleBanks { get; set; }
     public DbSet<FileRecord> FileRecords { get; set; } = null!;
     public DbSet<Quiz> Quizzes { get; set; } = null!;
     public DbSet<AssignmentSolutionJob> AssignmentSolutionJobs { get; set; } = null!;
+    public DbSet<GeneratedAssignment> GeneratedAssignments { get; set; } = null!;
+    public DbSet<GeneratedQuestion> GeneratedQuestions { get; set; } = null!;
+
     
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.ApplyConfigurationsFromAssembly(typeof(LmsDbContext).Assembly);
         base.OnModelCreating(builder);
+        
+        var dateTimeOffsetConverter = new ValueConverter<DateTimeOffset, DateTimeOffset>(
+            v => v.ToUniversalTime(),          
+            v => DateTime.SpecifyKind(v.DateTime, DateTimeKind.Utc));
+
+        foreach (var entityType in builder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(DateTimeOffset) ||
+                    property.ClrType == typeof(DateTimeOffset?))
+                {
+                    property.SetValueConverter(dateTimeOffsetConverter);
+                }
+            }
+        }
+
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Application.Features.Excel.Queries;
 
-public sealed record AddQuestionsTemplateQuery() : IRequest<Result<byte[]>>;
+public sealed record AddQuestionsTemplateQuery : IRequest<Result<byte[]>>;
 
 public class AddQuestionsTemplateQueryHandler(IExcelProcessor _excel) : IRequestHandler<AddQuestionsTemplateQuery, Result<byte[]>>
 {

@@ -10,13 +10,16 @@ public record GenerateQuestionsCommand(
 
 public sealed class GenerateQuestionsHandler(
     IGeneratedAssignmentRepository generatedAssignmentRepository,
-    IUnitOfWork unitOfWork) : IRequestHandler<GenerateQuestionsCommand, Result>
+    IUnitOfWork unitOfWork,
+    ICurrentUserService userService) : IRequestHandler<GenerateQuestionsCommand, Result>
 {
     public async Task<Result> Handle(GenerateQuestionsCommand request, CancellationToken cancellationToken)
     {
         var generatedAssignmentCount = await generatedAssignmentRepository.CountAsync(cancellationToken);
 
-        GeneratedAssignment generatedAssignment = new($"Assigment {generatedAssignmentCount}", request.Task,
+        GeneratedAssignment generatedAssignment = new(
+            Guid.NewGuid(), userService.UserId,
+            $"Assigment {generatedAssignmentCount}", request.Task,
             request.Count, request.Difficulty, request.Models);
         
         await generatedAssignmentRepository.AddAsync(generatedAssignment);

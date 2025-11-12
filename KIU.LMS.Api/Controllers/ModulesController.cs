@@ -1,5 +1,6 @@
 ﻿using KIU.LMS.Application.Features.Modules.Commands;
 using KIU.LMS.Application.Features.Modules.Queries;
+using KIU.LMS.Domain.Entities.SQL;
 
 namespace KIU.LMS.Api.Controllers;
 
@@ -117,8 +118,9 @@ public class ModulesController(ISender sender) : ApiController(sender)
     public async Task<IResult> GetModuleBanks(
         [FromQuery] Guid id,
         [FromQuery] int pageNumber,
-        [FromQuery] int pageSize)
+        [FromQuery] int pageSize,
+        [FromQuery] SubModuleType type)
     {
-        return await Handle<GetModuleBanksQuery, PagedEntities<GetModuleBanksResponse>>(new GetModuleBanksQuery(id, pageNumber, pageSize));
+        return await Handle<GetModuleBanksQuery, PagedEntities<GetModuleBanksResponse>>(new GetModuleBanksQuery(id, pageNumber, pageSize, type));
     }
 }

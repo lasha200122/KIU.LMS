@@ -14,10 +14,14 @@ public class GeneratedQuestion : Aggregate
     
     public GeneratedAssignment Assignment { get; private set; } = null!;
 
+    public GeneratedQuestion() { }
+    
     public GeneratedQuestion(
+        Guid newGuid, Guid createdUserid,
         Guid generatedAssignmentId, string questionText,
         string optionA, string optionB, string optionC, string optionD,
-        string explanationCorrect, string explanationIncorrect)
+        string explanationCorrect, string explanationIncorrect) 
+        : base(newGuid, DateTimeOffset.UtcNow, createdUserid)
     {
         GeneratedAssignmentId =  generatedAssignmentId;
         QuestionText = questionText;
@@ -27,7 +31,6 @@ public class GeneratedQuestion : Aggregate
         OptionD = optionD;
         ExplanationCorrect = explanationCorrect;
         ExplanationIncorrect = explanationIncorrect;
-        CreateDate = DateTimeOffset.UtcNow;
     }
 }
 

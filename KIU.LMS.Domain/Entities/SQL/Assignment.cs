@@ -126,7 +126,6 @@ public class Assignment : Aggregate
     }
 }
 
-
 public enum AssignmentType 
 {
     None,
