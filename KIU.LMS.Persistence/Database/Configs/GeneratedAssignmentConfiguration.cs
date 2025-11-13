@@ -1,3 +1,7 @@
+using KIU.LMS.Domain.Entities.SQL;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
 namespace KIU.LMS.Persistence.Database.Configs;
 
 public class GeneratedAssignmentConfiguration : EntityConfiguration<GeneratedAssignment>
@@ -14,7 +18,11 @@ public class GeneratedAssignmentConfiguration : EntityConfiguration<GeneratedAss
         builder.HasMany(x => x.Questions)
             .WithOne(x => x.Assignment)
             .HasForeignKey(x => x.GeneratedAssignmentId)
-            .IsRequired()
+            .OnDelete(DeleteBehavior.Cascade);
+
+        builder.HasMany(x => x.Tasks)
+            .WithOne(x => x.Assignment)
+            .HasForeignKey(x => x.GeneratedAssignmentId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 }
