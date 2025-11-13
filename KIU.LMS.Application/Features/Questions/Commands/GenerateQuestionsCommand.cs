@@ -1,3 +1,4 @@
+using KIU.LMS.Domain.Common.Enums.Assignment;
 using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
 
 namespace KIU.LMS.Application.Features.Questions.Commands;
@@ -7,6 +8,7 @@ public record GenerateQuestionsCommand(
     int Count,
     DifficultyType Difficulty,
     string Prompt,
+    GeneratedAssignmentType AssignmentType,
     List<string> Models) : IRequest<Result>;
 
 public sealed class GenerateQuestionsHandler(
@@ -20,8 +22,9 @@ public sealed class GenerateQuestionsHandler(
 
         GeneratedAssignment generatedAssignment = new(
             Guid.NewGuid(), userService.UserId,
-            $"Assigment {generatedAssignmentCount}", request.Task,
-            request.Count, request.Difficulty, request.Prompt, request.Models);
+            $"Assigment {generatedAssignmentCount}", request.Task, 
+            request.Count, request.Difficulty, request.AssignmentType,
+            request.Prompt, request.Models);
         
         await generatedAssignmentRepository.AddAsync(generatedAssignment);
         await unitOfWork.SaveChangesAsync();

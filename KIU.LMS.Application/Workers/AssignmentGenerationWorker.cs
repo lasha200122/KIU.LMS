@@ -32,7 +32,7 @@ public class AssignmentGenerationWorker : BackgroundService
                 var questionRepo = scope.ServiceProvider.GetRequiredService<IGeneratedQuestionRepository>();
                 var uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
 
-                var assignment = await assignmentRepo.GetInProgressAsync(stoppingToken);
+                var assignment = await assignmentRepo.GetMCQInProgressAsync(stoppingToken);
                 if (assignment is null)
                 {
                     await Task.Delay(2000, stoppingToken);
