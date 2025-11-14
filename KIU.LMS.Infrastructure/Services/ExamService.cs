@@ -61,12 +61,13 @@ public class ExamService(
         return session;
     }
 
-    public async Task<Domain.Entities.NoSQL.ExamQuestion?> GetCurrentQuestionAsync(string sessionId)
+    public async Task<ExamQuestion?> GetCurrentQuestionAsync(string sessionId)
     {
         var session = await _sessionRepository.GetByIdAsync(sessionId);
+
         if (session == null || session.Status != ExamStatus.InProgress)
             return null;
-
+        
         if (session.IsExamTimeExpired)
         {
             await FinishExamAsync(sessionId);

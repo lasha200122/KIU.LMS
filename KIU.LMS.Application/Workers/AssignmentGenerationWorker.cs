@@ -38,7 +38,7 @@ public class AssignmentGenerationWorker : BackgroundService
                     await Task.Delay(2000, stoppingToken);
                     continue;
                 }
-
+                
                 _logger.LogInformation("Started processing assignment: {Title}", assignment.Title);
 
                 int needed = assignment.Count;
@@ -48,7 +48,7 @@ public class AssignmentGenerationWorker : BackgroundService
                 while (already < needed && maxAttempts-- > 0 && !stoppingToken.IsCancellationRequested)
                 {
                     var models = assignment.Models;
-                    if (models == null || models.Count == 0)
+                    if (models is [])
                     {
                         assignment.FailGeneration("No models provided");
                         break;

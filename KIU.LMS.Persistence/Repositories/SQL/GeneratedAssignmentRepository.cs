@@ -8,7 +8,11 @@ public class GeneratedAssignmentRepository(LmsDbContext db)
     public async Task<GeneratedAssignment?> GetMCQInProgressAsync(CancellationToken ct = default)
     {
         return await db.Set<GeneratedAssignment>()
-            .FirstOrDefaultAsync(a => 
-                a.Status == GeneratingStatus.InProgress && a.Type == GeneratedAssignmentType.MCQ, ct);
+            .FromSqlRaw(sql: """
+                             SELECT * FROM "GeneratedAssignment"
+                             WHERE "Status" = 1 AND "GeneratedAssignmentType" = 1 
+                             FOR UPDATE 
+                             """)
+            .FirstOrDefaultAsync(ct);
     }
 }

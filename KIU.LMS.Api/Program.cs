@@ -101,6 +101,8 @@ var app = builder.Build();
 
     app.UseAuthentication();
 
+    app.UseStaticFiles("C:\\inetpub\\files");
+
     app.UseMiddleware<ActiveSessionMiddleware>();
 
     app.UseAuthorization();

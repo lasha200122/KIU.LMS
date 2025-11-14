@@ -6,6 +6,8 @@ public static class EnumTranslator
     {
         UserRole.Admin => "Admin",
         UserRole.Student => "Student",
-        _ => string.Empty,
+        UserRole.Ta => "Ta",
+        UserRole.Professor => "Professor",
+        _ => ""
     };
 }
