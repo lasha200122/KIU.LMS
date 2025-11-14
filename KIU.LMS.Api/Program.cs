@@ -1,3 +1,5 @@
+using Microsoft.Extensions.FileProviders;
+
 var builder = WebApplication.CreateBuilder(args);
 {
     var logger = Log.Logger = new LoggerConfiguration()
@@ -101,7 +103,11 @@ var app = builder.Build();
 
     app.UseAuthentication();
 
-    app.UseStaticFiles("C:\\inetpub\\files");
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = new PhysicalFileProvider(@"C:\inetpub\files"),
+        RequestPath = "/files"
+    });
 
     app.UseMiddleware<ActiveSessionMiddleware>();
 
