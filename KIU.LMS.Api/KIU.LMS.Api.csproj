@@ -15,6 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DataMigration\DataMigration.csproj" />
     <ProjectReference Include="..\KIU.LMS.Application\KIU.LMS.Application.csproj" />
     <ProjectReference Include="..\KIU.LMS.Infrastructure\KIU.LMS.Infrastructure.csproj" />
     <ProjectReference Include="..\KIU.LMS.Persistence\KIU.LMS.Persistence.csproj" />

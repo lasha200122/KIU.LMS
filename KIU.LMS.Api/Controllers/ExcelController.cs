@@ -53,4 +53,14 @@ public class ExcelController(ISender _sender) : ApiController(_sender)
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             $"questions-{generatedAssigmentId}.xlsx");
     }
+    
+    [HttpGet("generated-tasks")]
+    public async Task<IResult> GetGeneratedTasks(
+        [FromQuery] Guid generatedAssigmentId)
+    {
+        return await HandleFile(
+            new GetExcelGeneratedTasksQuery(generatedAssigmentId),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            $"questions-{generatedAssigmentId}.xlsx");
+    }
 }

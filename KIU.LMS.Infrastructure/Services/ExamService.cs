@@ -33,7 +33,7 @@ public class ExamService(
             {
                 var questionsToAdd = randomQuestions
                     .OrderBy(x => Guid.NewGuid())
-                    .Select(x => new Domain.Entities.NoSQL.ExamQuestion(
+                    .Select(x => new ExamQuestion(
                         x.Id,
                         x.Text,
                         x.ExplanationCorrectAnswer,

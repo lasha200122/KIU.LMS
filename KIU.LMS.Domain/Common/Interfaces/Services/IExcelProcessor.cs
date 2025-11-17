@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Domain.Common.Interfaces.Services;
+﻿using KIU.LMS.Domain.Common.Enums.Assignment;
+
+namespace KIU.LMS.Domain.Common.Interfaces.Services;
 
 public interface IExcelProcessor
 {
@@ -14,6 +16,9 @@ public interface IExcelProcessor
     void GenerateC2RSTemplate(Stream stream);
     public void GetGeneratedAssigmentQuestions(Stream stream,
         IEnumerable<GeneratedQuestion> questions);
+    void GetGeneratedAssignmentTasks(
+        Stream stream, IEnumerable<GeneratedTask> tasks,
+        GeneratedAssignmentType type, DifficultyType difficulty);
     Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file);
 }
 

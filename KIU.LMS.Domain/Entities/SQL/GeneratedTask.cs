@@ -3,7 +3,6 @@ namespace KIU.LMS.Domain.Entities.SQL;
 public class GeneratedTask : Aggregate
 {
     public Guid GeneratedAssignmentId { get; private set; }
-
     public string TaskDescription { get; private set; }
     public string CodeSolution { get; private set; }
     public string CodeGenerationPrompt { get; private set; }

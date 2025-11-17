@@ -1,4 +1,5 @@
 ﻿using Anthropic.SDK;
+using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
 using KIU.LMS.Infrastructure.Common.Configs;
 using Microsoft.Extensions.Options;
 
@@ -96,6 +97,7 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IAiGradingService, AIGradingService>();
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IQuestionGenerationService, QuestionGenerationService>();
+        services.AddScoped<ITaskGenerationService, TaskGenerationService>();
         
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 

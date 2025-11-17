@@ -1,6 +1,7 @@
 ﻿using KIU.LMS.Application.Features.Questions.Commands;
 using KIU.LMS.Application.Features.Questions.Commands.AddQuestions;
 using KIU.LMS.Application.Features.Questions.Queries;
+using KIU.LMS.Domain.Common.Enums.Assignment;
 using KIU.LMS.Domain.Entities.NoSQL;
 
 namespace KIU.LMS.Api.Controllers;
@@ -76,6 +77,15 @@ public class QuestionController(ISender sender) : ApiController(sender)
         [FromQuery] GetGeneratedQuestionsQuery request) 
     {
         var result = await sender.Send(request);
+        return Results.Ok(result);
+    }
+
+    [HttpGet("generated-tasks")]
+    [ProducesResponseType(typeof(GetGeneratedTasksResponse[]), StatusCodes.Status200OK)]
+    public async Task<IResult> GetGeneratedTasks(
+        [FromQuery] GetGeneratedTasksQuery query)
+    {
+        var result = await sender.Send(query);
         return Results.Ok(result);
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Infrastructure.Services;
+﻿using KIU.LMS.Domain.Common.Enums.Assignment;
+
+namespace KIU.LMS.Infrastructure.Services;
 
 public class ExcelProcessor : IExcelProcessor
 {
@@ -471,6 +473,61 @@ public class ExcelProcessor : IExcelProcessor
         stream.Position = 0;
     }
 
+    public void GetGeneratedAssignmentTasks(
+        Stream stream, IEnumerable<GeneratedTask> tasks,
+        GeneratedAssignmentType type, DifficultyType difficulty)
+    {
+        using var workbook = new XLWorkbook();
+        var worksheet = workbook.Worksheets.Add("Tasks");
+
+        worksheet.Cell(1, 1).Value = "Task Description";
+        worksheet.Cell(1, 2).Value = "Code Solution";
+        worksheet.Cell(1, 3).Value = "Code Generation Prompt";
+        worksheet.Cell(1, 4).Value = "Code Grading Prompt";
+        worksheet.Cell(1, 5).Value = "Difficulty";
+
+        var headerRow = worksheet.Row(1);
+        headerRow.Style.Font.Bold = true;
+        headerRow.Style.Fill.BackgroundColor = XLColor.LightGray;
+
+        int row = 2;
+        foreach (var task in tasks)
+        {
+            worksheet.Cell(row, 1).Value = task.TaskDescription;
+            worksheet.Cell(row, 2).Value = task.CodeSolution;
+        
+            if (type == GeneratedAssignmentType.C2RS)
+            {
+                worksheet.Cell(row, 3).Value = "EMPTY";
+            }
+            else  
+            {
+                worksheet.Cell(row, 3).Value = string.IsNullOrWhiteSpace(task.CodeGenerationPrompt) 
+                    ? "EMPTY" 
+                    : task.CodeGenerationPrompt;
+            }
+        
+            worksheet.Cell(row, 4).Value = task.CodeGradingPrompt;
+            worksheet.Cell(row, 5).Value = difficulty.ToString();
+
+            row++;
+        }
+
+        worksheet.Columns().AdjustToContents();
+
+        // Apply borders
+        if (row > 2)
+        {
+            var dataRange = worksheet.Range(1, 1, row - 1, 5);
+            dataRange.Style.Border.OutsideBorder = XLBorderStyleValues.Thin;
+            dataRange.Style.Border.InsideBorder = XLBorderStyleValues.Thin;
+        }
+
+        workbook.SaveAs(stream);
+        stream.Position = 0;
+    }
+
+    
     public async Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file)
     {
         var result = new ExcelValidationResult();

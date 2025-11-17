@@ -120,7 +120,7 @@ public class ExamQuestion
 
     public bool IsTimeExpired => TimeLimit.HasValue &&
         StartedAt.HasValue &&
-        DateTimeOffset.UtcNow > StartedAt.Value.AddSeconds(TimeLimit.Value);
+        DateTimeOffset.UtcNow > StartedAt.Value.AddSeconds(TimeLimit.Value + 10);
 
     public ExamQuestion() {}
 

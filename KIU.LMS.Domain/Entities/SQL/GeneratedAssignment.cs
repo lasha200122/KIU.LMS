@@ -31,9 +31,6 @@ public class GeneratedAssignment : Aggregate
         string prompt,
         List<string> models) : base(id, DateTimeOffset.UtcNow, createUserId)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.", nameof(title));
-
         if (type == GeneratedAssignmentType.None)
             throw new ArgumentException("Assignment type must be specified.", nameof(type));
 
@@ -99,7 +96,7 @@ public class GeneratedAssignment : Aggregate
         Status = GeneratingStatus.Failed;
     }
 
-    public bool HasValidContent()
+    private bool HasValidContent()
     {
         return (_questions != null && _questions.Any()) || (_tasks != null && _tasks.Any());
     }

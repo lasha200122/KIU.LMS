@@ -50,7 +50,7 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IAssignmentSolutionJobRepository, AssignmentSolutionJobRepository>();
         services.AddScoped<IGeneratedAssignmentRepository, GeneratedAssignmentRepository>();
         services.AddScoped<IGeneratedQuestionRepository, GeneratedQuestionRepository>();
-        
+        services.AddScoped<IGeneratedTaskRepository,  GeneratedTaskRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);

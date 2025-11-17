@@ -1,5 +1,3 @@
-using KIU.LMS.Domain.Common.Enums.Assignment;
-
 namespace KIU.LMS.Persistence.Repositories.SQL;
 
 public class GeneratedAssignmentRepository(LmsDbContext db)
@@ -10,7 +8,7 @@ public class GeneratedAssignmentRepository(LmsDbContext db)
         return await db.Set<GeneratedAssignment>()
             .FromSqlRaw(sql: """
                              SELECT * FROM "GeneratedAssignment"
-                             WHERE "Status" = 1 AND "GeneratedAssignmentType" = 1 
+                             WHERE "Status" = 1 AND "Type" = 1 
                              FOR UPDATE 
                              """)
             .FirstOrDefaultAsync(ct);

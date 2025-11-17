@@ -7,11 +7,15 @@ public sealed record AddAssigmentByModulesCommand(
     Guid CourseId,
     Guid TopicId,
     AssignmentType Type,
+    SolutionType SolutionType,
     bool IsPublic,
     bool AIGrader,
     bool FullScreen,
     bool IsTraining,
     int ValidationsCount,
+    int? GenerationAttempt,
+    DateTime? StartDateTime,
+    DateTime? EndDateTime,
     BanksDto[] BanksDto) : IRequest<Result>;
 
 public record BanksDto(
@@ -80,11 +84,12 @@ public sealed class AddAssigmentByModulesHandler(
         if (!validation.IsValid)
             return Result.Failure(string.Join("; ", validation.Errors.Select(e => e.ErrorMessage)));
 
-        int order = await assignmentRepository
+        var order = await assignmentRepository
             .AsQueryable()
             .Where(a => a.TopicId == request.TopicId)
             .Select(a => (int?)a.Order)
             .MaxAsync(cancellationToken) ?? 0;
+        
         order++;
 
         var assignments = new List<Assignment>();
@@ -118,17 +123,37 @@ public sealed class AddAssigmentByModulesHandler(
                 .OrderBy(_ => random.Next())
                 .Take(bank.Count)
                 .ToList();
-
+            
             assignments.AddRange(
                 from sub in selectedSubmodules
                 let score = ScoreMapping.GetValueOrDefault(bank.Difficulty, 0)
-                select new Assignment(id: Guid.NewGuid(), courseId: request.CourseId, topicId: request.TopicId,
-                    type: request.Type, name: $"{moduleBank.Name} - {bank.Difficulty} #{order}", order: order++,
-                    startDateTime: null, endDateTime: null, score: score, problem: sub.TaskDescription, code: null,
-                    fileName: null, isPublic: request.IsPublic, aiGrader: request.AIGrader,
-                    solutionType: SolutionType.Code, promptId: null, fullScreen: request.FullScreen,
-                    runtimeAttempt: null, isTraining: request.IsTraining, promptText: sub.CodeGraidingPrompt,
-                    codeSolution: sub.CodeSolution, validationsCount: request.ValidationsCount,
+                let isIpeqType = request.Type == AssignmentType.IPEQ
+                let code = isIpeqType ? sub.CodeSolution : null
+                let codeSolution = request.SolutionType == SolutionType.Code ? sub.CodeSolution : null
+                let runtimeAttempt = isIpeqType ? request.GenerationAttempt : null
+                select new Assignment(
+                    id: Guid.NewGuid(), 
+                    courseId: request.CourseId, 
+                    topicId: request.TopicId,
+                    type: request.Type, 
+                    name: $"{moduleBank.Name} - {bank.Difficulty} #{order}", 
+                    order: order++,
+                    startDateTime: request.StartDateTime, 
+                    endDateTime: request.EndDateTime, 
+                    score: score, 
+                    problem: sub.TaskDescription, 
+                    code: code,
+                    fileName: null, 
+                    isPublic: request.IsPublic, 
+                    aiGrader: request.AIGrader,
+                    solutionType: request.SolutionType, 
+                    promptId: null, 
+                    fullScreen: request.FullScreen,
+                    runtimeAttempt: runtimeAttempt, 
+                    isTraining: request.IsTraining, 
+                    promptText: sub.CodeGraidingPrompt,
+                    codeSolution: codeSolution, 
+                    validationsCount: request.ValidationsCount,
                     createUserId: currentUserService.UserId));
         }
 

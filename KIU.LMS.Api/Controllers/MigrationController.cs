@@ -1,4 +1,4 @@
-﻿using KIU.LMS.Persistence.Database.Services;
+﻿using DataMigration.Migration;
 
 namespace KIU.LMS.Api.Controllers;
 
@@ -16,7 +16,7 @@ public class MigrationController : ControllerBase
     [HttpPost("sync-all")]
     public async Task<IActionResult> SyncAll()
     {
-        await _migration.MigrateAllAsync();
+        await _migration.RunAsync();
         return Ok("✅ Full migration completed successfully!");
     }
 }
