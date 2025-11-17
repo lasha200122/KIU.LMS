@@ -52,9 +52,19 @@ public class GeneratedAssignment : Aggregate
         Difficulty = difficulty ?? Difficulty;
         Prompt = prompt  ?? Prompt;
         Models = models  ?? Models;
-        
     }
-
+    
+    public void UpdateStatus(GeneratingStatus status)
+    {
+        Status = status;
+        LastUpdateDate = DateTimeOffset.UtcNow;
+    }
+    
+    public void ReplaceQuestions(List<GeneratedQuestion> questions)
+    {
+        _questions = questions ?? [];
+    }
+    
     public void AddQuestion(GeneratedQuestion question)
     {
         if (Status != GeneratingStatus.InProgress)
@@ -66,6 +76,7 @@ public class GeneratedAssignment : Aggregate
         _questions.Add(question);
     }
 
+    
     public void CompleteGeneration()
     {
         if (!_questions.Any())

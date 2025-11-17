@@ -23,9 +23,12 @@ public class UnitOfWork(LmsDbContext _dbContext) : IUnitOfWork
     public ISubModuleRepository SubModuleRepository => new SubModuleRepository(_dbContext);
     public IModuleBankRepository ModuleBankRepository => new ModuleBankRepository(_dbContext);
     public IAssignmentSolutionJobRepository AssignmentSolutionJobRepository => new AssignmentSolutionJobRepository(_dbContext);
+    public IGeneratedAssignmentRepository GeneratedAssignmentRepository => new GeneratedAssignmentRepository(_dbContext);
 
+    public IGeneratedQuestionRepository GeneratedQuestionRepository => new GeneratedQuestionRepository(_dbContext);
     public async Task CreateTransactionAsync() => await _dbContext.Database.BeginTransactionAsync();
     public async Task CommitTransactionAsync() => await _dbContext.Database.CommitTransactionAsync();
     public async Task RollbackAsync() => await _dbContext.Database.RollbackTransactionAsync();
     public async Task SaveChangesAsync() => await _dbContext.SaveChangesAsync();
+    
 }

@@ -39,7 +39,7 @@ public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignme
             .NotNull();
 
         RuleFor(x => x.SolutionType)
-            .NotNull();
+            .IsInEnum();
     }
 }
 

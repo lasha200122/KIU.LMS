@@ -27,4 +27,6 @@ public interface IUnitOfWork
     Task CommitTransactionAsync();
     Task RollbackAsync();
     Task SaveChangesAsync();
+    IGeneratedAssignmentRepository GeneratedAssignmentRepository { get;  }
+    IGeneratedQuestionRepository GeneratedQuestionRepository { get; }
 }

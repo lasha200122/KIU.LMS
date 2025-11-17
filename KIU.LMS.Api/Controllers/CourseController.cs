@@ -244,6 +244,20 @@ public class CourseController(ISender sender) : ApiController(sender)
         var result = await sender.Send(query);
         return Results.Ok(result);
     }
+
+    [HttpPut("generated-assigments")]
+    public async Task<IResult> UpdateGeneratedAssignment([FromQuery] UpdateGeneratedAssignmentCommand request)
+    {
+        var result = await sender.Send(request);
+        return Results.Ok(result);
+    }
+    
+    [HttpDelete("generated-assigments/{id}")]
+    public async Task<IResult> DeleteGeneratedAssignment(Guid id)
+    {
+        return await Handle(new DeleteAssignmentGeneratedCommand(id));
+    }
+    
     
     #endregion Assignments
 

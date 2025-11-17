@@ -83,7 +83,7 @@ public class QuestionController(ISender sender) : ApiController(sender)
     [HttpDelete("generated-question/{id}")]
     public async Task<IResult> DeleteGeneratedQuestion(Guid id)
     {
-        return await Handle(new DeleteGeneratedQuestionCommand(id));
+        return await Handle(new DeleteAssignmentQuestionCommand(id));
     }
     
 }
