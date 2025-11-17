@@ -38,22 +38,20 @@ public class GeneratedAssignment : Aggregate
 
     
     public void Update(
-        string title,
-        string taskContent,
-        int count,
-        DifficultyType difficulty,
-        string prompt,
-        List<string> models)
+        string? title = null,
+        string? taskContent = null,
+        int? count = null,
+        DifficultyType? difficulty = null,
+        string? prompt = null,
+        
+        List<string>? models = null)
     {
-        if (string.IsNullOrWhiteSpace(title))
-            throw new ArgumentException("Title cannot be empty.", nameof(title));
-
-        Title = title;
-        TaskContent = taskContent;
-        Count = count;
-        Difficulty = difficulty;
-        Prompt = prompt;
-        Models = models;
+        Title = title ?? Title;
+        TaskContent = taskContent ?? TaskContent;
+        Count = count ?? Count;
+        Difficulty = difficulty ?? Difficulty;
+        Prompt = prompt  ?? Prompt;
+        Models = models  ?? Models;
         
     }
 
