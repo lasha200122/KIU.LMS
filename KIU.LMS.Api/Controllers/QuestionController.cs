@@ -70,6 +70,7 @@ public class QuestionController(ISender sender) : ApiController(sender)
         return await Handle(command);
     }
     
+    
     [HttpGet("generated-questions")]
     [ProducesResponseType(typeof(PagedEntities<GetGeneratedQuestionsQueryResult>), StatusCodes.Status200OK)]
     public async Task<IResult> GetGeneratedQuestions(
@@ -78,4 +79,11 @@ public class QuestionController(ISender sender) : ApiController(sender)
         var result = await sender.Send(request);
         return Results.Ok(result);
     }
+    
+    [HttpDelete("generated-question/{id}")]
+    public async Task<IResult> DeleteGeneratedQuestion(Guid id)
+    {
+        return await Handle(new DeleteGeneratedQuestionCommand(id));
+    }
+    
 }
