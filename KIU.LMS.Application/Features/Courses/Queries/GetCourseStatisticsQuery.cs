@@ -1,4 +1,6 @@
 ﻿
+using KIU.LMS.Domain.Entities.NoSQL;
+
 namespace KIU.LMS.Application.Features.Courses.Queries;
 
 public sealed record GetCourseStatisticsQuery(Guid Id) : IRequest<Result<GetCourseStatisticsQueryResponse>>;
@@ -19,14 +21,24 @@ public sealed record AssignmentStatistic(
     int Question,
     int Assignments);
 
-public class GetCourseStatisticsQueryHandler(IUnitOfWork _unitOfWork) 
-    : IRequestHandler<GetCourseStatisticsQuery, Result<GetCourseStatisticsQueryResponse>>
+public class GetCourseStatisticsQueryHandler : IRequestHandler<GetCourseStatisticsQuery, Result<GetCourseStatisticsQueryResponse>>
 {
-    public async Task<Result<GetCourseStatisticsQueryResponse>> Handle(GetCourseStatisticsQuery request, CancellationToken cancellationToken)
+    private readonly IUnitOfWork _unitOfWork;
+    private readonly IMongoRepository<Question> _questionRepository;
+    
+    public GetCourseStatisticsQueryHandler(
+        IUnitOfWork unitOfWork,
+        IMongoRepository<Question> questionRepository)
+    {
+        _unitOfWork = unitOfWork;
+        _questionRepository = questionRepository;
+    }
+    
+    public async Task<Result<GetCourseStatisticsQueryResponse>> Handle(
+        GetCourseStatisticsQuery request, 
+        CancellationToken cancellationToken)
     {
         var course = await _unitOfWork.CourseRepository.GetByIdWithDetailsAsync(request.Id);
-        
-        var assignments = await _unitOfWork.AssignmentRepository.GetByCourseIdAsync(request.Id);
         
         if(course is null)
             return Result<GetCourseStatisticsQueryResponse>.Failure("Course not found");
@@ -57,15 +69,22 @@ public class GetCourseStatisticsQueryHandler(IUnitOfWork _unitOfWork)
         var projectsAssignments = course.Assignments.Count(a => a.Type == AssignmentType.Project);
         var mcqAssignments = course.Assignments.Count(a => a.Type == AssignmentType.MCQ);
         
-        var statsC2Rs = new AssignmentStatistic(c2rsModules, c2rsQuizBanks,1, c2RsAssignments);
-        var statsIpeq = new AssignmentStatistic(ipeqModules,ipeqQuizBanks,1,ipeqAssignments);
-        var statsProjects = new AssignmentStatistic(projectsModules, projectsQuizBanks,1,projectsAssignments);
-        var statsMcq = new AssignmentStatistic(mcqModules, mcqQuizBanks,1,mcqAssignments);
+        var c2rsQuestions = await GetQuestionCountByModuleBankType(course, SubModuleType.C2RS);
+        var ipeqQuestions = await GetQuestionCountByModuleBankType(course, SubModuleType.IPEQ);
+        var projectsQuestions = await GetQuestionCountByModuleBankType(course, SubModuleType.Project);
+        var mcqQuestions = await GetQuestionCountByModuleBankType(course, SubModuleType.MCQ);
+        
+        var totalQuestions = c2rsQuestions + ipeqQuestions + projectsQuestions + mcqQuestions;
+        
+        var statsC2Rs = new AssignmentStatistic(c2rsModules, c2rsQuizBanks, c2rsQuestions, c2RsAssignments);
+        var statsIpeq = new AssignmentStatistic(ipeqModules, ipeqQuizBanks, ipeqQuestions, ipeqAssignments);
+        var statsProjects = new AssignmentStatistic(projectsModules, projectsQuizBanks, projectsQuestions, projectsAssignments);
+        var statsMcq = new AssignmentStatistic(mcqModules, mcqQuizBanks, mcqQuestions, mcqAssignments);
 
         var result = new GetCourseStatisticsQueryResponse(
             course.Modules.Count,
-            course.Quizzes.Select(q => q.QuizBanks.Count).Sum(),
-            1,
+            course.Quizzes.SelectMany(q => q.QuizBanks).Count(),
+            totalQuestions,
             course.Assignments.Count,
             statsC2Rs,
             statsIpeq, 
@@ -74,4 +93,22 @@ public class GetCourseStatisticsQueryHandler(IUnitOfWork _unitOfWork)
         
         return Result<GetCourseStatisticsQueryResponse>.Success(result);
     }
+    
+    private async Task<int> GetQuestionCountByModuleBankType(Course course, SubModuleType type)
+    {
+        var questionBankIds = course.Modules
+            .SelectMany(m => m.ModuleBanks)
+            .Where(mb => mb.Type == type)
+            .SelectMany(mb => mb.Module.QuestionBanks)
+            .Select(qb => qb.Id.ToString())
+            .Distinct()
+            .ToList();
+    
+        if (!questionBankIds.Any())
+            return 0;
+    
+        var questions = await _questionRepository.FindAsync(q => questionBankIds.Contains(q.QuestionBankId));
+        return questions.Count();
+    }
+
 }

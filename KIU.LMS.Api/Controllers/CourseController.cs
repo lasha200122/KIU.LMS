@@ -121,8 +121,7 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     #endregion Teaching Plan
-
-
+    
     #region Topics
 
     [HttpGet("topics")]
@@ -296,4 +295,14 @@ public class CourseController(ISender sender) : ApiController(sender)
     }
 
     #endregion Solutions
+    
+    #region Statistics
+
+    [HttpGet("statistics")]
+    public async Task<IResult> CourseStatistics([FromQuery] GetCourseStatisticsQuery request)
+    {
+        return await Handle<GetCourseStatisticsQuery, GetCourseStatisticsQueryResponse>(request);
+    }
+    
+    #endregion
 }

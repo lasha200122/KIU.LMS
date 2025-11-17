@@ -1,6 +1,6 @@
 ﻿namespace KIU.LMS.Domain.Entities.SQL;
 
-public class  QuestionBank : Aggregate
+public class QuestionBank : Aggregate
 {
     public string Name { get; private set; } = null!;
     public Guid ModuleId { get; private set; }

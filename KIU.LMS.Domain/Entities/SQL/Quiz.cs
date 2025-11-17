@@ -80,4 +80,7 @@ public enum QuizType
     None = 0,
     MCQ = 1,
     ExamPreparation = 2,
+    IPEQ,
+    Projects,
+    C2RS
 }

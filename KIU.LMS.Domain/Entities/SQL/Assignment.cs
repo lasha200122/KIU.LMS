@@ -133,7 +133,8 @@ public enum AssignmentType
     ClassWork,
     IPEQ,
     Project,
-    C2RS
+    C2RS,
+    MCQ
 }
 
 public enum SolutionType 

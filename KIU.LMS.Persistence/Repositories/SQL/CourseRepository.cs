@@ -30,6 +30,8 @@ public sealed class CourseRepository(LmsDbContext _context)
                 .ThenInclude(mb => mb.SubModules)
             .Include(c => c.Quizzes)
                 .ThenInclude(q => q.ExamResults)
+            .Include(c => c.Quizzes)
+                .ThenInclude(q => q.QuizBanks)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
