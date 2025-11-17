@@ -1,5 +1,3 @@
-using KIU.LMS.Domain.Common.Models;
-
 namespace KIU.LMS.Domain.Entities.SQL;
 
 public class GeneratedAssignment : Aggregate
@@ -36,6 +34,27 @@ public class GeneratedAssignment : Aggregate
         Models = models;
         Difficulty = difficulty;
         Status = GeneratingStatus.InProgress;
+    }
+
+    
+    public void Update(
+        string title,
+        string taskContent,
+        int count,
+        DifficultyType difficulty,
+        string prompt,
+        List<string> models)
+    {
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Title cannot be empty.", nameof(title));
+
+        Title = title;
+        TaskContent = taskContent;
+        Count = count;
+        Difficulty = difficulty;
+        Prompt = prompt;
+        Models = models;
+        
     }
 
     public void AddQuestion(GeneratedQuestion question)
