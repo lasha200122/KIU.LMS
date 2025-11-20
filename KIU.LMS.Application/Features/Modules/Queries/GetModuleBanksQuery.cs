@@ -52,7 +52,7 @@ public sealed class GetModuleBanksHandler(
 
         var data = moduleBanks.Select(x => new GetModuleBanksResponse(
                 x.Name,
-                x.ModuleId,
+                x.Id,
                 x.SubModules.Count != 0
                     ? x.SubModules
                         .Where(sm => sm.Difficulty != null)

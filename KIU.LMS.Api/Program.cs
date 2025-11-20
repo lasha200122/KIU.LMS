@@ -1,4 +1,3 @@
-using DataMigration;
 using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -28,7 +27,6 @@ var builder = WebApplication.CreateBuilder(args);
         .AddPersistenceServices(builder.Configuration, logger)
         .AddInfrastructureServices(builder.Configuration, logger)
         .AddApplicationServices(logger);
-    builder.Services.AddMigrationDependencies();
     
     builder.Services.AddControllers();
     builder.Services.AddEndpointsApiExplorer();
@@ -91,8 +89,7 @@ var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 {
     await app.ApplyMigrationsAsync(Log.Logger);
-
-
+    
     app.UseExceptionHandler();
 
     app.UseSwagger();
@@ -122,4 +119,3 @@ var app = builder.Build();
 
     app.Run();
 }
-  

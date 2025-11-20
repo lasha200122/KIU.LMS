@@ -23,6 +23,58 @@ namespace KIU.LMS.Persistence.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.AIProcessingQueue", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeleteDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeleteUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastUpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastUpdateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("MetaData")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Result")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<Guid>("TargetId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreateDate");
+
+                    b.HasIndex("Status", "Type")
+                        .HasDatabaseName("IX_AIQueue_Status_Type");
+
+                    b.ToTable("AIProcessingQueue", (string)null);
+                });
+
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Assignment", b =>
                 {
                     b.Property<Guid>("Id")

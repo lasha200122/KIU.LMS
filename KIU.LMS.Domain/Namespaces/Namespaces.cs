@@ -2,7 +2,6 @@
 global using KIU.LMS.Domain.Common.Constants.Characters;
 global using KIU.LMS.Domain.Common.Enums.Conversation;
 global using KIU.LMS.Domain.Common.Enums.Email;
-global using KIU.LMS.Domain.Common.Enums.Exam;
 global using KIU.LMS.Domain.Common.Enums.Question;
 global using KIU.LMS.Domain.Common.Enums.User;
 global using KIU.LMS.Domain.Common.Interfaces.Entities;

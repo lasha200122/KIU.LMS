@@ -5,9 +5,9 @@ namespace DataMigration;
 
 public static class MigrationDependencies
 {
-    public static void AddMigrationDependencies(this IServiceCollection services)
+    public static IServiceCollection AddMigrationDependencies(this IServiceCollection services)
     {
         //services.AddDbContext<KiuLmsContext>();
-        services.AddScoped<DataMigrationService>();
+        return services.AddScoped<DataMigrationService>();
     }
 }

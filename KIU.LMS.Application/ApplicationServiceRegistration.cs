@@ -12,11 +12,12 @@ public static class ApplicationServiceRegistration
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         services.AddHostedService<EmailQueueWorker>();
-        services.AddHostedService<AssignmentSolutionJobWorker>();
-        services.AddHostedService<AssignmentGenerationWorker>();
-        services.AddHostedService<TaskGenerationWorker>();
+        //services.AddHostedService<AssignmentSolutionJobWorker>();
+        //services.AddHostedService<AssignmentGenerationWorker>();
+        //services.AddHostedService<TaskGenerationWorker>();
         //services.AddHostedService<GradingWorker>();
-
+        services.AddHostedService<AIProcessingWorker>();
+        
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
         return services;

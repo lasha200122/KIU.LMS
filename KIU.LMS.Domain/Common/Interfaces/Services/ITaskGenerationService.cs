@@ -12,7 +12,7 @@ public interface ITaskGenerationService
         GeneratedAssignmentType type);
     
     public Task<TaskValidationResult?> ValidateAsync(
-        string model,
+        string model,               
         string taskContent,
         GeneratedTaskDraft draft,
         GeneratedAssignmentType type);

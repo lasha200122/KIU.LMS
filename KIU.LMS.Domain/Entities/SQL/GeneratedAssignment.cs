@@ -58,7 +58,7 @@ public class GeneratedAssignment : Aggregate
         if (_tasks != null && _tasks.Any())
             throw new InvalidOperationException("Cannot add questions when tasks are already present.");
 
-        _questions ??= new List<GeneratedQuestion>();
+        _questions ??=  [];
         _questions.Add(question);
         _tasks = null;
     }

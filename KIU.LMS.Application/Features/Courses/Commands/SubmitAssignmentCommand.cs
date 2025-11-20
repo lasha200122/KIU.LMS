@@ -1,4 +1,6 @@
-﻿namespace KIU.LMS.Application.Features.Courses.Commands;
+﻿using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
+
+namespace KIU.LMS.Application.Features.Courses.Commands;
 
 public sealed record SubmitAssignmentCommand(
     Guid Id,
@@ -19,6 +21,7 @@ public class SubmitAssignmentCommandValidator : AbstractValidator<SubmitAssignme
 
 public class SubmitAssignmentCommandHandler(
     IUnitOfWork unitOfWork, 
+    IAIProcessingQueueRepository processedAssignmentRepository,
     ICurrentUserService current)
     : IRequestHandler<SubmitAssignmentCommand, Result<Guid>>
 {
@@ -48,6 +51,11 @@ public class SubmitAssignmentCommandHandler(
                 solution.Id,
                 "gpt-oss:120b",
                 current.UserId);
+
+        await processedAssignmentRepository.AddAsync(new AIProcessingQueue(
+            Guid.NewGuid(), current.UserId,
+            solutionGrateJob.Id, AIProcessingType.Grading, "gpt-oss:120b"
+        ));
         
         await unitOfWork.SolutionRepository.AddAsync(solution);
         await unitOfWork.AssignmentSolutionJobRepository.AddAsync(solutionGrateJob);
