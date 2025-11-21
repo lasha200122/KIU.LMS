@@ -39,34 +39,26 @@ public class GradeAssignmentJobCommandHandler
 
         if (job == null)
         {
-            return new AIProcessingResult(
-                false,
-                "{}",
-                "Job not found"
-            );
+            return new AIProcessingResult(false, "{}", "Job not found");
+        }
+
+        var assignment = await _assignmentRepo.FirstOrDefaultWithTrackingAsync(
+            a => a.Id == job.AssignmentId, cancellationToken);
+
+        var solution = await _solutionRepo.FirstOrDefaultWithTrackingAsync(
+            s => s.Id == job.SolutionId, cancellationToken);
+
+        if (assignment == null || solution == null)
+        {
+            job.MarkAsFailed(job.Id);
+            await _uow.SaveChangesAsync();
+
+            return new AIProcessingResult(false, "{}", "Assignment or Solution missing");
         }
 
         try
         {
             job.IncrementAttempts(job.Id);
-
-            var assignment = await _assignmentRepo.FirstOrDefaultWithTrackingAsync(
-                a => a.Id == job.AssignmentId, cancellationToken);
-
-            var solution = await _solutionRepo.FirstOrDefaultWithTrackingAsync(
-                s => s.Id == job.SolutionId, cancellationToken);
-
-            if (assignment == null || solution == null)
-            {
-                job.MarkAsFailed(job.Id);
-                await _uow.SaveChangesAsync();
-
-                return new AIProcessingResult(
-                    false,
-                    "{}",
-                    "Assignment or Solution not found"
-                );
-            }
 
             var gradeResult = await _aiService.GradeAsync(
                 assignment.Problem ?? "",
@@ -77,73 +69,85 @@ public class GradeAssignmentJobCommandHandler
 
             if (gradeResult == null)
             {
-                solution.Failed();
-                job.MarkAsFailed(job.Id);
+                return FailOrRetry(job, solution, "Empty grade result");
             }
-            else
+
+            JsonElement json;
+            try
             {
-                try
-                {
-                    var json = JsonDocument.Parse(gradeResult).RootElement;
-                    var grade = json.GetProperty("grade").GetInt32().ToString();
-                    var feedback = json.GetProperty("feedback").GetString() ?? "";
-
-                    if (assignment.ValidationsCount > 0)
-                    {
-                        for (var i = 0; i < assignment.ValidationsCount; i++)
-                        {
-                            var validation = await _aiService.ValidateAsync(
-                                assignment.Problem ?? "",
-                                assignment.CodeSolution ?? "",
-                                solution.Value,
-                                assignment.PromptText ?? "",
-                                gradeResult);
-
-                            if (!validation.isValid)
-                            {
-                                solution.Failed(validation.reason);
-                                continue;
-                            }
-
-                            solution.Graded(grade, feedback);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        solution.Graded(grade, feedback);
-                    }
-
-                    job.MarkAsGraded(gradeResult, job.Id);
-                }
-                catch (JsonException jsonEx)
-                {
-                    _logger.LogInformation(jsonEx.Message);
-                    solution.Failed("Invalid JSON format");
-                    job.MarkAsFailed(job.Id);
-                }
+                json = JsonDocument.Parse(gradeResult).RootElement;
             }
+            catch
+            {
+                return FailOrRetry(job, solution, "Invalid JSON format");
+            }
+
+            if (!TryParseGrade(json, out int grade))
+            {
+                return FailOrRetry(job, solution, "Invalid grade format");
+            }
+
+            if (grade < 0 || grade > (assignment.Score ?? 10))
+            {
+                return FailOrRetry(job, solution, "Grade out of valid range");
+            }
+
+            string feedback =
+                json.TryGetProperty("feedback", out var fb)
+                    ? fb.GetString() ?? ""
+                    : "";
+
+            solution.Graded(grade.ToString(), feedback);
+            job.MarkAsGraded(gradeResult, job.Id);
 
             await _uow.SaveChangesAsync();
 
-            return new AIProcessingResult(
-                job.Status == AssignmentSolutionJobStatus.Graded,
-                gradeResult ?? "{}",
-                job.Status == AssignmentSolutionJobStatus.Failed ? "Failed" : null
-            );
+            return new AIProcessingResult(true, gradeResult, null);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Job {JobId} failed attempt {Attempts}", job.Id, job.Attempts);
+            _logger.LogError(ex, "Job {JobId} crashed on attempt {Attempt}", job.Id, job.Attempts);
+            return FailOrRetry(job, solution!, ex.Message);
+        }
+    }
 
-            job.MarkAsFailed(job.Id);
-            await _uow.SaveChangesAsync();
+    private AIProcessingResult FailOrRetry(AssignmentSolutionJob job, Solution solution, string message)
+    {
+        _logger.LogWarning("Grading Failed: {Msg}. Job {JobId} Attempt {Attempt}",
+            message, job.Id, job.Attempts);
+
+        if (job.Attempts < 3)
+        {
+            _uow.SaveChangesAsync();
 
             return new AIProcessingResult(
                 false,
                 "{}",
-                ex.Message
+                "Retrying grade"
             );
         }
+
+        solution.Failed(message);
+        job.MarkAsFailed(job.Id);
+        _uow.SaveChangesAsync().Wait();
+
+        return new AIProcessingResult(
+            false,
+            "{}",
+            message
+        );
+    }
+
+    private bool TryParseGrade(JsonElement json, out int grade)
+    {
+        grade = 0;
+
+        if (!json.TryGetProperty("grade", out var gradeProp))
+            return false;
+
+        return gradeProp.ValueKind == JsonValueKind.Number
+            ? (grade = gradeProp.GetInt32()) >= 0
+            : (gradeProp.ValueKind == JsonValueKind.String
+               && int.TryParse(gradeProp.GetString(), out grade));
     }
 }

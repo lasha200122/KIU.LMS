@@ -79,6 +79,8 @@ public class AIProcessingWorker : BackgroundService
 
         if (result.Success)
             job.MarkCompleted(result.ResultJson);
+        else if (result.ErrorMessage == "Retrying grade")
+            job.MarkToRetry();
         else
             job.MarkFailed(result.ErrorMessage ?? "Unknown error");
 

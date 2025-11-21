@@ -38,6 +38,12 @@ public class AIProcessingQueue : Aggregate
         Touch();
     }
 
+    public void MarkToRetry()
+    {
+        Status = AIProcessingStatus.InProgress;
+        Touch();
+    }
+    
     private void Touch()
     {
         Update(CreateUserId, DateTimeOffset.UtcNow);
@@ -69,3 +75,5 @@ public sealed record AIProcessingResult(
     string ResultJson, 
     string? ErrorMessage = null
 );
+
+//TODO : davamato endpointi AIProcessingebis misagebad 
