@@ -52,6 +52,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IGeneratedQuestionRepository, GeneratedQuestionRepository>();
         services.AddScoped<IGeneratedTaskRepository,  GeneratedTaskRepository>();
         services.AddScoped<IAIProcessingQueueRepository, AIProcessingQueueRepository>();
+        services.AddScoped<IVotingSessionRepository, VotingSessionRepository>();
+        
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
