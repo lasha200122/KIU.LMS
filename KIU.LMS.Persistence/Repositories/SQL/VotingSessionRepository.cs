@@ -11,4 +11,11 @@ public class VotingSessionRepository(LmsDbContext context) :
             .Select(g => new { OptionId = g.Key, Count = g.Count() })
             .ToDictionaryAsync(x => x.OptionId, x => x.Count);
     }
+    
+    public async Task<VotingSession?> GetByIdWithOptionsAsync(Guid id, CancellationToken ct)
+    {
+        return await context.VotingSessions
+            .Include(s => s.Options)
+            .FirstOrDefaultAsync(s => s.Id == id, ct);
+    }
 }

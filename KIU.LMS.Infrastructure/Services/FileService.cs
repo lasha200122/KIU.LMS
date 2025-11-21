@@ -25,30 +25,25 @@ public class FileService : IFileService
         if (file == null || file.Length == 0)
             throw new ArgumentException("File is required");
 
-        // Create directory structure: Uploads/{ObjectType}/{ObjectId}
-        var objectDirectory = Path.Combine(_uploadPath, objectType, objectId);
-        if (!Directory.Exists(objectDirectory))
+        if (!Directory.Exists(_uploadPath))
         {
-            Directory.CreateDirectory(objectDirectory);
+            Directory.CreateDirectory(_uploadPath);
         }
 
         var id = Guid.NewGuid();
 
-        // Generate unique filename to avoid conflicts
         var fileName = file.FileName;
         var fileExtension = Path.GetExtension(fileName);
         var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
         var uniqueFileName = $"{fileNameWithoutExtension}_{id}{fileExtension}";
 
-        var filePath = Path.Combine(objectDirectory, uniqueFileName);
+        var filePath = Path.Combine(_uploadPath, uniqueFileName);
 
-        // Save file to disk
         using (var stream = new FileStream(filePath, FileMode.Create))
         {
             await file.CopyToAsync(stream);
         }
-
-        // Save file record to database
+        
         var fileRecord = new FileRecord(
             id,
             objectId,
@@ -65,6 +60,47 @@ public class FileService : IFileService
         return fileRecord;
     }
 
+    public async Task<FileRecord> UploadFileAsync(string objectId, string objectType, IFormFile file, string fileName)
+    {
+        if (file == null || file.Length == 0)
+            throw new ArgumentException("File is required");
+
+        if (!Directory.Exists(_uploadPath))
+            Directory.CreateDirectory(_uploadPath);
+
+        var extension = Path.GetExtension(file.FileName);
+
+        if (string.IsNullOrWhiteSpace(extension))
+            throw new ArgumentException("File must have extension");
+
+        var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf" };
+        if (!allowedExtensions.Contains(extension.ToLower()))
+            throw new ArgumentException($"File type {extension} not supported");
+
+        var id = Guid.NewGuid();
+        var newFileName = $"{fileName}{extension}";
+        var filePath = Path.Combine(_uploadPath, newFileName);
+
+        await using (var stream = new FileStream(filePath, FileMode.Create))
+            await file.CopyToAsync(stream);
+
+        var fileRecord = new FileRecord(
+            id,
+            objectId,
+            objectType,
+            newFileName,
+            filePath,
+            file.ContentType,
+            file.Length,
+            DateTime.UtcNow);
+
+        _context.FileRecords.Add(fileRecord);
+        await _context.SaveChangesAsync();
+
+        return fileRecord;
+    }
+
+    
     public async Task<List<FileRecord>> GetFilesByObjectAsync(string objectId, string objectType)
     {
         return await _context.FileRecords

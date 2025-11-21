@@ -2,7 +2,8 @@
 
 public interface IFileService
 {
-    Task<FileRecord> UploadFileAsync(string objectId, string objectType, IFormFile file);
+    public Task<FileRecord> UploadFileAsync(string objectId, string objectType, IFormFile file);
+    Task<FileRecord> UploadFileAsync(string objectId, string objectType, IFormFile file, string fileName);
     Task<List<FileRecord>> GetFilesByObjectAsync(string objectId, string objectType);
     Task<FileRecord> GetFileByIdAsync(Guid fileId);
     Task<bool> DeleteFileAsync(Guid fileId);

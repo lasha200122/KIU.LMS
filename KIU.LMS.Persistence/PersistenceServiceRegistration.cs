@@ -53,6 +53,8 @@ public static class PersistenceServiceRegistration
         services.AddScoped<IGeneratedTaskRepository,  GeneratedTaskRepository>();
         services.AddScoped<IAIProcessingQueueRepository, AIProcessingQueueRepository>();
         services.AddScoped<IVotingSessionRepository, VotingSessionRepository>();
+        services.AddScoped<IVoteRepository, VoteRepository>();
+        services.AddScoped<IVotingOptionRepository, VotingOptionRepository>();
         
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
