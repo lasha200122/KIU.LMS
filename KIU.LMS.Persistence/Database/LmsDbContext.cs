@@ -27,6 +27,10 @@ public sealed class LmsDbContext(DbContextOptions<LmsDbContext> options) : DbCon
     public DbSet<AssignmentSolutionJob> AssignmentSolutionJobs { get; set; } = null!;
     public DbSet<GeneratedAssignment> GeneratedAssignments { get; set; } = null!;
     public DbSet<GeneratedQuestion> GeneratedQuestions { get; set; } = null!;
+    public DbSet<VotingSession> VotingSessions { get; set; } = null!;
+    public DbSet<VotingOption> VotingOptions { get; set; } = null!;
+    public DbSet<Vote> Votes { get; set; } = null!;
+
 
     
     protected override void OnModelCreating(ModelBuilder builder)
