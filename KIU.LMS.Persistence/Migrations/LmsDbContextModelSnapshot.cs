@@ -1520,6 +1520,144 @@ namespace KIU.LMS.Persistence.Migrations
                     b.ToTable("UserDevice", (string)null);
                 });
 
+            modelBuilder.Entity("Vote", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeleteDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeleteUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastUpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastUpdateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("OptionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreateDate");
+
+                    b.HasIndex("UserId");
+
+                    b.HasIndex("SessionId", "UserId")
+                        .IsUnique();
+
+                    b.ToTable("Votes");
+                });
+
+            modelBuilder.Entity("VotingOption", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeleteDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeleteUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FileRecordId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastUpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastUpdateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("SessionId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreateDate");
+
+                    b.HasIndex("FileRecordId");
+
+                    b.HasIndex("SessionId", "FileRecordId")
+                        .IsUnique();
+
+                    b.ToTable("VotingOptions");
+                });
+
+            modelBuilder.Entity("VotingSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("CreateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("CreateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset?>("DeleteDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("DeleteUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTimeOffset>("EndTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTimeOffset?>("LastUpdateDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid?>("LastUpdateUserId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreateDate");
+
+                    b.ToTable("VotingSessions");
+                });
+
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Assignment", b =>
                 {
                     b.HasOne("KIU.LMS.Domain.Entities.SQL.Course", "Course")
@@ -1778,6 +1916,38 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("Vote", b =>
+                {
+                    b.HasOne("VotingSession", null)
+                        .WithMany()
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("KIU.LMS.Domain.Entities.SQL.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("VotingOption", b =>
+                {
+                    b.HasOne("KIU.LMS.Domain.Entities.SQL.FileRecord", "FileRecord")
+                        .WithMany()
+                        .HasForeignKey("FileRecordId");
+
+                    b.HasOne("VotingSession", null)
+                        .WithMany("Options")
+                        .HasForeignKey("SessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("FileRecord");
+                });
+
             modelBuilder.Entity("KIU.LMS.Domain.Entities.SQL.Assignment", b =>
                 {
                     b.Navigation("Solutions");
@@ -1864,6 +2034,11 @@ namespace KIU.LMS.Persistence.Migrations
                     b.Navigation("Solutions");
 
                     b.Navigation("UserCourses");
+                });
+
+            modelBuilder.Entity("VotingSession", b =>
+                {
+                    b.Navigation("Options");
                 });
 #pragma warning restore 612, 618
         }
