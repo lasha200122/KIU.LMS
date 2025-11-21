@@ -1,6 +1,6 @@
 using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
 
-namespace KIU.LMS.Application.Features.Voting;
+namespace KIU.LMS.Application.Features.Voting.Commands;
 
 public sealed record CreateVotingCommand(
     string Name, DateTimeOffset EndTime) : IRequest<Result<Guid>>;
@@ -11,7 +11,7 @@ public sealed class CreateVotingCommandValidator : AbstractValidator<CreateVotin
     {
         RuleFor(x => x.Name).NotNull().NotEmpty();
         RuleFor(x => x.Name).Length(1, 100);
-        RuleFor(x => x.EndTime).LessThan(DateTimeOffset.UtcNow);
+        RuleFor(x => x.EndTime).GreaterThan(DateTimeOffset.UtcNow);
     }
 }
 
