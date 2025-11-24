@@ -56,7 +56,7 @@ public class AssignmentSolutionJobWorker : BackgroundService
                     var gradeResult = await aiService.GradeAsync(problem, reference, studentSubmission, rubric, assignment.Score ?? 10);
                     if (gradeResult == null)
                     {
-                        solution.Failed(); 
+                        solution.Failed(""); 
                         job.MarkAsFailed(job.Id);
                     }
                     else
@@ -64,7 +64,7 @@ public class AssignmentSolutionJobWorker : BackgroundService
                         try
                         {
                             var doc = JsonDocument.Parse(gradeResult);
-                            var grade = doc.RootElement.GetProperty("grade").GetInt32().ToString();
+                            var grade = doc.RootElement.GetProperty("grade").GetDecimal().ToString();
                             var feedback = doc.RootElement.GetProperty("feedback").GetString() ?? "";
 
                             if (assignment.ValidationsCount > 0)
@@ -74,7 +74,7 @@ public class AssignmentSolutionJobWorker : BackgroundService
                                     var result = await aiService.ValidateAsync(problem, reference, studentSubmission, rubric, gradeResult);
 
                                     if (!result.isValid)
-                                        solution.Failed(result.reason);
+                                        solution.Failed("");
                                 
                                     else
                                     {
@@ -90,7 +90,7 @@ public class AssignmentSolutionJobWorker : BackgroundService
                         catch (JsonException ex)
                         {
                             if (ex != null) _logger.LogInformation(ex.Message);
-                            solution.Failed();
+                            solution.Failed("");
                             job.MarkAsFailed(job.Id);
                         }
                     }

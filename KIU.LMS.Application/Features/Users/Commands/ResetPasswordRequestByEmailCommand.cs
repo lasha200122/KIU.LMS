@@ -1,34 +1,29 @@
-﻿namespace KIU.LMS.Application.Features.Users.Commands;
+namespace KIU.LMS.Application.Features.Users.Commands;
 
-public sealed record ResetPasswordRequestCommand(Guid UserId) : IRequest<Result>;
+public sealed record ResetPasswordRequestByEmailCommand(string Email) : IRequest<Result>;
 
-public class ResetPasswordRequestCommandValidator : AbstractValidator<ResetPasswordRequestCommand> 
+public sealed class ResetPasswordRequestByEmailHandler(
+    IUnitOfWork _unitOfWork, 
+    IRedisRepository<string> _redis,
+    ICurrentUserService _currentUser,
+    FrontSettings _settings)  : IRequestHandler<ResetPasswordRequestByEmailCommand, Result>
 {
-    public ResetPasswordRequestCommandValidator() 
+    public async Task<Result> Handle(ResetPasswordRequestByEmailCommand request, CancellationToken cancellationToken)
     {
-        RuleFor(x => x.UserId)
-            .NotNull();
-    }
-}
-
-public class ResetPasswordRequestCommandHandler(IUnitOfWork _unitOfWork, IRedisRepository<string> _redis, ICurrentUserService _currentUser, FrontSettings _settings) : IRequestHandler<ResetPasswordRequestCommand, Result>
-{
-    public async Task<Result> Handle(ResetPasswordRequestCommand request, CancellationToken cancellationToken)
-    {
-        var user = await _unitOfWork.UserRepository.SingleOrDefaultAsync(x => x.Id == request.UserId);
-
+        var user = await _unitOfWork.UserRepository.FirstOrDefaultAsync(x => x.Email == request.Email, cancellationToken);
+        
         if (user is null)
-            return Result.Failure("Can't find user");
-
+            return Result.Failure("User not found");
+        
         var template = await _unitOfWork.EmailTemplateRepository.SingleOrDefaultAsync(x => x.Type == EmailType.PasswordReset);
 
         if (template is null)
             return Result.Failure("Can't find email template");
-
+        
         var token = TextGenerator.GenerateRandomToken(16);
 
         var url = $"{_settings.Domain}/reset-password/{token}";
-
+        
         var variables = EmailTemplateUtils.ResetPasswordVariableBuilder(user, url);
 
         var email = new EmailQueue(
@@ -37,7 +32,7 @@ public class ResetPasswordRequestCommandHandler(IUnitOfWork _unitOfWork, IRedisR
             user.Email,
             variables,
             _currentUser.UserId);
-
+        
         await _unitOfWork.EmailQueueRepository.AddAsync(email);
 
         await _redis.SetAsync(token, user.Id.ToString());

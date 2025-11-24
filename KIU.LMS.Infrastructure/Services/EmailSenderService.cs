@@ -6,11 +6,9 @@ public class EmailSenderService(EmailSettings _settings) : IEmailSenderService
     {
         try
         {
-            using var smtpClient = new SmtpClient(_settings.SmtpServer, _settings.Port)
-            {
-                Credentials = new NetworkCredential(_settings.Username, _settings.Password),
-                EnableSsl = true
-            };
+            using var smtpClient = new SmtpClient(_settings.SmtpServer, _settings.Port);
+            smtpClient.Credentials = new NetworkCredential(_settings.Username, _settings.Password);
+            smtpClient.EnableSsl = true;
 
             var mailMessage = new MailMessage
             {

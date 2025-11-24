@@ -15,8 +15,7 @@ public class UserController(ISender _sender) : ApiController(_sender)
     {
         return await Handle(request);
     }
-
-
+    
     [HttpPost("excel")]
     public async Task<IResult> RegisterUsers([FromForm] RegisterUsersCommand request)
     {
@@ -49,6 +48,12 @@ public class UserController(ISender _sender) : ApiController(_sender)
     public async Task<IResult> ResetPassword([FromBody] ResetPasswordCommand request)
     {
         return await Handle(request);
+    }
+
+    [HttpPost("reset-password-by-email")]
+    public async Task<IResult> ResetPasswordByEmail([FromQuery] ResetPasswordRequestByEmailCommand command)
+    {
+        return await Handle(command);
     }
 
     [HttpPost("register/qr")]
