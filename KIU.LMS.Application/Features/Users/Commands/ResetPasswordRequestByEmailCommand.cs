@@ -5,7 +5,6 @@ public sealed record ResetPasswordRequestByEmailCommand(string Email) : IRequest
 public sealed class ResetPasswordRequestByEmailHandler(
     IUnitOfWork _unitOfWork, 
     IRedisRepository<string> _redis,
-    ICurrentUserService _currentUser,
     FrontSettings _settings)  : IRequestHandler<ResetPasswordRequestByEmailCommand, Result>
 {
     public async Task<Result> Handle(ResetPasswordRequestByEmailCommand request, CancellationToken cancellationToken)
@@ -31,7 +30,7 @@ public sealed class ResetPasswordRequestByEmailHandler(
             template.Id,
             user.Email,
             variables,
-            _currentUser.UserId);
+            user.Id);
         
         await _unitOfWork.EmailQueueRepository.AddAsync(email);
 
