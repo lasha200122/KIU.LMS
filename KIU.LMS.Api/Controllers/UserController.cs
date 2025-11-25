@@ -51,6 +51,7 @@ public class UserController(ISender _sender) : ApiController(_sender)
     }
 
     [HttpPost("reset-password-by-email")]
+    [AllowAnonymous]
     public async Task<IResult> ResetPasswordByEmail([FromQuery] ResetPasswordRequestByEmailCommand command)
     {
         return await Handle(command);
