@@ -1,5 +1,4 @@
-﻿
-using KIU.LMS.Domain.Entities.NoSQL;
+﻿using KIU.LMS.Domain.Entities.NoSQL;
 
 namespace KIU.LMS.Application.Features.Courses.Queries;
 
@@ -44,38 +43,34 @@ public class GetCourseStatisticsQueryHandler : IRequestHandler<GetCourseStatisti
             return Result<GetCourseStatisticsQueryResponse>.Failure("Course not found");
 
         var c2rsModules = course.Modules
-            .SelectMany(m => m.ModuleBanks)
-            .Count(mb => mb.Type == SubModuleType.C2RS);
+            .Count(m => m.ModuleBanks.Any(mb => mb.Type == SubModuleType.C2RS));
 
         var ipeqModules = course.Modules
-            .SelectMany(m => m.ModuleBanks)
-            .Count(mb => mb.Type == SubModuleType.IPEQ);
+            .Count(m => m.ModuleBanks.Any(mb => mb.Type == SubModuleType.IPEQ));
 
         var projectsModules = course.Modules
-            .SelectMany(m => m.ModuleBanks)
-            .Count(mb => mb.Type == SubModuleType.Project);
+            .Count(m => m.ModuleBanks.Any(mb => mb.Type == SubModuleType.Project));
 
         var mcqModules = course.Modules
-            .SelectMany(m => m.ModuleBanks)
-            .Count(mb => mb.Type == SubModuleType.MCQ);
+            .Count(m => m.ModuleBanks.Any(mb => mb.Type == SubModuleType.MCQ));
 
         var c2rsQuizBanks = course.Quizzes
-            .Where(quiz => quiz.Type == QuizType.C2RS)
+            .Where(q => q.Type == QuizType.C2RS)
             .SelectMany(q => q.QuizBanks)
             .Count();
 
         var ipeqQuizBanks = course.Quizzes
-            .Where(quiz => quiz.Type == QuizType.IPEQ)
+            .Where(q => q.Type == QuizType.IPEQ)
             .SelectMany(q => q.QuizBanks)
             .Count();
 
         var projectsQuizBanks = course.Quizzes
-            .Where(quiz => quiz.Type == QuizType.Projects)
+            .Where(q => q.Type == QuizType.Projects)
             .SelectMany(q => q.QuizBanks)
             .Count();
 
         var mcqQuizBanks = course.Quizzes
-            .Where(quiz => quiz.Type == QuizType.MCQ)
+            .Where(q => q.Type == QuizType.MCQ)
             .SelectMany(q => q.QuizBanks)
             .Count();
 
@@ -97,7 +92,7 @@ public class GetCourseStatisticsQueryHandler : IRequestHandler<GetCourseStatisti
         var statsMcq = new AssignmentStatistic(mcqModules, mcqQuizBanks, mcqQuestions, mcqAssignments);
 
         var result = new GetCourseStatisticsQueryResponse(
-            course.Modules.Count,
+            c2rsModules + ipeqModules + mcqModules + projectsModules,
             course.Quizzes.SelectMany(q => q.QuizBanks).Count(),
             totalQuestions,
             course.Assignments.Count,
@@ -112,10 +107,17 @@ public class GetCourseStatisticsQueryHandler : IRequestHandler<GetCourseStatisti
 
     private async Task<int> GetQuestionCountByModuleBankType(Course course, SubModuleType type)
     {
+        var moduleIdsWithType = course.Modules
+            .Where(m => m.ModuleBanks.Any(mb => mb.Type == type))
+            .Select(m => m.Id)
+            .ToHashSet();
+
+        if (!moduleIdsWithType.Any())
+            return 0;
+
         var questionBankIds = course.Modules
-            .SelectMany(m => m.ModuleBanks)
-            .Where(mb => mb.Type == type)
-            .SelectMany(mb => mb.Module.QuestionBanks)
+            .Where(m => moduleIdsWithType.Contains(m.Id))
+            .SelectMany(m => m.QuestionBanks)
             .Select(qb => qb.Id.ToString())
             .Distinct()
             .ToList();
@@ -126,5 +128,4 @@ public class GetCourseStatisticsQueryHandler : IRequestHandler<GetCourseStatisti
         var questions = await _questionRepository.FindAsync(q => questionBankIds.Contains(q.QuestionBankId));
         return questions.Count();
     }
-
 }

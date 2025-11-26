@@ -16,7 +16,7 @@ public static class ApplicationServiceRegistration
         //services.AddHostedService<AssignmentGenerationWorker>();
         //services.AddHostedService<TaskGenerationWorker>();
         //services.AddHostedService<GradingWorker>();
-        services.AddHostedService<AIProcessingWorker>();
+        //services.AddHostedService<AIProcessingWorker>();
         
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
