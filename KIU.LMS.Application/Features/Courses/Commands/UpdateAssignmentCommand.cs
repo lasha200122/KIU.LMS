@@ -21,8 +21,7 @@ public sealed record UpdateAssignmentCommand(
     string? PromptText,
     string? CodeSolution) : IRequest<Result>;
 
-
-public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignmentCommand>
+public sealed class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignmentCommand>
 {
     public UpdateAssignmentCommandValidator()
     {
@@ -43,7 +42,6 @@ public class UpdateAssignmentCommandValidator : AbstractValidator<UpdateAssignme
     }
 }
 
-
 public class UpdateAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<UpdateAssignmentCommand, Result>
 {
     public async Task<Result> Handle(UpdateAssignmentCommand request, CancellationToken cancellationToken)
@@ -53,11 +51,25 @@ public class UpdateAssignmentCommandHandler(IUnitOfWork unitOfWork, ICurrentUser
         if (assignment == null)
             return Result.Failure("Can't find assignment");
 
+        var splitted = request.Name.Split(".");
+        var name = string.Empty;
+        var order = request.Order; 
+
+        if (splitted.Length == 1)
+        {
+            name = splitted.First();
+        }
+        else
+        {
+            name = splitted.Last();
+            int.TryParse(splitted.First(), out order);
+        }
+        
         assignment.Update(
             request.TopicId,
             request.Type,
-            request.Name,
-            request.Order,
+            name,
+            order,
             request.StartDateTime,
             request.EndDateTime,
             request.Score,
