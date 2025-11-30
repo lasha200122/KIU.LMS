@@ -11,7 +11,6 @@ public sealed class AddQuestionBankCommandValidator : AbstractValidator<AddQuest
     }
 }
 
-
 public sealed class AddQuestionBankCommandHandler(IUnitOfWork _unitOfWork, ICurrentUserService _current) : IRequestHandler<AddQuestionBankCommand, Result>
 {
     public async Task<Result> Handle(AddQuestionBankCommand request, CancellationToken cancellationToken)

@@ -8,8 +8,7 @@ public class QuestionBank : Aggregate
     public virtual Module Module { get; private set; } = null!;
     private List<QuizBank> _quizBanks = new();
     public IReadOnlyCollection<QuizBank> QuizBanks => _quizBanks;
-
-
+    
     public QuestionBank() { }
 
     public QuestionBank(

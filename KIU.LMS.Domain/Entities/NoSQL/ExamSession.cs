@@ -110,11 +110,20 @@ public class ExamSession : Document
 public class ExamQuestion
 {
     public string QuestionId { get; set; } = string.Empty;
-    public string Text { get; set; } = string.Empty;
     public QuestionType Type { get; set; }
-    public List<Option> Options { get; set; } = new();
-    public string ExplanationCorrectAnswer { get; private set; } = string.Empty;
-    public string ExplanationIncorrectAnswer { get; private set; } = string.Empty;
+    
+    // MCQ fields
+    public string? Text { get; set; }
+    public List<Option>? Options { get; set; }
+    public string? ExplanationCorrectAnswer { get; private set; }
+    public string? ExplanationIncorrectAnswer { get; private set; }
+    
+    // IPEQ/C2RS fields
+    public string? TaskDescription { get; set; }
+    public string? ReferenceSolution { get; set; }
+    public string? CodeGenerationPrompt { get; set; }
+    public string? CodeGradingPrompt { get; set; }
+    
     public int? TimeLimit { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
 
@@ -124,6 +133,7 @@ public class ExamQuestion
 
     public ExamQuestion() {}
 
+    // MCQ constructor
     public ExamQuestion(
         string questionId,
         string text,
@@ -140,6 +150,27 @@ public class ExamQuestion
         ExplanationIncorrectAnswer = explanationIncorrectAnswer;
         Type = type;
         Options = options;
+        TimeLimit = timeLimit;
+        StartedAt = startedAt;
+    }
+    
+    // IPEQ/C2RS constructor
+    public ExamQuestion(
+        string questionId,
+        QuestionType type,
+        string taskDescription,
+        string referenceSolution,
+        string codeGenerationPrompt,
+        string codeGradingPrompt,
+        int? timeLimit,
+        DateTimeOffset? startedAt)
+    {
+        QuestionId = questionId;
+        Type = type;
+        TaskDescription = taskDescription;
+        ReferenceSolution = referenceSolution;
+        CodeGenerationPrompt = codeGenerationPrompt;
+        CodeGradingPrompt = codeGradingPrompt;
         TimeLimit = timeLimit;
         StartedAt = startedAt;
     }

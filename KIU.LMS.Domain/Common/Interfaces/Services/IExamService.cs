@@ -6,7 +6,12 @@ public interface IExamService
 {
     Task<ExamSession> StartExamAsync(Guid studentId, Guid quizId);
     Task<Domain.Entities.NoSQL.ExamQuestion?> GetCurrentQuestionAsync(string sessionId);
-    Task<bool> SubmitAnswerAsync(string sessionId, string questionId, List<string> selectedOptions);
+    Task<bool> SubmitAnswerAsync(
+        string sessionId,
+        string questionId,
+        List<string>? selectedOptions = null,
+        string? studentCode = null,
+        string? studentPrompt = null);
     Task<ExamSession?> GetSessionByIdAsync(string sessionId);
     Task<bool> PauseExamAsync(string sessionId);
     Task<bool> ResumeExamAsync(string sessionId);

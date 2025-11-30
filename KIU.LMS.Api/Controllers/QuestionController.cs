@@ -1,8 +1,5 @@
 ﻿using KIU.LMS.Application.Features.Questions.Commands;
-using KIU.LMS.Application.Features.Questions.Commands.AddQuestions;
 using KIU.LMS.Application.Features.Questions.Queries;
-using KIU.LMS.Domain.Common.Enums.Assignment;
-using KIU.LMS.Domain.Entities.NoSQL;
 
 namespace KIU.LMS.Api.Controllers;
 

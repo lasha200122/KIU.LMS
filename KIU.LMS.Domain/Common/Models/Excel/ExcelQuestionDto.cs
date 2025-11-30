@@ -5,7 +5,7 @@ public sealed class QuestionExcelDto
     public string Question { get; set; } = string.Empty;
     public string CorrectAnswer { get; set; } = string.Empty;
     public List<string> IncorrectAnswers { get; set; } = new();
-
+    
     public string ExplanationCorrectAnswer { get; private set; } = string.Empty;
     public string ExplanationIncorrectAnswer { get; private set; } = string.Empty;
 

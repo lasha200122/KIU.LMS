@@ -14,9 +14,10 @@ public sealed class CourseRepository(LmsDbContext _context)
             .FirstOrDefaultAsync(c => c.Id == id);
     }
 
-    public async Task<Course?> GetByIdWithDetailsAsync(Guid id)
+    public Task<Course?> GetByIdWithDetailsAsync(Guid id)
     {
-        return await _context.Courses
+        return _context.Courses
+            .AsNoTracking()
             .AsSplitQuery()
             .Include(c => c.UserCourses)
                 .ThenInclude(uc => uc.User)

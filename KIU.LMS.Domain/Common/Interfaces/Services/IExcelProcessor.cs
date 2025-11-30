@@ -6,6 +6,7 @@ public interface IExcelProcessor
 {
     Task<ExcelValidationResult> ProcessStudentsExcelFile(IFormFile file);
     ExcelValidationResult ProcessQuestionsExcelFile(IFormFile file);
+    ExcelValidationResult ProcessIpeqAndC2rsExcelFile(IFormFile file);
 
     void GenerateStudentRegistrationTemplate(Stream stream);
     void GenerateQuestionsTemplate(Stream stream);

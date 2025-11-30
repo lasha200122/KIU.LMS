@@ -26,7 +26,7 @@ public class ExcelProcessor : IExcelProcessor
                             if (!string.IsNullOrWhiteSpace(answer))
                                 incorrectAnswers.Add(answer);
                         }
-                        
+
                         var question = new QuestionExcelDto(
                             row.Cell(1).GetString().Trim(),
                             row.Cell(2).GetString().Trim(),
@@ -49,34 +49,108 @@ public class ExcelProcessor : IExcelProcessor
 
                         if (string.IsNullOrWhiteSpace(question.ExplanationCorrectAnswer))
                         {
-                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationCorrectAnswer", "სწორი პასუხის ახსნა სავალდებულოა"));
+                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationCorrectAnswer",
+                                "სწორი პასუხის ახსნა სავალდებულოა"));
                             continue;
                         }
-                        
+
                         if (string.IsNullOrWhiteSpace(question.ExplanationIncorrectAnswer))
                         {
-                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationIncorrectAnswer", "არასწორი პასუხის ახსნა სავალდებულოა"));
+                            result.Errors.Add(new ExcelRowError(rowNum, "ExplanationIncorrectAnswer",
+                                "არასწორი პასუხის ახსნა სავალდებულოა"));
                             continue;
                         }
-                        
+
                         if (!question.IncorrectAnswers.Any())
                         {
-                            result.Errors.Add(new ExcelRowError(rowNum, "IncorrectAnswers", "მინიმუმ ერთი არასწორი პასუხი სავალდებულოა"));
+                            result.Errors.Add(new ExcelRowError(rowNum, "IncorrectAnswers",
+                                "მინიმუმ ერთი არასწორი პასუხი სავალდებულოა"));
                             continue;
                         }
-                        
+
                         result.ValidQuestions.Add(question);
                     }
                     catch (Exception ex)
                     {
-                        result.Errors.Add(new ExcelRowError(rowNum, "General", $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
+                        result.Errors.Add(new ExcelRowError(rowNum, "General",
+                            $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
                     }
                 }
             }
         }
+
         result.IsValid = !result.Errors.Any();
         return result;
     }
+
+    public ExcelValidationResult ProcessIpeqAndC2rsExcelFile(IFormFile file)
+    {
+        var result = new ExcelValidationResult();
+
+        using (var stream = new MemoryStream())
+        {
+            file.CopyTo(stream);
+            using (var workbook = new XLWorkbook(stream))
+            {
+                var worksheet = workbook.Worksheet(1);
+                var rows = worksheet.RowsUsed().Skip(1);
+
+                foreach (var row in rows)
+                {
+                    var rowNum = row.RowNumber();
+                    try
+                    {
+                        var task = new C2RSExcelDto(
+                            row.Cell(1).GetString().Trim(),
+                            row.Cell(2).GetString().Trim(), 
+                            row.Cell(3).GetString().Trim(), 
+                            row.Cell(4).GetString().Trim(), 
+                            row.Cell(5).GetString().Trim() 
+                        );
+
+                        if (string.IsNullOrWhiteSpace(task.TaskDescription))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "TaskDescription",
+                                "დავალების აღწერა სავალდებულოა"));
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(task.CodeSolution))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "CodeSolution", "კოდის ამოხსნა სავალდებულოა"));
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(task.CodeGenerationPrompt))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "CodeGenerationPrompt",
+                                "კოდის გენერაციის პრომპტი სავალდებულოა"));
+                            continue;
+                        }
+
+                        if (string.IsNullOrWhiteSpace(task.CodeGradingPrompt))
+                        {
+                            result.Errors.Add(new ExcelRowError(rowNum, "CodeGradingPrompt",
+                                "შეფასების პრომპტი სავალდებულოა"));
+                            continue;
+                        }
+
+                        result.ValidTasks.Add(task);
+                    }
+                    catch (Exception ex)
+                    {
+                        result.Errors.Add(new ExcelRowError(rowNum, "General",
+                            $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
+                    }
+                }
+            }
+        }
+
+        result.IsValid = !result.Errors.Any();
+        return result;
+    }
+
+
     public async Task<ExcelValidationResult> ProcessStudentsExcelFile(IFormFile file)
     {
         var result = new ExcelValidationResult();
@@ -95,7 +169,7 @@ public class ExcelProcessor : IExcelProcessor
                     try
                     {
                         var student = new StudentExcelDto(
-                            row.Cell(1).GetString().Trim().ToLower(), 
+                            row.Cell(1).GetString().Trim().ToLower(),
                             row.Cell(2).GetString().Trim().ToLower(),
                             row.Cell(3).GetString().Trim().ToLower(),
                             row.Cell(4).GetString().Trim());
@@ -137,7 +211,7 @@ public class ExcelProcessor : IExcelProcessor
                         result.Errors.Add(new ExcelRowError(
                             rowNum,
                             "General",
-                           $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
+                            $"მონაცემების წაკითხვის შეცდომა: {ex.Message}"));
                     }
                 }
             }
@@ -154,7 +228,7 @@ public class ExcelProcessor : IExcelProcessor
 
         try
         {
-            var addr = new System.Net.Mail.MailAddress(email);
+            var addr = new MailAddress(email);
             return addr.Address == email;
         }
         catch
@@ -302,7 +376,8 @@ public class ExcelProcessor : IExcelProcessor
                 worksheet.Cell(row, 12).Value = result.WrongAnswers;
 
                 var duration = result.Duration;
-                worksheet.Cell(row, 13).Value = $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
+                worksheet.Cell(row, 13).Value =
+                    $"{(int)duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
 
                 worksheet.Cell(row, 14).Value = result.MinusPoint;
                 worksheet.Cell(row, 15).Value = result.Bonus;
@@ -405,10 +480,14 @@ public class ExcelProcessor : IExcelProcessor
             worksheet.Column(4).Style.Alignment.WrapText = true;
 
             // Add sample row to demonstrate the template
-            worksheet.Cell(2, 1).Value = "Create a function called calculate_factorial_recursive that calculates the factorial of a number using recursion (5! = 5×4×3×2×1 = 120)";
-            worksheet.Cell(2, 2).Value = @"python<br>def calculate_factorial_recursive(n: int) -> int:<br>if n <= 1:<br>return 1<br>return n * calculate_factorial_recursive(n - 1)";
-            worksheet.Cell(2, 3).Value = "Write a Python function called 'calculate_factorial_recursive' that calculates factorial using recursion. Include proper base case for n <= 1 and recursive case. Use proper type annotations.";
-            worksheet.Cell(2, 4).Value = "Evaluate this calculate_factorial_recursive function: Does it correctly implement recursion with proper base case? Does it calculate factorial correctly? Are type annotations appropriate?";
+            worksheet.Cell(2, 1).Value =
+                "Create a function called calculate_factorial_recursive that calculates the factorial of a number using recursion (5! = 5×4×3×2×1 = 120)";
+            worksheet.Cell(2, 2).Value =
+                @"python<br>def calculate_factorial_recursive(n: int) -> int:<br>if n <= 1:<br>return 1<br>return n * calculate_factorial_recursive(n - 1)";
+            worksheet.Cell(2, 3).Value =
+                "Write a Python function called 'calculate_factorial_recursive' that calculates factorial using recursion. Include proper base case for n <= 1 and recursive case. Use proper type annotations.";
+            worksheet.Cell(2, 4).Value =
+                "Evaluate this calculate_factorial_recursive function: Does it correctly implement recursion with proper base case? Does it calculate factorial correctly? Are type annotations appropriate?";
             worksheet.Cell(2, 5).Value = "Easy";
 
             // Style the sample row
@@ -495,18 +574,18 @@ public class ExcelProcessor : IExcelProcessor
         {
             worksheet.Cell(row, 1).Value = task.TaskDescription;
             worksheet.Cell(row, 2).Value = task.CodeSolution;
-        
+
             if (type == GeneratedAssignmentType.C2RS)
             {
                 worksheet.Cell(row, 3).Value = "EMPTY";
             }
-            else  
+            else
             {
-                worksheet.Cell(row, 3).Value = string.IsNullOrWhiteSpace(task.CodeGenerationPrompt) 
-                    ? "EMPTY" 
+                worksheet.Cell(row, 3).Value = string.IsNullOrWhiteSpace(task.CodeGenerationPrompt)
+                    ? "EMPTY"
                     : task.CodeGenerationPrompt;
             }
-        
+
             worksheet.Cell(row, 4).Value = task.CodeGradingPrompt;
             worksheet.Cell(row, 5).Value = difficulty.ToString();
 
@@ -527,7 +606,7 @@ public class ExcelProcessor : IExcelProcessor
         stream.Position = 0;
     }
 
-    
+
     public async Task<ExcelValidationResult> ProcessTasksExcelFile(IFormFile file)
     {
         var result = new ExcelValidationResult();
@@ -550,7 +629,7 @@ public class ExcelProcessor : IExcelProcessor
                             row.Cell(2).GetString().Trim(), // Code Solution
                             row.Cell(3).GetString().Trim(), // Code Generation Prompt
                             row.Cell(4).GetString().Trim(), // Code Grading Prompt
-                            row.Cell(5).GetString().Trim()  // Difficulty
+                            row.Cell(5).GetString().Trim() // Difficulty
                         );
 
                         // Validate Task Description
