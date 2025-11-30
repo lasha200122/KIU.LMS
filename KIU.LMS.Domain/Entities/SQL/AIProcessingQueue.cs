@@ -58,7 +58,8 @@ public enum AIProcessingType
     MCQ = 1,
     C2RS = 2,
     IPEQ = 3,
-    Grading = 4
+    Grading = 4,
+    QuizGrading = 5 
 }
 
 public enum AIProcessingStatus

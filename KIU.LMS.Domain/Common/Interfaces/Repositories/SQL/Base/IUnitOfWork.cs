@@ -22,6 +22,7 @@ public interface IUnitOfWork
     IModuleRepository ModuleRepository { get; }
     ISubModuleRepository SubModuleRepository { get; }
     IModuleBankRepository ModuleBankRepository { get; }
+    IAIProcessingQueueRepository AIProcessingQueueRepository { get; }
     IAssignmentSolutionJobRepository AssignmentSolutionJobRepository { get; }
     Task CreateTransactionAsync();
     Task CommitTransactionAsync();

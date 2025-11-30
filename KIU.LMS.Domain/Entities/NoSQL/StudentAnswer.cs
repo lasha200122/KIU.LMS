@@ -5,12 +5,16 @@ public class StudentAnswer : Document
 {
     public string SessionId { get; private set; } = string.Empty;
     public string QuestionId { get; private set; } = string.Empty;
+    
+    // MCQ
     public List<string>? SelectedOptions { get; private set; }
+    
+    public string? StudentCode { get; private set; }
     public string? StudentPrompt { get; private set; }
     public string? GeneratedCode { get; private set; }
     public DateTimeOffset AnsweredAt { get; private set; }
+    public StudentAnswer() { }
 
-    // MCQ constructor
     public StudentAnswer(string sessionId, string questionId, List<string> selectedOptions)
     {
         SessionId = sessionId;
@@ -18,18 +22,22 @@ public class StudentAnswer : Document
         SelectedOptions = selectedOptions;
         AnsweredAt = DateTimeOffset.UtcNow;
     }
+    public StudentAnswer(string sessionId, string questionId, string studentCode, bool isCode)
+    {
+        SessionId = sessionId;
+        QuestionId = questionId;
+        StudentCode = studentCode;
+        AnsweredAt = DateTimeOffset.UtcNow;
+    }
     
-    // IPEQ/C2RS constructor
-    public StudentAnswer(
-        string sessionId, 
-        string questionId, 
-        string? studentPrompt,
-        string? generatedCode = null)
+    public StudentAnswer(string sessionId, string questionId, string studentPrompt)
     {
         SessionId = sessionId;
         QuestionId = questionId;
         StudentPrompt = studentPrompt;
-        GeneratedCode = generatedCode;
         AnsweredAt = DateTimeOffset.UtcNow;
     }
+    
+    public void SetGeneratedCode(string code)
+        => GeneratedCode = code;
 }

@@ -191,4 +191,40 @@ Output format:
         var reason = root.GetProperty("reason").GetString();
         return (isValid, reason);
     }
+    
+    public async Task<string?> GenerateCodeFromPromptAsync(string prompt)
+    {
+        var request = new
+        {
+            model = aiGradingConfiguration.AIModel,
+            messages = new[]
+            {
+                new
+                {
+                    role = "system",
+                    content = "You are an expert programmer. Generate clean, working code based on the user's description. Return ONLY the code, no explanations."
+                },
+                new
+                {
+                    role = "user",
+                    content = prompt
+                }
+            },
+            stream = false
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("chat/completions", request);
+        if (!response.IsSuccessStatusCode)
+            return null;
+
+        var content = await response.Content.ReadFromJsonAsync<JsonElement>();
+   
+        return content
+            .GetProperty("choices")[0]
+            .GetProperty("message")
+            .GetProperty("content")
+            .GetString()
+            ?.Trim();
+    }
+
 }

@@ -39,4 +39,11 @@ public class ExamResult : Aggregate
         Duration = finishedAt - startedAt;
         SessionId = sessionId;
     }
+    
+    public void UpdateScore(decimal score, int correctAnswersCount)
+    {
+        Score = score;
+        CorrectAnswers = correctAnswersCount;
+        Update(CreateUserId, DateTimeOffset.UtcNow);
+    }
 }

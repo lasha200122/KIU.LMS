@@ -85,8 +85,8 @@ public sealed class GetSessionQuestionQueryHandler(IExamService _service, IUnitO
                 
                 // IPEQ/C2RS fields
                 TaskDescription: question.TaskDescription,
-                ReferenceSolution: question.Type == QuestionType.IPEQ ? question.ReferenceSolution : null, // только для C2RS показываем код
-                CodeGenerationPrompt: question.Type == QuestionType.C2RS ? question.CodeGenerationPrompt : null
+                ReferenceSolution: question.Type == QuestionType.C2RS ? question.ReferenceSolution : null, 
+                CodeGenerationPrompt: question.Type ==  QuestionType.IPEQ ? question.CodeGenerationPrompt : null
             ),
             
             _ => throw new NotSupportedException($"Question type {question.Type} is not supported")

@@ -1,3 +1,4 @@
+using KIU.LMS.Application.Features.AIProcessing;
 using KIU.LMS.Domain.Common.Interfaces.Repositories.SQL;
 using Microsoft.Extensions.Logging;
 
@@ -32,6 +33,7 @@ public class AIProcessingWorker : BackgroundService
 
                 var jobToProcess =
                     jobs.FirstOrDefault(x => x.Type == AIProcessingType.Grading) ??
+                    jobs.FirstOrDefault(x => x.Type == AIProcessingType.QuizGrading) ??
                     (IsNightTime() ? jobs.FirstOrDefault(x => x.Type == AIProcessingType.MCQ) : null) ??
                     (IsNightTime() ? jobs.FirstOrDefault(x =>
                         x.Type is AIProcessingType.C2RS or AIProcessingType.IPEQ) : null);
@@ -73,6 +75,9 @@ public class AIProcessingWorker : BackgroundService
 
             AIProcessingType.MCQ =>
                 await mediator.Send(new GenerateAssignmentCommand(job.TargetId), ct),
+            
+            AIProcessingType.QuizGrading => 
+                await mediator.Send(new GradeQuizCommand(job.TargetId), ct),
 
             _ => new AIProcessingResult(false, "{}", "Unsupported type")
         };

@@ -112,7 +112,7 @@ public class ExamService(
             if (string.IsNullOrWhiteSpace(studentCode))
                 return false;
         
-            answer = new StudentAnswer(sessionId, questionId, studentCode);
+            answer = new StudentAnswer(sessionId, questionId, studentCode, true);
         }
         else if (currentQuestion.Type == QuestionType.C2RS)
         {
@@ -211,22 +211,42 @@ public class ExamService(
     {
         var answers = await _answerRepository.FindAsync(a => a.SessionId == session.Id);
         var quiz = await _unitOfWork.QuizRepository.SingleOrDefaultAsync(x => x.Id == new Guid(session.QuizId));
-        
+
         if (quiz != null)
         {
+            var hasCodeQuestions = session.Questions.Any(q => 
+                q.Type == QuestionType.IPEQ || q.Type == QuestionType.C2RS);
+        
+            var score = hasCodeQuestions ? -1 : CalculateScore(answers.ToList(), session.Questions, quiz.Type, quiz.MinusScore);
+            var correctCount = hasCodeQuestions ? -1 : CountAnswers(answers.ToList(), session.Questions).CorrectCount;
+        
             var examResult = new ExamResult(
                 Guid.NewGuid(),
                 new Guid(session.StudentId),
                 new Guid(session.QuizId),
                 session.StartedAt,
                 DateTimeOffset.UtcNow,
-                CalculateScore(answers.ToList(), session.Questions, quiz.Type, quiz.MinusScore),
+                score,
                 session.Questions.Count,
-                CountAnswers(answers.ToList(), session.Questions).CorrectCount,
+                correctCount,
                 session.Id,
                 new Guid(session.StudentId));
 
             await _unitOfWork.ExamResultRepository.AddAsync(examResult);
+        
+            if (hasCodeQuestions)
+            {
+                var gradingJob = new AIProcessingQueue(
+                    Guid.NewGuid(),
+                    new Guid(session.StudentId),
+                    examResult.Id,
+                    AIProcessingType.QuizGrading,
+                    session.Id 
+                );
+            
+                await _unitOfWork.AIProcessingQueueRepository.AddAsync(gradingJob);
+            }
+        
             await _unitOfWork.SaveChangesAsync();
         }
     }
