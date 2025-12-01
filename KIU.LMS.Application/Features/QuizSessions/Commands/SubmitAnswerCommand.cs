@@ -14,10 +14,6 @@ public sealed class SubmitAnswerCommandValidator : AbstractValidator<SubmitAnswe
     {
         RuleFor(x => x.QuestionId).NotEmpty();
         RuleFor(x => x.SessionId).NotEmpty();
-        
-        RuleFor(x => x)
-            .Must(x => x.Options != null && x.Options.Any())
-            .WithMessage("Answer is required");
     }
 }
     
