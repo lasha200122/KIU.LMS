@@ -27,26 +27,35 @@ jobs:
       - name: Publish
         run: dotnet publish -c Release -o ./publish
 
-      - name: Deploy to IIS (keep configs)
+      - name: Deploy to IIS (keep configs and logs)
         shell: powershell
         run: |
           $AppSource = "$(Get-Location)\publish"
           $AppTarget = "C:\inetpub\wwwroot\lms-ai-api"
           $KeepFiles = @("appsettings.json", "appsettings.Development.json", "web.config")
+          $KeepDirs = @("logs")
 
           Write-Host "Stopping IIS site..."
           Import-Module WebAdministration
           Stop-WebSite -Name "lms-ai-api"
 
-          Write-Host "Cleaning old files except important configs..."
+          Write-Host "Cleaning old files except important configs and logs..."
           Get-ChildItem $AppTarget -Recurse | Where-Object {
-              $KeepFiles -notcontains $_.Name
+              $relativePath = $_.FullName.Replace($AppTarget, "").TrimStart("\")
+              $isKeepFile = $KeepFiles -contains $_.Name
+              $isKeepDir = $KeepDirs | Where-Object { $relativePath -like "$_*" }
+              -not ($isKeepFile -or $isKeepDir)
           } | Remove-Item -Recurse -Force -ErrorAction SilentlyContinue
 
-          Write-Host "Copying new build (without overwriting configs)..."
-          Get-ChildItem $AppSource -Recurse | Copy-Item -Destination $AppTarget -Recurse
+          Write-Host "Copying new build (without overwriting configs and logs)..."
+          Get-ChildItem $AppSource -Recurse | ForEach-Object {
+              $targetPath = $_.FullName.Replace($AppSource, $AppTarget)
+              if (-not (Test-Path $targetPath)) {
+                  Copy-Item $_.FullName -Destination $targetPath -Force
+              }
+          }
 
           Write-Host "Starting IIS site..."
-          Start-WebSite -Name "your-app"
+          Start-WebSite -Name "lms-ai-api"
 
           Write-Host "Deployment completed successfully!"
