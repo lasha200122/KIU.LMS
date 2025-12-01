@@ -1,15 +1,12 @@
-﻿
-namespace KIU.LMS.Application.Features.QuizSessions.Commands;
+﻿namespace KIU.LMS.Application.Features.QuizSessions.Commands;
 
 public sealed record SubmitAnswerCommand(
     string SessionId,
     string QuestionId,
     List<string>? Options,
-    string? StudentCode,
-    string? StudentPrompt
+    string? StudentCode = "",
+    string? StudentPrompt = ""
 ) : IRequest<Result>;
-
-
 
 public sealed class SubmitAnswerCommandValidator : AbstractValidator<SubmitAnswerCommand> 
 {
@@ -19,13 +16,11 @@ public sealed class SubmitAnswerCommandValidator : AbstractValidator<SubmitAnswe
         RuleFor(x => x.SessionId).NotEmpty();
         
         RuleFor(x => x)
-            .Must(x => (x.Options != null && x.Options.Any()) || 
-                       !string.IsNullOrWhiteSpace(x.StudentCode) || 
-                       !string.IsNullOrWhiteSpace(x.StudentPrompt))
+            .Must(x => x.Options != null && x.Options.Any())
             .WithMessage("Answer is required");
     }
 }
-
+    
 public sealed class SubmitAnswerCommandHandler(IExamService _service, ICurrentUserService _current) 
     : IRequestHandler<SubmitAnswerCommand, Result>
 {

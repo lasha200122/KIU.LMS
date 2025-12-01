@@ -12,7 +12,7 @@ public static class ApplicationServiceRegistration
         services.AddScoped(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
         services.AddHostedService<EmailQueueWorker>();
-        services.AddHostedService<AssignmentSolutionJobWorker>();
+        //services.AddHostedService<AssignmentSolutionJobWorker>();
         //services.AddHostedService<AssignmentGenerationWorker>();
         //services.AddHostedService<TaskGenerationWorker>();
         //services.AddHostedService<GradingWorker>();
