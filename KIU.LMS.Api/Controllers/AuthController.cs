@@ -21,4 +21,11 @@ public class AuthController(ISender _sender) : ApiController(_sender)
     {
         return await Handle(new LogoutCommand());
     }
+
+    [HttpGet("test")]
+    [AllowAnonymous]
+    public async Task<IResult> Test() 
+    {
+        return Results.Ok("Test endpoint is working!");
+    }
 }
