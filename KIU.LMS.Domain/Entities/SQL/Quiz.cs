@@ -15,10 +15,15 @@ public class Quiz : Aggregate
     public int? TimePerQuestion { get; private set; }
     public decimal? MinusScore { get; private set; }
     public DateTimeOffset? PublicTill { get; private set; }
-    public bool IsTraining { get; private set; } 
+    public bool IsTraining { get; private set; }
+
+    // Safe Exam Browser Configuration
+    public bool RequiresSafeExamBrowser { get; private set; }
+    public string? SafeExamBrowserConfigKey { get; private set; }
+    public DateTimeOffset? SafeExamBrowserConfigGeneratedAt { get; private set; }
 
     public virtual Course Course { get; private set; } = null!;
-    public virtual Topic Topic { get; private set; } = null!;
+    public virtual Topic Topic { get; private set; } = null!
 
     private List<QuizBank> _quizBanks = new();
     public IReadOnlyCollection<QuizBank> QuizBanks => _quizBanks;
@@ -67,10 +72,39 @@ public class Quiz : Aggregate
         StartDateTime = DateTimeOffset.UtcNow;
     }
 
-    public void Reschedule(DateTimeOffset start, DateTimeOffset end) 
+    public void Reschedule(DateTimeOffset start, DateTimeOffset end)
     {
         StartDateTime = start;
         EndDateTime = end;
+    }
+
+    public void EnableSafeExamBrowser(string configKey)
+    {
+        if (string.IsNullOrWhiteSpace(configKey))
+            throw new ArgumentException("Config key cannot be empty", nameof(configKey));
+
+        RequiresSafeExamBrowser = true;
+        SafeExamBrowserConfigKey = configKey;
+        SafeExamBrowserConfigGeneratedAt = DateTimeOffset.UtcNow;
+    }
+
+    public void DisableSafeExamBrowser()
+    {
+        RequiresSafeExamBrowser = false;
+        SafeExamBrowserConfigKey = null;
+        SafeExamBrowserConfigGeneratedAt = null;
+    }
+
+    public void RegenerateSebConfig(string newConfigKey)
+    {
+        if (!RequiresSafeExamBrowser)
+            throw new InvalidOperationException("Cannot regenerate SEB config when SEB is not required");
+
+        if (string.IsNullOrWhiteSpace(newConfigKey))
+            throw new ArgumentException("Config key cannot be empty", nameof(newConfigKey));
+
+        SafeExamBrowserConfigKey = newConfigKey;
+        SafeExamBrowserConfigGeneratedAt = DateTimeOffset.UtcNow;
     }
 }
 

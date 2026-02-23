@@ -8,4 +8,9 @@ public interface ICurrentUserService
     string Role { get; }
     bool IsAuthenticated { get; }
     string? DeviceId { get; }
+
+    // Safe Exam Browser Detection
+    bool IsUsingSafeExamBrowser { get; }
+    string? SebRequestHash { get; }
+    string? SebConfigKeyHash { get; }
 }

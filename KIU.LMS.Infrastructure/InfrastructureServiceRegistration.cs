@@ -98,7 +98,8 @@ public static class InfrastructureServiceRegistration
         services.AddScoped<IQrCodeService, QrCodeService>();
         services.AddScoped<IQuestionGenerationService, QuestionGenerationService>();
         services.AddScoped<ITaskGenerationService, TaskGenerationService>();
-        
+        services.AddScoped<ISafeExamBrowserService, SafeExamBrowserService>();
+
         logger.Information("Layer loaded: {Layer} ", thisAssembly.GetName().Name);
 
         return services;

@@ -14,7 +14,8 @@ public sealed record AddQuizCommand(
     decimal? MinusScore,
     DateTimeOffset? PublicTill,
     bool IsTraining,
-    List<QuestionBankItem> Banks) : IRequest<Result>;
+    List<QuestionBankItem> Banks,
+    bool RequiresSafeExamBrowser = false) : IRequest<Result>;
 
 public sealed record QuestionBankItem(Guid Id, int Amount);
 
@@ -53,7 +54,10 @@ public sealed class AddQuizCommandValidator : AbstractValidator<AddQuizCommand>
     }
 }
 
-public sealed class AddQuizCommandHandler(IUnitOfWork unitOfWork, ICurrentUserService current) : IRequestHandler<AddQuizCommand, Result>
+public sealed class AddQuizCommandHandler(
+    IUnitOfWork unitOfWork,
+    ICurrentUserService current,
+    ISafeExamBrowserService sebService) : IRequestHandler<AddQuizCommand, Result>
 {
     public async Task<Result> Handle(AddQuizCommand request, CancellationToken cancellationToken)
     {
@@ -99,6 +103,13 @@ public sealed class AddQuizCommandHandler(IUnitOfWork unitOfWork, ICurrentUserSe
             request.PublicTill,
             request.IsTraining,
             current.UserId);
+
+        // Enable Safe Exam Browser if requested
+        if (request.RequiresSafeExamBrowser)
+        {
+            var configKey = sebService.GenerateBrowserExamKey(quiz.Id, quiz.Id.ToString());
+            quiz.EnableSafeExamBrowser(configKey);
+        }
 
         var quizBanks = request.Banks.Select(x => new QuizBank(
             Guid.NewGuid(),

@@ -8,7 +8,8 @@ public class ExamService(
     IUnitOfWork _unitOfWork,
     IMongoRepository<ExamSession> _sessionRepository,
     IMongoRepository<StudentAnswer> _answerRepository,
-    IMongoRepository<Question> _questionsRepository) : IExamService
+    IMongoRepository<Question> _questionsRepository,
+    ICurrentUserService _currentUser) : IExamService
 {
     public async Task<ExamSession> StartExamAsync(Guid studentId, Guid quizId)
     {
@@ -49,7 +50,9 @@ public class ExamService(
             studentId.ToString(),
             quizId.ToString(),
             questions,
-            totalDuration);
+            totalDuration,
+            _currentUser.IsUsingSafeExamBrowser,
+            quiz.RequiresSafeExamBrowser ? quiz.SafeExamBrowserConfigKey : null);
 
         await _sessionRepository.CreateAsync(session);
         return session;

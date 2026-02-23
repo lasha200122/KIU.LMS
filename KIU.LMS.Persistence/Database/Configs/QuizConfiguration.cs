@@ -16,5 +16,17 @@ public class QuizConfiguration : EntityConfiguration<Quiz>
             .WithMany(x => x.Quizzes)
             .HasForeignKey(x => x.TopicId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        // Safe Exam Browser Configuration
+        builder.Property(x => x.RequiresSafeExamBrowser)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(x => x.SafeExamBrowserConfigKey)
+            .HasMaxLength(256)
+            .IsRequired(false);
+
+        builder.Property(x => x.SafeExamBrowserConfigGeneratedAt)
+            .IsRequired(false);
     }
 }

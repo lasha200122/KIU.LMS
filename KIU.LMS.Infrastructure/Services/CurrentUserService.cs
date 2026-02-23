@@ -1,6 +1,8 @@
 ﻿namespace KIU.LMS.Infrastructure.Services;
 
-public class CurrentUserService(IHttpContextAccessor _httpContextAccessor) : ICurrentUserService
+public class CurrentUserService(
+    IHttpContextAccessor _httpContextAccessor,
+    ISafeExamBrowserService _sebService) : ICurrentUserService
 {
     public Guid UserId
     {
@@ -16,6 +18,39 @@ public class CurrentUserService(IHttpContextAccessor _httpContextAccessor) : ICu
     public string Role => GetClaim(ClaimTypes.Role);
     public bool IsAuthenticated => _httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
     public string? DeviceId => "TEST ID";//_httpContextAccessor.HttpContext?.Request.Headers["X-Device-Info"].FirstOrDefault();
+
+    // Safe Exam Browser Detection
+    public bool IsUsingSafeExamBrowser
+    {
+        get
+        {
+            if (_httpContextAccessor.HttpContext == null)
+                return false;
+            return _sebService.IsRequestFromSafeBrowser(_httpContextAccessor.HttpContext);
+        }
+    }
+
+    public string? SebRequestHash
+    {
+        get
+        {
+            if (_httpContextAccessor.HttpContext == null)
+                return null;
+            var (requestHash, _) = _sebService.GetSebHeaders(_httpContextAccessor.HttpContext);
+            return requestHash;
+        }
+    }
+
+    public string? SebConfigKeyHash
+    {
+        get
+        {
+            if (_httpContextAccessor.HttpContext == null)
+                return null;
+            var (_, configKeyHash) = _sebService.GetSebHeaders(_httpContextAccessor.HttpContext);
+            return configKeyHash;
+        }
+    }
 
     private string GetClaim(string claimType)
     {

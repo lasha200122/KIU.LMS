@@ -28,7 +28,7 @@ public class Aggregate : Entity
         CreateDate = createDate;
     }
 
-    protected void Update(Guid userId, DateTimeOffset updateDate)
+    public void Update(Guid userId, DateTimeOffset updateDate)
     {
         if (IsDeleted)
         {

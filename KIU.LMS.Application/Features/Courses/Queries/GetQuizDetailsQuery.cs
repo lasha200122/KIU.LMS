@@ -14,7 +14,10 @@ public sealed record GetQuizDetailsQueryResponse(
     int TotalQuestions,
     int? TimePerQuestion,
     string TotalTime,
-    List<ExamHistory> History);
+    List<ExamHistory> History,
+    bool RequiresSafeExamBrowser,
+    bool IsAccessibleViaSeb,
+    string? SebBlockMessage);
 
 public sealed record ExamHistory(
     string SessionId,
@@ -44,10 +47,20 @@ public sealed class GetQuizDetailsQueryHandler(IUnitOfWork _unitOfWork, ICurrent
 
         bool isAllowed = (!quiz.Attempts.HasValue || quiz.Attempts.Value > attempted) && (!quiz.EndDateTime.HasValue || DateTimeOffset.UtcNow < quiz.EndDateTime.Value);
 
+        // Check Safe Exam Browser requirements
+        bool requiresSeb = quiz.RequiresSafeExamBrowser;
+        bool isAccessibleViaSeb = !requiresSeb || _current.IsUsingSafeExamBrowser;
+        string? sebBlockMessage = null;
+
+        if (requiresSeb && !_current.IsUsingSafeExamBrowser)
+        {
+            sebBlockMessage = "This quiz requires Safe Exam Browser. Please download the SEB configuration file and open it to start the exam.";
+        }
+
         var result = new GetQuizDetailsQueryResponse(
             quiz.Id,
             quiz.Title,
-            isAllowed,
+            isAllowed && isAccessibleViaSeb,
             quiz.Attempts,
             attempted,
             quiz.StartDateTime.ToLocalTime().ToString("dd/MM/yyyy HH:mm"),
@@ -64,7 +77,10 @@ public sealed class GetQuizDetailsQueryHandler(IUnitOfWork _unitOfWork, ICurrent
                 x.TotalQuestions.ToString(),
                 x.CorrectAnswers.ToString(),
                 x.Duration.ToString())
-            ).ToList());
+            ).ToList(),
+            requiresSeb,
+            isAccessibleViaSeb,
+            sebBlockMessage);
 
         return Result<GetQuizDetailsQueryResponse>.Success(result);
     }

@@ -11,6 +11,8 @@ public class ExamSession : Document
     public ExamStatus Status { get; private set; }
     public int CurrentQuestionIndex { get; private set; }
     public int? RemainingTimeInSeconds { get; private set; }
+    public bool UsedSafeExamBrowser { get; private set; }
+    public string? SebConfigKeyUsed { get; private set; }
     public ExamQuestion? CurrentQuestion => CurrentQuestionIndex < Questions.Count ? Questions[CurrentQuestionIndex] : null;
     public bool IsExamTimeExpired => RemainingTimeInSeconds.HasValue && DateTimeOffset.UtcNow > StartedAt.AddSeconds(RemainingTimeInSeconds.Value);
 
@@ -19,7 +21,9 @@ public class ExamSession : Document
         string studentId,
         string quizId,
         List<ExamQuestion> questions,
-        int? durationInSeconds = null)
+        int? durationInSeconds = null,
+        bool usedSafeExamBrowser = false,
+        string? sebConfigKey = null)
     {
         if (questions == null || !questions.Any())
             throw new ArgumentException("Questions cannot be null or empty", nameof(questions));
@@ -34,6 +38,8 @@ public class ExamSession : Document
         Status = ExamStatus.InProgress;
         CurrentQuestionIndex = 0;
         RemainingTimeInSeconds = durationInSeconds;
+        UsedSafeExamBrowser = usedSafeExamBrowser;
+        SebConfigKeyUsed = sebConfigKey;
     }
 
     public bool CanAnswerCurrentQuestion()
